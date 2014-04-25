@@ -5,13 +5,17 @@
 import git
 import ConfigParser
 
-from pyrdm.figshare import Figshare
+from figshare import Figshare
 
 class Publisher:
 
-   def __init__(self):
+   def __init__(self, config):
       # Read in the authentication tokens, etc from the configuration file.
-      self.config = {}
+      self.config = config
+
+      # Set up a Figshare object, in case we want to push data directly to Figshare
+      # (rather than via Fidgit).
+      fs = Figshare(self.config)
 
       return
 
@@ -51,22 +55,18 @@ class Publisher:
 
       # Get Fidgit to take a snapshot of the repository. This will require an HTTP POST to the server running Fidgit.
 
-      doi = "test"
 
+      response = client.get('http://api.figshare.com/v1/my_data/authors?search_for=Hill', auth=oauth)
+      publication_details = json.loads(response.content)
+      doi = publication_details["doi"]
 
       # Return the DOI. Note: this may have been done in a previous run, so check for an existing version.
       return doi
 
-   def publish_data(self, files):
+   def publish_data(self, parameters):
       """ Publishes the user-specified input (or output) files directly to Figshare. """
-
-      fs = Figshare()
-
-
-
-      result = fs.create_article(parameters)
-
-      doi = result["doi"] # Maybe use "handle_url"?
+      publication_details = self.fs.create_article(parameters)
+      doi = publication_details["doi"]
 
       # Return the DOI.
       return doi

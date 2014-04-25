@@ -3,7 +3,7 @@
 # Copyright (C) 2014 Alexandros Avdis, Gerard J. Gorman, Christian T. Jacobs, Matthew D. Piggott.
 
 import requests
-from oauth_hook import OAuthHook
+from requests_oauthlib import OAuth1
 import json
 
 class Figshare:
@@ -15,11 +15,11 @@ class Figshare:
 
    def _create_session(self):
       """ Authenticates with the Figshare server, and creates a session object used to send requests to the server. """
-      oauth = OAuthHook(client_key = self.config["client_key"], client_secret = self.config["client_secret"],
-                        resource_owner_key = self.config["token_key"], resource_owner_secret = self.config["token_secret"],
-                        signature_type = 'auth_header')
+      oauth = OAuth1(client_key = self.config["client_key"], client_secret = self.config["client_secret"],
+                     resource_owner_key = self.config["resource_owner_key"], resource_owner_secret = self.config["resource_owner_secret"],
+                     signature_type = 'auth_header')
 
-      client = requests.session()
+      client = requests.session() 
 
       return oauth, client
 
@@ -32,11 +32,12 @@ class Figshare:
       # Set up a new session.
       oauth, client = self._create_session()
 
-      body = parameters #{'title':'Test dataset', 'description':'Test description','defined_type':'dataset'}
+      # The data that will be sent via HTTP POST.
+      body = parameters
       headers = {'content-type':'application/json'}
 
       response = client.post('http://api.figshare.com/v1/my_data/articles', auth=oauth,
                               data=json.dumps(body), headers=headers)
+      publication_details = json.loads(response.content)
+      return publication_details
 
-      result = json.loads(response.content)
-      return result
