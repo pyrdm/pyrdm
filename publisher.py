@@ -61,6 +61,7 @@ class Publisher:
       head_sha = repo.head.commit.hexsha
 
       # Get Fidgit to take a snapshot of the repository. This will require an HTTP POST to the server running Fidgit in order to invoke it.
+      # FIXME: We may also need to modify Fidgit so it downloads the repository with the correct version, rather than a specific release/tag.
       oauth = OAuth1(client_key = self.config["github_token"], signature_type = 'auth_header')
       client = requests.session() 
       body = {'release':'1', 'repository':{'full_name':'ctjacobs/game-of-life', 'tag_name':'v1.0'}}
