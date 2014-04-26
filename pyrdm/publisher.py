@@ -9,7 +9,7 @@ import requests
 from requests_oauthlib import OAuth1
 import json
 
-from figshare import Figshare
+from pyrdm.figshare import Figshare
 
 class Publisher:
 
