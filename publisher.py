@@ -35,7 +35,7 @@ class Publisher:
 
       # First make sure we are using an up-to-date version of the repository.
       print "Pulling changes from remote '%s', branch '%s' ..." % (origin, repo.active_branch)
-      #origin.pull(origin.refs[0].remote_head) # FIXME: This assumes that the first RemoteReference in the list 'origin.refs' corresponds to the active branch, which may not always be the case.
+      origin.pull(origin.refs[0].remote_head) # FIXME: This assumes that the first RemoteReference in the list 'origin.refs' corresponds to the active branch, which may not always be the case.
 
       index = repo.index # The index is basically the staging area.
       index.add([diff.a_blob.name for diff in index.diff(None)]) # List all the modified files
@@ -64,9 +64,9 @@ class Publisher:
       # FIXME: We may also need to modify Fidgit so it downloads the repository with the correct version, rather than a specific release/tag.
       oauth = OAuth1(client_key = self.config["github_token"], signature_type = 'auth_header')
       client = requests.session() 
-      body = {'release':'1', 'repository':{'full_name':'ctjacobs/game-of-life', 'tag_name':'v1.0'}}
+      body = {'release':{'tag_name':'v1.0'}, 'repository':{'full_name':'ctjacobs/game-of-life'}}
       headers = {'content-type':'application/json'}
-      response = client.post('%s/releases?secret=%s' % (self.config["fidgit_url"], self.config["github_token"]), auth=oauth,
+      response = client.post('%s/events?secret=%s' % (self.config["fidgit_url"], self.config["github_token"]), auth=oauth,
                               data=json.dumps(body), headers=headers)
       print response
 
