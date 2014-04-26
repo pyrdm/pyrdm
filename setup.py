@@ -21,7 +21,7 @@ from distutils.core import setup
 
 setup(name='PyRDM',
       version='0.1a-dev',
-      description='A Python program for research data management. Enables the citation of scientific software hosted by GitHub and associated input and output data files.',
+      description='A Python program for research data management.',
       author='Alexandros Avdis, Christian T. Jacobs, Gerard J. Gorman, Matthew D. Piggott',
       url='https://bitbucket.org/ctjacobs/pyrdm',
       packages=['pyrdm'],
