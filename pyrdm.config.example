@@ -1,0 +1,7 @@
+software_name = HelloWorld
+fidgit_url = http://localhost:9292
+github_token = abcdef
+client_key = stuvwx
+client_secret = xyz
+resource_owner_key = ghijkl
+resource_owner_secret = mnopqr
