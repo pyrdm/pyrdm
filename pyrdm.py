@@ -1,6 +1,6 @@
 #!/usr/bin/env python
 
-# Copyright (C) 2014 Alexandros Avdis, Gerard J. Gorman, Christian T. Jacobs, Matthew D. Piggott.
+# Copyright (C) 2014 Alexandros Avdis, Gerard J. Gorman, Matthew D. Piggott, Christian T. Jacobs.
 
 import ConfigParser
 
@@ -15,6 +15,8 @@ class PyRDM:
 
 
    def load_config(self, config_file_path):
+      """ Load the configuration file containing the OAuth keys and information about the software name, etc
+      into a dictionary called 'config' and return it. """
       f = open(config_file_path, "r")
 
       config = {}
@@ -28,4 +30,4 @@ class PyRDM:
 
 #if(__name__ == "__main__"):
 rdm = PyRDM()
-rdm.publisher.publish_data([])
+rdm.publisher.publish_software([])

@@ -1,6 +1,6 @@
 #!/usr/bin/env python
 
-# Copyright (C) 2014 Alexandros Avdis, Gerard J. Gorman, Christian T. Jacobs, Matthew D. Piggott.
+# Copyright (C) 2014 Alexandros Avdis, Gerard J. Gorman, Matthew D. Piggott, Christian T. Jacobs.
 
 import requests
 from requests_oauthlib import OAuth1
@@ -27,7 +27,7 @@ class Figshare:
       """ Create a new article (or dataset) on the Figshare server. 
       Returns a dictionary of details about the new article once created. """
 
-      # FIXME: Does Figshare prevent the creation of the same article twice? If not, we'll need to check for this here.
+      # FIXME: Does Figshare prevent the creation of the same article (or dataset) twice? If not, we'll need to check for this here.
 
       # Set up a new session.
       oauth, client = self._create_session()
@@ -35,7 +35,8 @@ class Figshare:
       # The data that will be sent via HTTP POST.
       body = parameters
       headers = {'content-type':'application/json'}
-
+      
+      # FIXME: We should set the article's status to 'public' (by default, it is set to 'draft').
       response = client.post('http://api.figshare.com/v1/my_data/articles', auth=oauth,
                               data=json.dumps(body), headers=headers)
       publication_details = json.loads(response.content)
