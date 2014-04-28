@@ -33,4 +33,3 @@ class PyRDM:
 
 if(__name__ == "__main__"):
    rdm = PyRDM()
-   rdm.publisher.publish_software([])
