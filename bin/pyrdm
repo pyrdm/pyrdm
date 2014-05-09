@@ -42,7 +42,7 @@ class PyRDM:
          # Publish the software
          
          print "Reading SHA-1 hash..."
-         f = open("../../include/version.h", "r")
+         f = open("../fluidity-rdm/include/version.h", "r")
          f.readline()
          f.readline()
          l = f.readline()

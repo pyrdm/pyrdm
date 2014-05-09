@@ -26,6 +26,8 @@ import zipfile
 from urllib2 import urlopen
 from urllib import urlencode
 
+import hashlib # For MD5 checksums
+
 class Figshare:
    """ An implementation of the Figshare API in Python. """
 
@@ -144,4 +146,27 @@ class Figshare:
                            files=filedata)
 
       return publication_details
+      
+   def write_checksum(self, f):
+      md5 = hashlib.md5(open(f).read()).hexdigest()
+      checksum_file = open(f + ".md5", "w")
+      checksum_file.write(md5)
+      checksum_file.close()
+      return
 
+   def find_modified(self, files):
+      modified = []
+      for f in files:
+         if(os.path.isfile(f + ".md5")):
+            checksum_file = open(f + ".md5")
+            md5_original = checksum_file.readline()
+            md5 = hashlib.md5(open(f).read()).hexdigest()
+            
+            if(md5 != md5_original):
+               modified.append(f)
+         else:
+            # No checksum file present - assume new or modified.
+            modified.append(f)
+            
+      return modified
+      
