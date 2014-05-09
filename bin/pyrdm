@@ -39,7 +39,6 @@ class PyRDM:
    def publish(self, data_type):
       libspud.load_options(self.options_file)
       
-      
       if(data_type == "s"):
          # Publish the software
          
@@ -89,9 +88,8 @@ class PyRDM:
          # Change the file paths to be relative to the directory where the options file is stored.
          for i in range(len(files)):
             files[i] = os.path.dirname(sys.argv[-1]) + "/" + files[i]
-         print files
          
-         print os.path.abspath(sys.argv[-1])
+         #print os.path.abspath(sys.argv[-1])
             
          parameters = {"title":"Fluidity-data-files-%s" % data_type, "description":"", "files":files}
          publication_details = self.publisher.publish_data(parameters, article_id)

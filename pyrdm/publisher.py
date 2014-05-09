@@ -136,6 +136,8 @@ class Publisher:
 
       # FIXME: Does Figshare prevent the creation of the same article (or dataset) twice? If not, we'll need to check for this here.
          
+      print "Publishing data..."
+         
       # Set up a new session.
       oauth, client = self._create_session()
       
@@ -156,14 +158,20 @@ class Publisher:
          
       # Check whether any files have been modified.
       modified_files = self.find_modified(parameters["files"])
-
+      print "The following files have been marked for uploading: ", modified_files
 
 
 
       # TODO: Don't upload a single .zip file - upload all the files, but only upload the ones that are modified.
 
 
-
+      file_list = []
+      for f in modified_files:
+         print "Uploading file: %s" % f
+         file_list.append(('%s' % f, open('%s' % f, 'rb')))
+      filedata = {'filedata':file_list}
+      response = client.put('http://api.figshare.com/v1/my_data/articles/%s/files' % article_id, auth=oauth,
+                              files=filedata)
 
 
 
@@ -175,6 +183,7 @@ class Publisher:
       filedata = {'filedata':('%s.zip' % parameters["title"], open('%s.zip' % parameters["title"], 'rb'))}      
       response = client.put('http://api.figshare.com/v1/my_data/articles/%s/files' % article_id, auth=oauth,
                            files=filedata)
+      
 
       return publication_details
       
@@ -194,11 +203,9 @@ class Publisher:
             md5 = hashlib.md5(open(f).read()).hexdigest()
             
             if(md5 != md5_original):
-               self.write_checksum(f)
                modified.append(f)
          else:
             # No checksum file present - assume new or modified.
-            self.write_checksum(f)
             modified.append(f)
             
       return modified
