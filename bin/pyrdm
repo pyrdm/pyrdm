@@ -20,7 +20,9 @@
 import sys, os
 import ConfigParser
 import optparse
+
 import libspud
+import git
 
 pyrdm_path = os.path.join(os.path.realpath(os.path.dirname(__file__)), os.pardir)
 sys.path.insert(0, pyrdm_path)
@@ -42,7 +44,9 @@ class PyRDM:
          # Publish the software
          
          print "Reading SHA-1 hash..."
-         f = open("../fluidity-rdm/include/version.h", "r")
+         # FIXME: Here we are assuming that the Fluidity binary is in the same Git repository as the options file. Is there a better way of doing this?
+         repo = git.Repo(sys.argv[-1])
+         f = open(repo.working_dir + "/include/version.h", "r")
          f.readline()
          f.readline()
          l = f.readline()
@@ -82,10 +86,14 @@ class PyRDM:
 
          # A list of paths to files that the user wants published.
          files = eval(libspud.get_option(options_path + "/files"))
+         # Change the file paths to be relative to the directory where the options file is stored.
+         for i in range(len(files)):
+            files[i] = os.path.dirname(sys.argv[-1]) + "/" + files[i]
+         print files
          
          print os.path.abspath(sys.argv[-1])
             
-         parameters = {"title":"Fluidity data files-%s" % data_type, "description":"", "files":files}
+         parameters = {"title":"Fluidity-data-files-%s" % data_type, "description":"", "files":files}
          publication_details = self.publisher.figshare.publish_data(parameters, article_id)
 
          # Write the article_id and DOI to the options file for next time.

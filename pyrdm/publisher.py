@@ -21,19 +21,37 @@ import requests
 from requests_oauthlib import OAuth1
 import json
 
-import os
+import ConfigParser
+import sys, os
 import zipfile
 from urllib2 import urlopen
 from urllib import urlencode
 
+import git
 import hashlib # For MD5 checksums
 
-class Figshare:
-   """ An implementation of the Figshare API in Python. """
+class Publisher:
+   """ A Python module for publishing scientific software and data to Figshare.
+   The functions which use the Figshare API might be moved to a separate module in the future. """
 
-   def __init__(self, config):
-      self.config = config
+   def __init__(self):
+      # Read in the authentication tokens, etc from the configuration file.
+      self.config = self.load_config("pyrdm.config")
       return
+      
+   def load_config(self, config_file_path):
+      """ Load the configuration file containing the OAuth keys and information about the software name, etc
+      into a dictionary called 'config' and return it. """
+      f = open(config_file_path, "r")
+
+      config = {}
+      for line in f.readlines():
+         s = line.replace(" ", "").replace("\n", "")
+         key, value = s.split("=")
+         config[key] = value
+
+      f.close()
+      return config
       
    def _create_session(self):
       """ Authenticates with the Figshare server, and creates a session object used to send requests to the server. """
@@ -46,12 +64,12 @@ class Figshare:
       return oauth, client
 
    def find_software(self, software_name, sha):
+      """ Checks if the software has already been published. If so, it returns the DOI.
+      Otherwise it returns None. """
+      
       # Set up a new session.
       oauth, client = self._create_session()
-      
-      # First check if the software has already been published.
-      # If so, return the DOI.
-      
+
       # FIXME: Only public articles can use the "has_tag" filter.
       #base_url = "http://api.figshare.com/v1/articles/search"
       base_url = "http://api.figshare.com/v1/my_data/articles"
@@ -69,7 +87,7 @@ class Figshare:
          return None
          
    def publish_software(self, software_name, sha):
-      """ Publishes the software in the current repository to Figshare using Fidgit. """
+      """ Publishes the software in the current repository to Figshare. """
 
       # Download the .zip file from GitHub...
       url = "%s/archive/%s.zip" % (self.config["github_location"], sha)
@@ -135,9 +153,22 @@ class Figshare:
          print publication_details
       else:
          publication_details = None
+         
+      # Check whether any files have been modified.
+      modified_files = self.find_modified(parameters["files"])
+
+
+
+
+      # TODO: Don't upload a single .zip file - upload all the files, but only upload the ones that are modified.
+
+
+
+
+
 
       zip_file = zipfile.ZipFile("%s.zip" % parameters["title"], "w")
-      for f in parameters["files"]:
+      for f in modified_files:
          zip_file.write(f)
       zip_file.close()
 
@@ -158,14 +189,16 @@ class Figshare:
       modified = []
       for f in files:
          if(os.path.isfile(f + ".md5")):
-            checksum_file = open(f + ".md5")
+            checksum_file = open(f + ".md5", "r")
             md5_original = checksum_file.readline()
             md5 = hashlib.md5(open(f).read()).hexdigest()
             
             if(md5 != md5_original):
+               self.write_checksum(f)
                modified.append(f)
          else:
             # No checksum file present - assume new or modified.
+            self.write_checksum(f)
             modified.append(f)
             
       return modified
