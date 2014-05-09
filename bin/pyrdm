@@ -19,6 +19,8 @@
 
 import sys, os
 import ConfigParser
+import optparse
+import libspud
 
 pyrdm_path = os.path.join(os.path.realpath(os.path.dirname(__file__)), os.pardir)
 sys.path.insert(0, pyrdm_path)
@@ -27,9 +29,92 @@ from pyrdm.publisher import Publisher
 
 class PyRDM:
 
-   def __init__(self):
+   def __init__(self, options_file):
+      self.options_file = options_file
       self.publisher = Publisher()
       return
+      
+   def publish(self, data_type):
+      libspud.load_options(self.options_file)
+      
+      
+      if(data_type == "s"):
+         # Publish the software
+         
+         print "Reading SHA-1 hash..."
+         f = open("../../include/version.h", "r")
+         f.readline()
+         f.readline()
+         l = f.readline()
+         sha = l.split()[-1].replace("\"", "")
+         f.close()
+         print "SHA-1 hash: ", sha
 
+         # Search for the software, in case it has already been published on Figshare.
+         article_id = self.publisher.figshare.find_software("Fluidity", sha)
+         print article_id
+         
+         options_path = "/publish/software/"
+         if(article_id is None):
+            # Software is not published already, so publish it now.
+            publication_details = self.publisher.figshare.publish_software("Fluidity", sha)
+            libspud.set_option(options_path + "/article_id", str(publication_details["article_id"]))
+            #libspud.set_option("/publish/software/doi", str(doi)) # FIXME: Uncomment this once the article status is set to 'public'.
+         else:
+            libspud.set_option(options_path + "/article_id", str(article_id))
+            #libspud.set_option("/publish/software/doi", str(doi)) # FIXME: Uncomment this once the article status is set to 'public'.
+         libspud.write_options(self.options_file)
+            
+      else:
+         # Publish the input/output data
+         if(data_type == "i"):
+            options_path = "/publish/input_data/"
+         elif(data_type == "o"):
+            options_path = "/publish/output_data/"
+         else:
+            print "Data type not recognised."
+            sys.exit(1)
+            
+         if(libspud.get_option(options_path + "/article_id") != "-1"):
+            article_id = libspud.get_option(options_path + "/article_id")
+         else:
+            article_id = None
+
+         # A list of paths to files that the user wants published.
+         files = eval(libspud.get_option(options_path + "/files"))
+         
+         print os.path.abspath(sys.argv[-1])
+            
+         parameters = {"title":"Fluidity data files-%s" % data_type, "description":"", "files":files}
+         publication_details = self.publisher.figshare.publish_data(parameters, article_id)
+
+         # Write the article_id and DOI to the options file for next time.
+         if(article_id is None):
+            libspud.set_option(options_path + "/article_id", str(publication_details["article_id"]))
+            libspud.set_option(options_path + "/doi", str(publication_details["doi"]))
+            libspud.write_options(self.options_file)
+         
+      return
+         
 if(__name__ == "__main__"):
-   rdm = PyRDM()
+   # Parse the command line arguments
+   parser = optparse.OptionParser()
+   parser.add_option("-s", "--software", action="store_true", default=False)
+   parser.add_option("-i", "--input", action="store_true", default=False)
+   parser.add_option("-o", "--output", action="store_true", default=False)
+   (options, args) = parser.parse_args()
+   
+   # The data the user wants to publish (software, input data, or output data)
+   if(options.software):
+      data_type = "s"
+   elif(options.input):
+      data_type = "i"
+   elif(options.output):
+      data_type = "o"
+   else:
+      print "No data type given."
+      sys.exit(1)
+      
+   rdm = PyRDM(options_file = sys.argv[-1])
+   rdm.publish(data_type = data_type)
+   

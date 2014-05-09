@@ -28,4 +28,5 @@ PyRDM depends on:
 * [GitPython](https://pypi.python.org/pypi/GitPython/)
 * [requests-oauthlib](https://github.com/requests/requests-oauthlib)
 * A forked version of [Fidgit](https://github.com/arfon/fidgit/), available [here](https://github.com/ctjacobs/fidgit).
+* [curl](http://curl.haxx.se/)
 
