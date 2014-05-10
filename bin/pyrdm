@@ -20,9 +20,11 @@
 import sys, os
 import ConfigParser
 import optparse
+import re
 
 import libspud
 import git
+from xml.dom import minidom
 
 pyrdm_path = os.path.join(os.path.realpath(os.path.dirname(__file__)), os.pardir)
 sys.path.insert(0, pyrdm_path)
@@ -35,23 +37,100 @@ class PyRDM:
       self.options_file = options_file
       self.publisher = Publisher()
       return
-      
+
+   def get_fluidity_version(self):
+      print "Reading SHA-1 hash..."
+      # FIXME: Here we are assuming that the Fluidity binary is in the same Git repository as the options file. Is there a better way of doing this?
+      repo = git.Repo(sys.argv[-1])
+      f = open(repo.working_dir + "/include/version.h", "r")
+      f.readline()
+      f.readline()
+      l = f.readline()
+      sha = l.split()[-1].replace("\"", "")
+      f.close()
+      print "SHA-1 hash: ", sha
+      return sha
+
+   def write_provenance_data(self):
+      # Get the path to the stat file.
+      simulation_name = libspud.get_option("/simulation_name")
+      stat_path = os.path.dirname(sys.argv[-1]) + "/" + simulation_name + ".stat"
+
+      # The following code is based on fluidity_tools.py:
+      stat = open(stat_path, "r")
+      header_re = re.compile(r"</header>")
+
+      # Get the header.
+      xml = ""
+      while True:
+         line = stat.readline()
+         if(line == ""):
+            raise Exception("Unable to read .stat file header")
+         xml = xml + line
+         if(re.search(header_re, line)):
+            break
+
+      # Get the body.
+      body = ""
+      while True:
+         line = stat.readline()
+         if(line == ""):
+            break
+         body = body + line
+
+      stat.close()
+
+      # Parse the XML
+      xml = minidom.parseString(xml)
+
+      # Check that the FLUIDITY_VERSION in the stat file is the same as the published version.
+      sha = self.get_fluidity_version()
+      for element in xml.getElementsByTagName('constant'):
+         if(element.attributes["name"].value == "FluidityVersion"):
+            sha_in_statfile = element.attributes["value"].value
+            break
+      if(libspud.get_option("/publish/software/article_id") != self.publisher.find_software("Fluidity", sha_in_statfile)):
+         print "The version of Fluidity that created this output data is not the same as the published version of Fluidity."
+         print "Please re-publish the software with the correct version (or re-run the simulation with an updated version) and try again."
+         #sys.exit(1) #TODO: Re-enable this later.
+
+      # Append the provenance data
+      provenance_data = {"SoftwareDOI":libspud.get_option("/publish/software/doi"), "InputDataDOI":libspud.get_option("/publish/input_data/doi")}
+
+      elements = xml.getElementsByTagName('constant')
+      for key in provenance_data.keys():
+         exists = False
+         for element in elements:
+            if(element.getAttribute("name") == key):
+               # Element already exists, so update the value attribute.
+               exists = True
+               element.setAttribute("value", provenance_data[key])
+         if(not exists):
+            # Element doesn't exist, so create it.
+            element = xml.createElement("constant")
+            element.setAttribute("name", key)
+            element.setAttribute("type", "string")
+            element.setAttribute("value", provenance_data[key])
+            xml.childNodes[0].insertBefore(xml.createTextNode("\n"), xml.childNodes[0].childNodes[3]) # Add a new line
+            xml.childNodes[0].insertBefore(element, xml.childNodes[0].childNodes[3]) # Append the provenance data
+
+      # Write the changes to the stat file.
+      header = xml.toprettyxml(newl="", indent="")
+      header = header.replace("<?xml version=\"1.0\" ?>", "")
+      stat = open(stat_path, "w")
+      stat.write(header + "\n" + body)
+      stat.close()
+
+      return
+
    def publish(self, data_type):
       libspud.load_options(self.options_file)
       
       if(data_type == "s"):
          # Publish the software
          
-         print "Reading SHA-1 hash..."
-         # FIXME: Here we are assuming that the Fluidity binary is in the same Git repository as the options file. Is there a better way of doing this?
-         repo = git.Repo(sys.argv[-1])
-         f = open(repo.working_dir + "/include/version.h", "r")
-         f.readline()
-         f.readline()
-         l = f.readline()
-         sha = l.split()[-1].replace("\"", "")
-         f.close()
-         print "SHA-1 hash: ", sha
+         # Get the SHA-1 hash of the software version.
+         sha = self.get_fluidity_version()
 
          # Search for the software, in case it has already been published on Figshare.
          article_id = self.publisher.find_software("Fluidity", sha)
@@ -88,9 +167,10 @@ class PyRDM:
          # Change the file paths to be relative to the directory where the options file is stored.
          for i in range(len(files)):
             files[i] = os.path.dirname(sys.argv[-1]) + "/" + files[i]
-         
-         #print os.path.abspath(sys.argv[-1])
-            
+
+         # Write provenance data to the stat file.
+         self.write_provenance_data()
+
          parameters = {"title":"Fluidity-data-files-%s" % data_type, "description":"", "files":files}
          publication_details = self.publisher.publish_data(parameters, article_id)
 
@@ -99,7 +179,7 @@ class PyRDM:
             libspud.set_option(options_path + "/article_id", str(publication_details["article_id"]))
             libspud.set_option(options_path + "/doi", str(publication_details["doi"]))
             libspud.write_options(self.options_file)
-         
+
       return
          
 if(__name__ == "__main__"):

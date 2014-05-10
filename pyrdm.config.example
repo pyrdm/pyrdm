@@ -1,4 +1,5 @@
-fidgit_url = http://localhost:9292
+github_location = http://github.com/ctjacobs/hello-world
+github_branch_name = hello-world
 github_token = abcdef
 client_key = stuvwx
 client_secret = xyz

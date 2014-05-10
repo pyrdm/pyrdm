@@ -36,10 +36,10 @@ class Publisher:
 
    def __init__(self):
       # Read in the authentication tokens, etc from the configuration file.
-      self.config = self.load_config("pyrdm.config")
+      self.config = self._load_config("pyrdm.config")
       return
       
-   def load_config(self, config_file_path):
+   def _load_config(self, config_file_path):
       """ Load the configuration file containing the OAuth keys and information about the software name, etc
       into a dictionary called 'config' and return it. """
       f = open(config_file_path, "r")
@@ -75,10 +75,9 @@ class Publisher:
       base_url = "http://api.figshare.com/v1/my_data/articles"
       parameters = {"search_for":"%s-%s" % (software_name, sha), "has_tag":"%s" % sha}
       url = base_url + "?" + urlencode(parameters)
-      print url
+
       response = client.get(url, auth=oauth)
       results = json.loads(response.content)
-      print results
       if(results["count"] >= 1):
          print "Software %s has already been published (with SHA-1 %s)." % (software_name, sha)
          article_id = results["items"][-1]["article_id"]
@@ -165,13 +164,13 @@ class Publisher:
       # TODO: Don't upload a single .zip file - upload all the files, but only upload the ones that are modified.
 
 
-      file_list = []
-      for f in modified_files:
-         print "Uploading file: %s" % f
-         file_list.append(('%s' % f, open('%s' % f, 'rb')))
-      filedata = {'filedata':file_list}
-      response = client.put('http://api.figshare.com/v1/my_data/articles/%s/files' % article_id, auth=oauth,
-                              files=filedata)
+      #file_list = []
+      #for f in modified_files:
+      #   print "Uploading file: %s" % f
+      #   file_list.append(('%s' % f, open('%s' % f, 'rb')))
+      #filedata = {'filedata':file_list}
+      #response = client.put('http://api.figshare.com/v1/my_data/articles/%s/files' % article_id, auth=oauth,
+      #                        files=filedata)
 
 
 
@@ -188,6 +187,7 @@ class Publisher:
       return publication_details
       
    def write_checksum(self, f):
+      """ For a given file with path 'f', write a corresponding MD5 checksum file. """
       md5 = hashlib.md5(open(f).read()).hexdigest()
       checksum_file = open(f + ".md5", "w")
       checksum_file.write(md5)
@@ -195,6 +195,8 @@ class Publisher:
       return
 
    def find_modified(self, files):
+      """ Return a list of files (whose paths are in the argument 'files') which have been modified.
+      This is based on MD5 checksums. """
       modified = []
       for f in files:
          if(os.path.isfile(f + ".md5")):
