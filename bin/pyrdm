@@ -95,7 +95,8 @@ class PyRDM:
          #sys.exit(1) #TODO: Re-enable this later.
 
       # Append the provenance data
-      provenance_data = {"SoftwareDOI":libspud.get_option("/publish/software/doi"), "InputDataDOI":libspud.get_option("/publish/input_data/doi")}
+      provenance_data = {"SoftwareDOI":libspud.get_option("/publish/software/doi"), 
+                         "InputDataDOI":libspud.get_option("/publish/input_data/doi")}
 
       elements = xml.getElementsByTagName('constant')
       for key in provenance_data.keys():
@@ -123,14 +124,18 @@ class PyRDM:
 
       return
 
-   def publish(self, data_type):
+   def publish(self, data_type, version=None):
       libspud.load_options(self.options_file)
       
       if(data_type == "s"):
          # Publish the software
          
          # Get the SHA-1 hash of the software version.
-         sha = self.get_fluidity_version()
+         if(version is None):
+            sha = self.get_fluidity_version()
+         else:
+            print "Using the software version provided: %s" % version
+            sha = version
 
          # Search for the software, in case it has already been published on Figshare.
          article_id = self.publisher.find_software("Fluidity", sha)
@@ -188,6 +193,7 @@ if(__name__ == "__main__"):
    parser.add_option("-s", "--software", action="store_true", default=False)
    parser.add_option("-i", "--input", action="store_true", default=False)
    parser.add_option("-o", "--output", action="store_true", default=False)
+   parser.add_option("-v", "--version", action="store", type="string", default=None)
    (options, args) = parser.parse_args()
    
    # The data the user wants to publish (software, input data, or output data)
@@ -202,5 +208,5 @@ if(__name__ == "__main__"):
       sys.exit(1)
       
    rdm = PyRDM(options_file = sys.argv[-1])
-   rdm.publish(data_type = data_type)
+   rdm.publish(data_type = data_type, version = options.version)
    
