@@ -17,18 +17,14 @@
 #    You should have received a copy of the GNU General Public License
 #    along with PyRDM.  If not, see <http://www.gnu.org/licenses/>.
 
-import requests
-from requests_oauthlib import OAuth1
-import json
-
 import ConfigParser
 import sys, os
 import zipfile
-from urllib2 import urlopen
-from urllib import urlencode
 
 import git
 import hashlib # For MD5 checksums
+
+from pyrdm.figshare import Figshare
 
 class Publisher:
    """ A Python module for publishing scientific software and data to Figshare.
@@ -37,6 +33,8 @@ class Publisher:
    def __init__(self):
       # Read in the authentication tokens, etc from the configuration file.
       self.config = self._load_config("pyrdm.config")
+      self.figshare = Figshare(client_key = self.config["client_key"], client_secret = self.config["client_secret"],
+                     resource_owner_key = self.config["resource_owner_key"], resource_owner_secret = self.config["resource_owner_secret"])
       return
       
    def _load_config(self, config_file_path):
@@ -52,32 +50,14 @@ class Publisher:
 
       f.close()
       return config
-      
-   def _create_session(self):
-      """ Authenticates with the Figshare server, and creates a session object used to send requests to the server. """
-      oauth = OAuth1(client_key = self.config["client_key"], client_secret = self.config["client_secret"],
-                     resource_owner_key = self.config["resource_owner_key"], resource_owner_secret = self.config["resource_owner_secret"],
-                     signature_type = 'auth_header')
-
-      client = requests.session() 
-
-      return oauth, client
 
    def find_software(self, software_name, sha):
       """ Checks if the software has already been published. If so, it returns the DOI.
       Otherwise it returns None. """
       
-      # Set up a new session.
-      oauth, client = self._create_session()
+      keyword = "%s-%s" % (software_name, sha)
+      results = self.figshare.search(keyword, tag=sha)
 
-      # FIXME: Only public articles can use the "has_tag" filter.
-      #base_url = "http://api.figshare.com/v1/articles/search"
-      base_url = "http://api.figshare.com/v1/my_data/articles"
-      parameters = {"search_for":"%s-%s" % (software_name, sha), "has_tag":"%s" % sha}
-      url = base_url + "?" + urlencode(parameters)
-
-      response = client.get(url, auth=oauth)
-      results = json.loads(response.content)
       if(results["count"] >= 1):
          print "Software %s has already been published (with SHA-1 %s)." % (software_name, sha)
          article_id = results["items"][-1]["article_id"]
@@ -100,31 +80,18 @@ class Publisher:
       print "Download complete."
 
       # ...then upload it to Figshare.
-      
-      # Set up a new session.
-      oauth, client = self._create_session()
-
-      # The data that will be sent via HTTP POST.
-      body = {'title':'%s-%s' % (software_name, sha), 'description':'%s version %s' % (software_name, sha), 'defined_type':'code', "status": "Drafts"}
-      headers = {'content-type':'application/json'}
-      
-      # FIXME: We should set the article's status to 'public' (by default, it is set to 'draft').
-      print "Creating dataset on Figshare for software..."
-      response = client.post('http://api.figshare.com/v1/my_data/articles', auth=oauth,
-                              data=json.dumps(body), headers=headers)
-      publication_details = json.loads(response.content)
-      print "Dataset created with DOI: %s" % publication_details["doi"]
+      print "Creating article on Figshare for software..."
+      title='%s-%s' % (software_name, sha)
+      description='%s version %s' % (software_name, sha)
+      publication_details = self.figshare.create_article(title=title, description=description, defined_type="code", status="Drafts")
+      print "Article created with DOI: %s" % publication_details["doi"]
       
       print "Adding tags..."
-      body = {'tag_name':'%s' % sha}
-      response = client.put('http://api.figshare.com/v1/my_data/articles/%d/tags' % publication_details["article_id"], auth=oauth,
-                             data=json.dumps(body), headers=headers)
+      self.figshare.add_tag(article_id=publication_details["article_id"], tag=sha)
       print "Tags added."
 
       print "Uploading software to Figshare..."
-      files = {'filedata':(output_file_name, open(output_file_name, 'rb'))}
-      response = client.put('http://api.figshare.com/v1/my_data/articles/%d/files' % publication_details["article_id"], auth=oauth,
-                              files=files)
+      self.figshare.upload_file(article_id=publication_details["article_id"], file_path=output_file_name)
       print "Software uploaded to Figshare."
 
       return publication_details
@@ -135,30 +102,20 @@ class Publisher:
 
       # FIXME: Does Figshare prevent the creation of the same article (or dataset) twice? If not, we'll need to check for this here.
          
-      print "Publishing data..."
-         
-      # Set up a new session.
-      oauth, client = self._create_session()
-      
+      print "Publishing data..."      
       if(article_id is None):
          print "Creating dataset on Figshare for data..."
-         
-         body = {'title':'%s' % parameters["title"], 'description':'%s' % parameters["description"], 'defined_type':'dataset', "status": "Drafts"}
-         headers = {'content-type':'application/json'}
-         
-         response = client.post('http://api.figshare.com/v1/my_data/articles', auth=oauth,
-                                 data=json.dumps(body), headers=headers)
-         publication_details = json.loads(response.content)
+         publication_details = self.figshare.create_article(title=parameters["title"], description=parameters["description"], defined_type="dataset", status="Drafts")
          print "Dataset created with DOI: %s" % publication_details["doi"]
-         article_id = publication_details["article_id"]
          print publication_details
+
+         article_id = publication_details["article_id"]
       else:
          publication_details = None
          
       # Check whether any files have been modified.
       modified_files = self.find_modified(parameters["files"])
       print "The following files have been marked for uploading: ", modified_files
-
 
 
       # TODO: Don't upload a single .zip file - upload all the files, but only upload the ones that are modified.
@@ -179,10 +136,7 @@ class Publisher:
          zip_file.write(f)
       zip_file.close()
 
-      filedata = {'filedata':('%s.zip' % parameters["title"], open('%s.zip' % parameters["title"], 'rb'))}      
-      response = client.put('http://api.figshare.com/v1/my_data/articles/%s/files' % article_id, auth=oauth,
-                           files=filedata)
-      
+      self.figshare.upload_file(article_id=article_id, file_path='%s.zip' % parameters["title"])
 
       return publication_details
       
