@@ -89,14 +89,23 @@ class PyRDM:
          if(element.attributes["name"].value == "FluidityVersion"):
             sha_in_statfile = element.attributes["value"].value
             break
-      if(libspud.get_option("/publish/software/article_id") != self.publisher.find_software("Fluidity", sha_in_statfile)):
-         print "The version of Fluidity that created this output data is not the same as the published version of Fluidity."
-         print "Please re-publish the software with the correct version (or re-run the simulation with an updated version) and try again."
-         #sys.exit(1) #TODO: Re-enable this later.
+      if(libspud.have_option("/publish/software/article_id")):
+         if(libspud.get_option("/publish/software/article_id") != self.publisher.find_software("Fluidity", sha_in_statfile)):
+            print "The version of Fluidity that created this output data is not the same as the published version of Fluidity."
+            print "Please re-publish the software with the correct version (or re-run the simulation with an updated version) and try again."
+            #sys.exit(1) #TODO: Re-enable this later.
 
       # Append the provenance data
-      provenance_data = {"SoftwareDOI":libspud.get_option("/publish/software/doi"), 
-                         "InputDataDOI":libspud.get_option("/publish/input_data/doi")}
+      provenance_data = {}
+      if(libspud.have_option("/publish/software/doi")):
+         provenance_data["SoftwareDOI"] = libspud.get_option("/publish/software/doi")
+      else:
+         provenance_data["SoftwareDOI"] = "Unknown"
+
+      if(libspud.have_option("/publish/input_data/doi")):
+         provenance_data["InputDataDOI"] = libspud.get_option("/publish/input_data/doi")
+      else:
+         provenance_data["InputDataDOI"] = "Unknown"
 
       elements = xml.getElementsByTagName('constant')
       for key in provenance_data.keys():
@@ -145,10 +154,18 @@ class PyRDM:
          if(article_id is None):
             # Software is not published already, so publish it now.
             publication_details = self.publisher.publish_software("Fluidity", sha)
-            libspud.set_option(options_path + "/article_id", str(publication_details["article_id"]))
+            try:
+               libspud.set_option(options_path + "/article_id", str(publication_details["article_id"]))
+            except:
+               # Ignore any SPUD_NEW_KEY_WARNING warnings
+               pass
             #libspud.set_option("/publish/software/doi", str(doi)) # FIXME: Uncomment this once the article status is set to 'public'.
          else:
-            libspud.set_option(options_path + "/article_id", str(article_id))
+            try:
+               libspud.set_option(options_path + "/article_id", str(article_id))
+            except:
+               # Ignore any SPUD_NEW_KEY_WARNING warnings
+               pass
             #libspud.set_option("/publish/software/doi", str(doi)) # FIXME: Uncomment this once the article status is set to 'public'.
          libspud.write_options(self.options_file)
             
@@ -162,7 +179,7 @@ class PyRDM:
             print "Data type not recognised."
             sys.exit(1)
             
-         if(libspud.get_option(options_path + "/article_id") != "-1"):
+         if(libspud.have_option(options_path + "/article_id")):
             article_id = libspud.get_option(options_path + "/article_id")
          else:
             article_id = None
@@ -181,8 +198,16 @@ class PyRDM:
 
          # Write the article_id and DOI to the options file for next time.
          if(article_id is None):
-            libspud.set_option(options_path + "/article_id", str(publication_details["article_id"]))
-            libspud.set_option(options_path + "/doi", str(publication_details["doi"]))
+            try:
+               libspud.set_option(options_path + "/article_id", str(publication_details["article_id"]))
+            except:
+               # Ignore any SPUD_NEW_KEY_WARNING warnings
+               pass
+            try:
+               libspud.set_option(options_path + "/doi", str(publication_details["doi"]))
+            except:
+               # Ignore any SPUD_NEW_KEY_WARNING warnings
+               pass
             libspud.write_options(self.options_file)
 
       return
