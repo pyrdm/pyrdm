@@ -105,7 +105,8 @@ class Publisher:
       print "Publishing data..."      
       if(article_id is None):
          print "Creating dataset on Figshare for data..."
-         publication_details = self.figshare.create_article(title=parameters["title"], description=parameters["description"], defined_type="dataset", status="Drafts")
+         # NOTE: The defined_type needs to be a 'fileset' to allow multiple files to be uploaded separately.
+         publication_details = self.figshare.create_article(title=parameters["title"], description=parameters["description"], defined_type="fileset", status="Drafts")
          print "Dataset created with DOI: %s" % publication_details["doi"]
          print publication_details
 
@@ -117,26 +118,27 @@ class Publisher:
       modified_files = self.find_modified(parameters["files"])
       print "The following files have been marked for uploading: ", modified_files
 
+      existing_files = self.figshare.get_files(article_id)["files"]
 
-      # TODO: Don't upload a single .zip file - upload all the files, but only upload the ones that are modified.
-
-
-      #file_list = []
-      #for f in modified_files:
-      #   print "Uploading file: %s" % f
-      #   file_list.append(('%s' % f, open('%s' % f, 'rb')))
-      #filedata = {'filedata':file_list}
-      #response = client.put('http://api.figshare.com/v1/my_data/articles/%s/files' % article_id, auth=oauth,
-      #                        files=filedata)
-
-
-
-      zip_file = zipfile.ZipFile("%s.zip" % parameters["title"], "w")
       for f in modified_files:
-         zip_file.write(f)
-      zip_file.close()
+         print "Uploading %s..." % f
+         # Check whether the file already exists on the server. If so, over-write the version on the server.
+         exists = False
+         for e in existing_files:
+            if(e["name"] == os.path.basename(f)):
+               print "File already exists on Figshare server. Over-writing..."
+               exists = True
+               # FIXME: Trying to re-upload to an existing file_id doesn't seem to work.
+               self.figshare.delete_file(article_id=article_id, file_id=e["id"])
+               self.figshare.add_file(article_id=article_id, file_path=f)
+         if(not exists):
+            self.figshare.add_file(article_id=article_id, file_path=f)
+         self.write_checksum(f)
 
-      self.figshare.upload_file(article_id=article_id, file_path='%s.zip' % parameters["title"])
+      #zip_file = zipfile.ZipFile("%s.zip" % parameters["title"], "w")
+      #   zip_file.write(f)
+      #zip_file.close()
+      #self.figshare.upload_file(article_id=article_id, file_path='%s.zip' % parameters["title"])
 
       return publication_details
       

@@ -168,7 +168,7 @@ class Figshare:
       results = json.loads(response.content)
       return results
 
-   def upload_file(self, article_id, file_path):
+   def add_file(self, article_id, file_path):
       """ Upload a file with path 'file_path' to an article with a given article_id. """
       files = {'filedata':(os.path.basename(file_path), open(file_path, 'rb'))}
       response = self.client.put('http://api.figshare.com/v1/my_data/articles/%s/files' % str(article_id), auth=self.oauth,
@@ -176,18 +176,28 @@ class Figshare:
       results = json.loads(response.content)
       return results
 
-   def get_details(self, article_id):
+   def delete_file(self, article_id, file_id):
+      response = self.client.delete('http://api.figshare.com/v1/my_data/articles/%s/files/%s' % (str(article_id), str(file_id)), auth=self.oauth)
+      results = json.loads(response.content)
+      return results
+
+   def get_files(self, article_id):
+      response = self.client.get('http://api.figshare.com/v1/my_data/articles/%s/files' % str(article_id), auth=self.oauth)
+      results = json.loads(response.content)
+      return results
+
+   def get_article_details(self, article_id):
       """ Returns a dictionary containing details of an article with ID 'article_id'. """
       response = self.client.get('http://api.figshare.com/v1/my_data/articles/%s' % str(article_id), auth=self.oauth)
       results = json.loads(response.content)
       return results
 
-   def get_versions(self, article_id):
+   def get_article_versions(self, article_id):
       response = self.client.get('http://api.figshare.com/v1/my_data/articles/%s/versions' % str(article_id), auth=self.oauth)
       results = json.loads(response.content)
       return results
 
-   def get_version_details(self, article_id, version_id):
+   def get_article_version_details(self, article_id, version_id):
       response = self.client.get('http://api.figshare.com/v1/my_data/articles/%s/versions/%s' % (str(article_id), str(version_id)), auth=self.oauth)
       results = json.loads(response.content)
       return results
