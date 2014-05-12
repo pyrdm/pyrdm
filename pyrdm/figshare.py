@@ -181,7 +181,7 @@ class Figshare:
       results = json.loads(response.content)
       return results
 
-   def get_files(self, article_id):
+   def get_file_details(self, article_id):
       response = self.client.get('http://api.figshare.com/v1/my_data/articles/%s/files' % str(article_id), auth=self.oauth)
       results = json.loads(response.content)
       return results

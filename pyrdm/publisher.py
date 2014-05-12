@@ -118,7 +118,7 @@ class Publisher:
       modified_files = self.find_modified(parameters["files"])
       print "The following files have been marked for uploading: ", modified_files
 
-      existing_files = self.figshare.get_files(article_id)["files"]
+      existing_files = self.figshare.get_file_details(article_id)["files"]
 
       for f in modified_files:
          print "Uploading %s..." % f
