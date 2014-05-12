@@ -22,7 +22,6 @@ from requests_oauthlib import OAuth1
 import json
 
 import sys, os
-import zipfile
 from urllib2 import urlopen
 from urllib import urlencode
 

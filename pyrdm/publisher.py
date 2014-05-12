@@ -19,7 +19,6 @@
 
 import ConfigParser
 import sys, os
-import zipfile
 
 import git
 import hashlib # For MD5 checksums
@@ -133,11 +132,6 @@ class Publisher:
          if(not exists):
             self.figshare.add_file(article_id=article_id, file_path=f)
          self.write_checksum(f)
-
-      #zip_file = zipfile.ZipFile("%s.zip" % parameters["title"], "w")
-      #   zip_file.write(f)
-      #zip_file.close()
-      #self.figshare.upload_file(article_id=article_id, file_path='%s.zip' % parameters["title"])
 
       return publication_details
       
