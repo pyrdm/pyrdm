@@ -157,15 +157,13 @@ class PyRDM:
             try:
                libspud.set_option(options_path + "/article_id", str(publication_details["article_id"]))
             except:
-               # Ignore any SPUD_NEW_KEY_WARNING warnings
-               pass
+               pass # Ignore any SPUD_NEW_KEY_WARNING warnings
             #libspud.set_option("/publish/software/doi", str(doi)) # FIXME: Uncomment this once the article status is set to 'public'.
          else:
             try:
                libspud.set_option(options_path + "/article_id", str(article_id))
             except:
-               # Ignore any SPUD_NEW_KEY_WARNING warnings
-               pass
+               pass # Ignore any SPUD_NEW_KEY_WARNING warnings
             #libspud.set_option("/publish/software/doi", str(doi)) # FIXME: Uncomment this once the article status is set to 'public'.
          libspud.write_options(self.options_file)
             
@@ -201,13 +199,11 @@ class PyRDM:
             try:
                libspud.set_option(options_path + "/article_id", str(publication_details["article_id"]))
             except:
-               # Ignore any SPUD_NEW_KEY_WARNING warnings
-               pass
+               pass # Ignore any SPUD_NEW_KEY_WARNING warnings
             try:
                libspud.set_option(options_path + "/doi", str(publication_details["doi"]))
             except:
-               # Ignore any SPUD_NEW_KEY_WARNING warnings
-               pass
+               pass # Ignore any SPUD_NEW_KEY_WARNING warnings
             libspud.write_options(self.options_file)
 
       return

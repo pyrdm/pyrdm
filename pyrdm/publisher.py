@@ -27,8 +27,7 @@ import hashlib # For MD5 checksums
 from pyrdm.figshare import Figshare
 
 class Publisher:
-   """ A Python module for publishing scientific software and data to Figshare.
-   The functions which use the Figshare API might be moved to a separate module in the future. """
+   """ A Python module for publishing scientific software and data on Figshare. """
 
    def __init__(self):
       # Read in the authentication tokens, etc from the configuration file.
