@@ -1,6 +1,6 @@
 #!/usr/bin/env python
 
-#    Copyright (C) 2014 Alexandros Avdis, Christian T. Jacobs, Gerard J. Gorman, Matthew D. Piggott.
+#    Copyright (C) 2014 Christian T. Jacobs, Alexandros Avdis, Gerard J. Gorman, Matthew D. Piggott.
 
 #    This file is part of PyRDM.
 
@@ -17,7 +17,7 @@
 #    You should have received a copy of the GNU General Public License
 #    along with PyRDM.  If not, see <http://www.gnu.org/licenses/>.
 
-import sys, os
+import sys, os, glob
 import ConfigParser
 import optparse
 import re
@@ -183,10 +183,20 @@ class PyRDM:
             article_id = None
 
          # A list of paths to files that the user wants published.
-         files = eval(libspud.get_option(options_path + "/files"))
+         temp = eval(libspud.get_option(options_path + "/files"))
          # Change the file paths to be relative to the directory where the options file is stored.
-         for i in range(len(files)):
-            files[i] = os.path.dirname(sys.argv[-1]) + "/" + files[i]
+         for i in range(len(temp)):
+            temp[i] = os.path.dirname(sys.argv[-1]) + "/" + temp[i]
+
+         files = []
+         for i in range(len(temp)):
+            if("*" in os.path.basename(temp[i])):
+               # Expand out any wildcard expressions.
+               expanded = glob.glob(temp[i])
+               for j in range(len(expanded)):
+                  files.append(expanded[j])
+            else:
+               files.append(temp[i])
 
          # Write provenance data to the stat file.
          self.write_provenance_data()

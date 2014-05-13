@@ -1,6 +1,6 @@
 #!/usr/bin/env python
 
-#    Copyright (C) 2014 Alexandros Avdis, Christian T. Jacobs, Gerard J. Gorman, Matthew D. Piggott.
+#    Copyright (C) 2014 Christian T. Jacobs, Alexandros Avdis, Gerard J. Gorman, Matthew D. Piggott.
 
 #    This file is part of PyRDM.
 
@@ -21,8 +21,8 @@ from distutils.core import setup
 
 setup(name='PyRDM',
       version='0.1a-dev',
-      description='A Python program for research data management.',
-      author='Alexandros Avdis, Christian T. Jacobs, Gerard J. Gorman, Matthew D. Piggott',
+      description='A Python program for research data management (RDM).',
+      author='Christian T. Jacobs, Alexandros Avdis, Gerard J. Gorman, Matthew D. Piggott',
       url='https://bitbucket.org/ctjacobs/pyrdm',
       packages=['pyrdm'],
       package_dir = {'pyrdm': 'pyrdm'},
