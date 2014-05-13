@@ -68,7 +68,6 @@ class Publisher:
 
       # Download the .zip file from GitHub...
       url = "%s/archive/%s.zip" % (self.config["github_location"], sha)
-      #url = "https://github.com/ctjacobs/fluidity-test/archive/master.zip"
       
       print "Downloading software from GitHub (URL: %s)..." % url
       f = urlopen(url)
