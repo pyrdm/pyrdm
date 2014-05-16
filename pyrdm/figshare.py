@@ -17,11 +17,13 @@
 #    You should have received a copy of the GNU General Public License
 #    along with PyRDM.  If not, see <http://www.gnu.org/licenses/>.
 
+import sys, os
+import unittest
+
 import requests
 from requests_oauthlib import OAuth1
 import json
 
-import sys, os
 from urllib2 import urlopen
 from urllib import urlencode
 
@@ -211,3 +213,49 @@ class Figshare:
       results = json.loads(response.content)
       return results
 
+
+class TestLog(unittest.TestCase):
+   """ Unit test suite for PyRDM's Figshare module. """
+
+   def setUp(self):
+      self.figshare = Figshare()
+      return
+
+   def tearDown(self):
+      return
+
+   def test_md5_write_checksum(self):
+      self.publisher.write_checksum("test_file.txt")
+      
+      f = open("test_file.txt.md5", "r")
+      md5_known = "29586140472f40eec4031eb2e0d352e1"
+      md5 = hashlib.md5(open("test_file.txt").read()).hexdigest()
+      print "Known MD5 hash of file: %s" % md5_known
+      print "Computed MD5 hash of file: %s" % md5
+      assert(md5 == md5_known)
+      
+   def test_md5_find_modified(self):
+      self.publisher.write_checksum("test_file.txt")
+      
+      modified = self.publisher.find_modified(["test_file.txt"])
+      print "Modified files: ", modified
+      assert(modified == [])
+      
+      # Modify the file.      
+      f = open("test_file.txt", "a")
+      f.write("This is another line.")
+      f.close()
+      
+      # Check that the MD5 checksums are not the same
+      md5_before = "29586140472f40eec4031eb2e0d352e1"
+      md5_after = hashlib.md5(open("test_file.txt").read()).hexdigest()
+      print "MD5 hash before modification: %s" % md5_before
+      print "MD5 hash after modification: %s" % md5_after
+      assert(md5_before != md5_after)
+      
+      modified = self.publisher.find_modified(["test_file.txt"])
+      print "Modified files: ", modified
+      assert(modified == ["test_file.txt"])
+      
+if(__name__ == '__main__'):
+   unittest.main()

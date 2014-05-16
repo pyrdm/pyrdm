@@ -19,6 +19,7 @@
 
 import ConfigParser
 import sys, os
+import unittest
 
 import git
 import hashlib # For MD5 checksums
@@ -30,7 +31,7 @@ class Publisher:
 
    def __init__(self):
       # Read in the authentication tokens, etc from the configuration file.
-      self.config = self._load_config("pyrdm.config")
+      self.config = self._load_config(os.path.expanduser("~/pyrdm.config"))
       self.figshare = Figshare(client_key = self.config["client_key"], client_secret = self.config["client_secret"],
                      resource_owner_key = self.config["resource_owner_key"], resource_owner_secret = self.config["resource_owner_secret"])
       return
@@ -38,7 +39,11 @@ class Publisher:
    def _load_config(self, config_file_path):
       """ Load the configuration file containing the OAuth keys and information about the software name, etc
       into a dictionary called 'config' and return it. """
-      f = open(config_file_path, "r")
+      try:
+         f = open(config_file_path, "r")
+      except IOError:
+         print "Could not open the PyRDM configuration file. Check that the file 'pyrdm.config' is in your home directory, and that it is readable."
+         sys.exit(1)
 
       config = {}
       for line in f.readlines():
@@ -160,3 +165,54 @@ class Publisher:
             
       return modified
       
+      
+
+class TestLog(unittest.TestCase):
+   """ Unit test suite for PyRDM's Publisher module. """
+
+   def setUp(self):
+      self.publisher = Publisher()
+      
+      f = open("test_file.txt", "w")
+      f.write("Hello World! This is a file for the MD5 functionality test.")
+      f.close()
+      return
+
+   def tearDown(self):
+      return
+
+   def test_md5_write_checksum(self):
+      self.publisher.write_checksum("test_file.txt")
+      
+      f = open("test_file.txt.md5", "r")
+      md5_known = "29586140472f40eec4031eb2e0d352e1"
+      md5 = hashlib.md5(open("test_file.txt").read()).hexdigest()
+      print "Known MD5 hash of file: %s" % md5_known
+      print "Computed MD5 hash of file: %s" % md5
+      assert(md5 == md5_known)
+      
+   def test_md5_find_modified(self):
+      self.publisher.write_checksum("test_file.txt")
+      
+      modified = self.publisher.find_modified(["test_file.txt"])
+      print "Modified files: ", modified
+      assert(modified == [])
+      
+      # Modify the file.      
+      f = open("test_file.txt", "a")
+      f.write("This is another line.")
+      f.close()
+      
+      # Check that the MD5 checksums are not the same
+      md5_before = "29586140472f40eec4031eb2e0d352e1"
+      md5_after = hashlib.md5(open("test_file.txt").read()).hexdigest()
+      print "MD5 hash before modification: %s" % md5_before
+      print "MD5 hash after modification: %s" % md5_after
+      assert(md5_before != md5_after)
+      
+      modified = self.publisher.find_modified(["test_file.txt"])
+      print "Modified files: ", modified
+      assert(modified == ["test_file.txt"])
+      
+if(__name__ == '__main__'):
+   unittest.main()
