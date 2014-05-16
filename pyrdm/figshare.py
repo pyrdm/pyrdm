@@ -218,44 +218,55 @@ class TestLog(unittest.TestCase):
    """ Unit test suite for PyRDM's Figshare module. """
 
    def setUp(self):
-      self.figshare = Figshare()
+      from pyrdm.publisher import Publisher
+      self.publisher = Publisher()
+      self.figshare = Figshare(client_key = self.publisher.config["client_key"], client_secret = self.publisher.config["client_secret"],
+                     resource_owner_key = self.publisher.config["resource_owner_key"], resource_owner_secret = self.publisher.config["resource_owner_secret"])
+                     
+      # Create a test article
+      print "Creating test article..."
+      publication_details = self.figshare.create_article(title="PyRDM Test", description="PyRDM Test Article", defined_type="code", status="Drafts")
+      print publication_details
+      self.article_id = publication_details["article_id"]
       return
 
    def tearDown(self):
+      print "Deleting test article..."
+      results = self.figshare.delete_article(self.article_id)
+      print results
+      assert("success" in results.keys())
       return
 
-   def test_md5_write_checksum(self):
-      self.publisher.write_checksum("test_file.txt")
-      
-      f = open("test_file.txt.md5", "r")
-      md5_known = "29586140472f40eec4031eb2e0d352e1"
-      md5 = hashlib.md5(open("test_file.txt").read()).hexdigest()
-      print "Known MD5 hash of file: %s" % md5_known
-      print "Computed MD5 hash of file: %s" % md5
-      assert(md5 == md5_known)
-      
-   def test_md5_find_modified(self):
-      self.publisher.write_checksum("test_file.txt")
-      
-      modified = self.publisher.find_modified(["test_file.txt"])
-      print "Modified files: ", modified
-      assert(modified == [])
-      
-      # Modify the file.      
-      f = open("test_file.txt", "a")
-      f.write("This is another line.")
+   def test_search(self):
+      print "Searching for test article..."
+      results = self.figshare.search(self, "PyRDM Test")
+      print results
+      assert (len(results) >= 1)
+      return
+ 
+   def test_add_file(self):
+      print "Adding file to test article..."
+      f = open("test_file.txt", "w")
+      f.write("This is a test file for PyRDM's Figshare module unit tests")
       f.close()
       
-      # Check that the MD5 checksums are not the same
-      md5_before = "29586140472f40eec4031eb2e0d352e1"
-      md5_after = hashlib.md5(open("test_file.txt").read()).hexdigest()
-      print "MD5 hash before modification: %s" % md5_before
-      print "MD5 hash after modification: %s" % md5_after
-      assert(md5_before != md5_after)
+      results = self.figshare.add_file(self.article_id, "test_file.txt")
+      print results
+      assert(results["extension"] == "txt")
+      assert(results["name"] == "test_file.txt")
       
-      modified = self.publisher.find_modified(["test_file.txt"])
-      print "Modified files: ", modified
-      assert(modified == ["test_file.txt"])
+      return
+      
+   def test_get_article_details(self):
+      print "Getting article details..."
+
+      publication_details = self.figshare.get_article_details(self.article_id)
+      print 
+      assert(publication_details["count"] == 1)
+      assert(publication_details["items"][0]["title"] == "PyRDM Test")
+      assert(publication_details["items"][0]["description"] == "PyRDM Test Article")
+      
+      return
       
 if(__name__ == '__main__'):
    unittest.main()
