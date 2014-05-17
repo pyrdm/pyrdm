@@ -1,5 +1,7 @@
-github_location = http://github.com/ctjacobs/hello-world
-github_branch_name = hello-world
+[github]
+repository_url = http://github.com/ctjacobs/hello-world
+repository_name = hello-world
+[figshare]
 client_key = stuvwx
 client_secret = xyz
 resource_owner_key = ghijkl

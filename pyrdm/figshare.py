@@ -38,10 +38,10 @@ class Figshare:
       self.resource_owner_secret = resource_owner_secret
 
       # Set up a new session.
-      self.oauth, self.client = self._create_session()
+      self.oauth, self.client = self.create_session()
       return
 
-   def _create_session(self):
+   def create_session(self):
       """ Authenticates with the Figshare server, and creates a session object used to send requests to the server. """
       oauth = OAuth1(client_key = self.client_key, client_secret = self.client_secret,
                      resource_owner_key = self.resource_owner_key, resource_owner_secret = self.resource_owner_secret,

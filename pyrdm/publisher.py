@@ -35,37 +35,30 @@ class Publisher:
       self.service = service
    
       # Read in the authentication tokens, etc from the configuration file.
-      self.config = self._load_config(os.path.expanduser("~/pyrdm.config"))
+      self.config = self.load_config(os.path.expanduser("~/.config/pyrdm.ini"))
       
       if(service == "figshare"):
-         self.figshare = Figshare(client_key = self.config["client_key"], client_secret = self.config["client_secret"],
-                        resource_owner_key = self.config["resource_owner_key"], resource_owner_secret = self.config["resource_owner_secret"])
+         self.figshare = Figshare(client_key = self.config.get("figshare", "client_key"), client_secret = self.config.get("figshare", "client_secret"),
+                        resource_owner_key = self.config.get("figshare", "resource_owner_key"), resource_owner_secret = self.config.get("figshare", "resource_owner_secret"))
       elif(service == "zenodo"):
          # FIXME: The interface to the Zenodo API is currently not authenticating properly with the Zenodo servers.
          raise NotImplementedError
-         self.zenodo = Zenodo(api_key = self.config["zenodo_api_key"])
+         self.zenodo = Zenodo(api_key = self.config.get("zenodo", "api_key"))
       else:
          print "Unsupported service: %s" % service
          sys.exit(1)
 
       return
       
-   def _load_config(self, config_file_path):
+   def load_config(self, config_file_path):
       """ Load the configuration file containing the OAuth keys and information about the software name, etc
       into a dictionary called 'config' and return it. """
-      try:
-         f = open(config_file_path, "r")
-      except IOError:
-         print "Could not open the PyRDM configuration file. Check that the file 'pyrdm.config' is in your home directory, and that it is readable."
+
+      config = ConfigParser.ConfigParser()
+      have_config = (config.read(config_file_path) != [])
+      if(not have_config):
+         print "Could not open the PyRDM configuration file. Check that the file 'pyrdm.ini' is in the ~/.config/ directory, and that it is readable."
          sys.exit(1)
-
-      config = {}
-      for line in f.readlines():
-         s = line.replace(" ", "").replace("\n", "")
-         key, value = s.split("=")
-         config[key] = value
-
-      f.close()
       return config
 
    def find_software(self, software_name, sha):
@@ -107,12 +100,12 @@ class Publisher:
       """ Publishes the software in the current repository to Figshare. """
 
       # Download the .zip file from GitHub...
-      url = "%s/archive/%s.zip" % (self.config["github_location"], sha)
+      url = "%s/archive/%s.zip" % (self.config.get("github", "repository_url"), sha)
       
       print "Downloading software from GitHub (URL: %s)..." % url
       f = urlopen(url)
-      output_file_name = self.config["github_repository_name"]+"-"+os.path.basename(url)
-      with open(self.config["github_repository_name"]+"-"+os.path.basename(url), "wb") as local_file:
+      output_file_name = self.config.get("github", "repository_name")+"-"+os.path.basename(url)
+      with open(self.config.get("github", "repository_name")+"-"+os.path.basename(url), "wb") as local_file:
          local_file.write(f.read())
       print "Download complete."
 
@@ -133,7 +126,7 @@ class Publisher:
 
       print "Adding all authors (with Figshare IDs) to the software article..."
       author_ids = self.get_authors_list(local_repo_location)
-      print author_ids
+      print "List of author IDs: ", author_ids
       if(author_ids is not None):
          for author_id in author_ids:
             self.figshare.add_author(publication_details["article_id"], author_id)
@@ -181,7 +174,8 @@ class Publisher:
             if(e["name"] == os.path.basename(f)):
                print "File already exists on Figshare server. Over-writing..."
                exists = True
-               # FIXME: Trying to re-upload to an existing file_id doesn't seem to work.
+               # FIXME: It is currently not possible to over-write an existing file via the Figshare API.
+               # We have to delete the file and then add it again.
                self.figshare.delete_file(article_id=article_id, file_id=e["id"])
                self.figshare.add_file(article_id=article_id, file_path=f)
          if(not exists):
@@ -215,8 +209,7 @@ class Publisher:
             modified.append(f)
             
       return modified
-      
-      
+
 
 class TestLog(unittest.TestCase):
    """ Unit test suite for PyRDM's Publisher module. """
