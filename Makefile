@@ -1,4 +1,4 @@
-#!/usr/bin/env python
+#!/bin/sh
 
 #    Copyright (C) 2014 Christian T. Jacobs, Alexandros Avdis, Gerard J. Gorman, Matthew D. Piggott.
 
@@ -17,7 +17,11 @@
 #    You should have received a copy of the GNU General Public License
 #    along with PyRDM.  If not, see <http://www.gnu.org/licenses/>.
 
-input: 	clean install manual
+input: 	clean build manual
+
+build:
+	@echo **********Building PyRDM
+	python setup.py build
 
 install:
 	@echo **********Installing PyRDM
