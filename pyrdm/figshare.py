@@ -220,9 +220,9 @@ class TestLog(unittest.TestCase):
    def setUp(self):
       # NOTE: This requires the user to have their Figshare authentication details in the file "/home/<user_name>/pyrdm.config".
       from pyrdm.publisher import Publisher
-      self.publisher = Publisher()
-      self.figshare = Figshare(client_key = self.publisher.config["client_key"], client_secret = self.publisher.config["client_secret"],
-                     resource_owner_key = self.publisher.config["resource_owner_key"], resource_owner_secret = self.publisher.config["resource_owner_secret"])
+      self.publisher = Publisher(service="figshare")
+      self.figshare = Figshare(client_key = self.publisher.config.get("figshare", "client_key"), client_secret = self.publisher.config.get("figshare", "client_secret"),
+                        resource_owner_key = self.publisher.config.get("figshare", "resource_owner_key"), resource_owner_secret = self.publisher.config.get("figshare", "resource_owner_secret"))
                      
       # Create a test article
       print "Creating test article..."
@@ -238,14 +238,14 @@ class TestLog(unittest.TestCase):
       assert("success" in results.keys())
       return
 
-   def test_search(self):
+   def test_figshare_search(self):
       print "Searching for test article..."
       results = self.figshare.search(self, "PyRDM Test")
       print results
       assert (len(results) >= 1)
       return
  
-   def test_add_file(self):
+   def test_figshare_add_file(self):
       print "Adding file to test article..."
       f = open("test_file.txt", "w")
       f.write("This is a test file for PyRDM's Figshare module unit tests")
@@ -258,11 +258,11 @@ class TestLog(unittest.TestCase):
       
       return
       
-   def test_get_article_details(self):
+   def test_figshare_get_article_details(self):
       print "Getting article details..."
 
       publication_details = self.figshare.get_article_details(self.article_id)
-      print 
+      print publication_details
       assert(publication_details["count"] == 1)
       assert(publication_details["items"][0]["title"] == "PyRDM Test")
       assert(publication_details["items"][0]["description"] == "PyRDM Test Article")
