@@ -24,6 +24,7 @@ import re
 
 import git
 import hashlib # For MD5 checksums
+from urllib2 import urlopen
 
 from pyrdm.figshare import Figshare
 from pyrdm.zenodo import Zenodo
