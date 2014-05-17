@@ -19,26 +19,44 @@
 
 import ConfigParser
 import sys, os
+import unittest
+import re
 
 import git
 import hashlib # For MD5 checksums
 
 from pyrdm.figshare import Figshare
+from pyrdm.zenodo import Zenodo
 
 class Publisher:
-   """ A Python module for publishing scientific software and data on Figshare. """
+   """ A Python module for publishing scientific software and data on Figshare or Zenodo. """
 
-   def __init__(self):
+   def __init__(self, service):
+      self.service = service
+   
       # Read in the authentication tokens, etc from the configuration file.
-      self.config = self._load_config("pyrdm.config")
-      self.figshare = Figshare(client_key = self.config["client_key"], client_secret = self.config["client_secret"],
-                     resource_owner_key = self.config["resource_owner_key"], resource_owner_secret = self.config["resource_owner_secret"])
+      self.config = self._load_config(os.path.expanduser("~/pyrdm.config"))
+      
+      if(service == "figshare"):
+         self.figshare = Figshare(client_key = self.config["client_key"], client_secret = self.config["client_secret"],
+                        resource_owner_key = self.config["resource_owner_key"], resource_owner_secret = self.config["resource_owner_secret"])
+      elif(service == "zenodo"):
+         # FIXME: The interface to the Zenodo API is currently not authenticating properly with the Zenodo servers.
+         raise NotImplementedError
+         self.zenodo = Zenodo(api_key = self.config["zenodo_api_key"])
+      else:
+         print "Unsupported service: %s" % service
+         sys.exit(1)
       return
       
    def _load_config(self, config_file_path):
       """ Load the configuration file containing the OAuth keys and information about the software name, etc
       into a dictionary called 'config' and return it. """
-      f = open(config_file_path, "r")
+      try:
+         f = open(config_file_path, "r")
+      except IOError:
+         print "Could not open the PyRDM configuration file. Check that the file 'pyrdm.config' is in your home directory, and that it is readable."
+         sys.exit(1)
 
       config = {}
       for line in f.readlines():
@@ -54,16 +72,37 @@ class Publisher:
       Otherwise it returns None. """
       
       keyword = "%s-%s" % (software_name, sha)
-      results = self.figshare.search(keyword, tag=sha)
+      
+      if(self.service == "figshare"):
+         results = self.figshare.search(keyword, tag=sha)
 
-      if(results["count"] >= 1):
-         print "Software %s has already been published (with SHA-1 %s)." % (software_name, sha)
-         article_id = results["items"][-1]["article_id"]
-         return article_id # TODO: Also return the DOI.
+         if(results["count"] >= 1):
+            print "Software %s has already been published (with SHA-1 %s)." % (software_name, sha)
+            article_id = results["items"][-1]["article_id"]
+            return article_id # TODO: Also return the DOI.
+         else:
+            return None
       else:
+         # TODO: Add in Zenodo searching.
+         raise NotImplementedError
+
+   def get_authors_list(self, local_repo_location):
+      repo = git.Repo(local_repo_location)
+      author_ids = []
+      try:
+         # Assumes that the AUTHORS file is in the root directory of the project.
+         f = open(repo.working_dir + "/AUTHORS", "r")
+         for line in f.readlines():
+            m = re.search("figshare:([0-9]+)", line)
+            if(m is not None):
+               author_id = int(m.group(1))
+               author_ids.append(author_id)
+         return author_ids
+      except IOError:
+         print "Could not open AUTHORS file. Does it exist? Check read permissions?"
          return None
-         
-   def publish_software(self, software_name, sha):
+
+   def publish_software(self, software_name, sha, local_repo_location):
       """ Publishes the software in the current repository to Figshare. """
 
       # Download the .zip file from GitHub...
@@ -84,12 +123,20 @@ class Publisher:
       print "Article created with DOI: %s" % publication_details["doi"]
       
       print "Adding tags..."
-      self.figshare.add_tag(article_id=publication_details["article_id"], tag=sha)
+      self.figshare.add_tag(article_id=publication_details["article_id"], tag_name=sha)
       print "Tags added."
 
       print "Uploading software to Figshare..."
-      self.figshare.upload_file(article_id=publication_details["article_id"], file_path=output_file_name)
+      self.figshare.add_file(article_id=publication_details["article_id"], file_path="test.txt")
       print "Software uploaded to Figshare."
+
+      print "Adding all authors (with Figshare IDs) to the software article..."
+      author_ids = self.get_authors_list(local_repo_location)
+      print author_ids
+      if(author_ids is not None):
+         for author_id in author_ids:
+            self.figshare.add_author(publication_details["article_id"], author_id)
+      print "All authors (with Figshare IDs) added."
 
       return publication_details
       
@@ -101,13 +148,21 @@ class Publisher:
          
       print "Publishing data..."      
       if(article_id is None):
-         print "Creating dataset on Figshare for data..."
-         # NOTE: The defined_type needs to be a 'fileset' to allow multiple files to be uploaded separately.
-         publication_details = self.figshare.create_article(title=parameters["title"], description=parameters["description"], defined_type="fileset", status="Drafts")
-         print "Dataset created with DOI: %s" % publication_details["doi"]
-         print publication_details
+         if(self.service == "figshare"):
+            print "Creating dataset on Figshare for data..."
+            # NOTE: The defined_type needs to be a 'fileset' to allow multiple files to be uploaded separately.
+            publication_details = self.figshare.create_article(title=parameters["title"], description=parameters["description"], defined_type="fileset", status="Drafts")
+            print "Dataset created with DOI: %s" % publication_details["doi"]
+            print publication_details
 
-         article_id = publication_details["article_id"]
+            article_id = publication_details["article_id"]
+         elif(self.service == "zenodo"):
+            print "Creating dataset on Zenodo for data..."
+            publication_details = self.zenodo.create_deposition(title=parameters["title"], description=parameters["description"], upload_type="dataset", state="inprogress")
+            print publication_details
+            print "Dataset created with DOI: %s" % publication_details["doi"]
+
+            article_id = publication_details["id"]
       else:
          publication_details = None
          
@@ -160,3 +215,54 @@ class Publisher:
             
       return modified
       
+      
+
+class TestLog(unittest.TestCase):
+   """ Unit test suite for PyRDM's Publisher module. """
+
+   def setUp(self):
+      self.publisher = Publisher()
+      
+      f = open("test_file.txt", "w")
+      f.write("Hello World! This is a file for the MD5 functionality test.")
+      f.close()
+      return
+
+   def tearDown(self):
+      return
+
+   def test_md5_write_checksum(self):
+      self.publisher.write_checksum("test_file.txt")
+      
+      f = open("test_file.txt.md5", "r")
+      md5_known = "29586140472f40eec4031eb2e0d352e1"
+      md5 = hashlib.md5(open("test_file.txt").read()).hexdigest()
+      print "Known MD5 hash of file: %s" % md5_known
+      print "Computed MD5 hash of file: %s" % md5
+      assert(md5 == md5_known)
+      
+   def test_md5_find_modified(self):
+      self.publisher.write_checksum("test_file.txt")
+      
+      modified = self.publisher.find_modified(["test_file.txt"])
+      print "Modified files: ", modified
+      assert(modified == [])
+      
+      # Modify the file.      
+      f = open("test_file.txt", "a")
+      f.write("This is another line.")
+      f.close()
+      
+      # Check that the MD5 checksums are not the same
+      md5_before = "29586140472f40eec4031eb2e0d352e1"
+      md5_after = hashlib.md5(open("test_file.txt").read()).hexdigest()
+      print "MD5 hash before modification: %s" % md5_before
+      print "MD5 hash after modification: %s" % md5_after
+      assert(md5_before != md5_after)
+      
+      modified = self.publisher.find_modified(["test_file.txt"])
+      print "Modified files: ", modified
+      assert(modified == ["test_file.txt"])
+      
+if(__name__ == '__main__'):
+   unittest.main()

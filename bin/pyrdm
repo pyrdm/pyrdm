@@ -35,7 +35,6 @@ class PyRDM:
 
    def __init__(self, options_file):
       self.options_file = options_file
-      self.publisher = Publisher()
       return
 
    def get_fluidity_version(self):
@@ -135,7 +134,10 @@ class PyRDM:
 
    def publish(self, data_type, version=None):
       libspud.load_options(self.options_file)
-      
+
+      service = libspud.get_option("/publish/service")
+      self.publisher = Publisher(service=service)
+
       if(data_type == "s"):
          # Publish the software
          
@@ -146,14 +148,14 @@ class PyRDM:
             print "Using the software version provided: %s" % version
             sha = version
 
-         # Search for the software, in case it has already been published on Figshare.
+         # Search for the software, in case it has already been published.
          article_id = self.publisher.find_software("Fluidity", sha)
          print article_id
          
          options_path = "/publish/software/"
          if(article_id is None):
-            # Software is not published already, so publish it now.
-            publication_details = self.publisher.publish_software("Fluidity", sha)
+            # Software is not published already, so publish it now.            
+            publication_details = self.publisher.publish_software("Fluidity", sha, local_repo_location=sys.argv[-1])
             try:
                libspud.set_option(options_path + "/article_id", str(publication_details["article_id"]))
             except:
@@ -198,8 +200,9 @@ class PyRDM:
             else:
                files.append(temp[i])
 
-         # Write provenance data to the stat file.
-         self.write_provenance_data()
+         if(data_type == "o"):
+            # Write provenance data to the stat file.
+            self.write_provenance_data()
 
          parameters = {"title":"Fluidity-data-files-%s" % data_type, "description":"", "files":files}
          publication_details = self.publisher.publish_data(parameters, article_id)
