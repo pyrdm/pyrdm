@@ -20,6 +20,7 @@
 \usepackage{graphicx}
 
 \setlength{\parskip}{0.25cm}
+\setlength{\parindent}{0cm}
 
 \begin{document}
 
@@ -33,6 +34,63 @@
 
 \tableofcontents
 
-\chapter{Introduction}
+\chapter{Introduction}\label{chap:introduction}
+\section{Overview}
+PyRDM is a Python library to facilitate the automated publication of scientific software and data via online, citable repositories such as Figshare.
+
+The \texttt{pyrdm} directory contains a set of modules which can be imported into software-specific tools. The \texttt{bin} directory contains an example of such a tool, designed to publish the Fluidity CFD code and any associated data files to Figshare. Users wishing to 
+
+\section{Licensing}
+PyRDM is released under the GNU General Public License. Further details can be found in the COPYING file supplied with this software.
+
+\chapter{Getting started}\label{chap:getting_started}
+\section{System requirements}
+A standard Python installation is required, as well as any additional Python modules that are listed in the README file under the ``Dependencies'' section. PyRDM is designed to run on the Linux operating system. All development and testing takes place on the Ubuntu Precise (12.04) distribution.
+
+\section{Installation and running}
+It is recommended that users use the terminal to install and run PyRDM. After navigating to the base directory of PyRDM (i.e. the directory that the Makefile is in), use the following command to install the PyRDM library:
+
+  \texttt{make install}
+
+Note: \texttt{sudo} may be needed for this if the default install directory is located outside of \texttt{/home}.
+
+\chapter{Publishing}
+
+\section{Figshare authentication}\label{sect:authentication}
+Figshare requires authentication keys in order to publish and modify files on the Figshare servers. If you are publishing through a group account, you will need to ask the account's administrator for the authentication details.
+
+\section{Publishing software}
+The publication of software is handled by the \texttt{publish\_software} method in the Publication class. This requires:
+
+\begin{itemize}
+  \item The Figshare authentication details (see Section \ref{sect:authentication}).
+  \item The software's name.
+  \item The version of the software that you would like to publish (for GitHub repositories, this is the SHA-1 commit hash).
+  \item The location of the software's Git repository (or the location of any file within that repository) on your local hard drive.
+\end{itemize}
+
+\subsection{Author attribution}
+If an AUTHORS file is provided in the Git repository's base directory, PyRDM parses it and looks for strings of the form figshare:xxxx, where xxxx is an author ID. Author IDs should be specified after each author's full name. An example is: 
+
+\texttt{Christian Jacobs (figshare:554577)}
+
+PyRDM automatically adds all authors who provide their Figshare author IDs to the software publication.
+
+\section{Publishing data}
+The publication of software is handled by the \texttt{publish\_software} method in the Publication class. This requires:
+
+\begin{itemize}
+  \item The Figshare authentication details (see Section \ref{sect:authentication}).
+  \item A dictionary of parameters, containing the following key-value pairs:
+    \begin{itemize}
+      \item \texttt{title}: the title of the dataset
+      \item \texttt{description}: a description of the dataset
+      \item \texttt{files}: a list of paths to the files within the dataset.
+    \end{itemize}
+  \item Optionally, an \texttt{article\_id} if the dataset already exists on the Figshare servers and you wish to update it. By default, this is set to \texttt{None}.
+\end{itemize}
+
+\subsection{MD5 cross-checks}
+When a data file is published, the file's MD5 checksum is stored in a corresponding checksum file. The next time the user tries to publish the file, its MD5 checksum is recomputed and compared against the MD5 checksum stored in its corresponding MD5 file. If the two MD5 checksums are different (or the checksum file does not exist), the file is uploaded to the Figshare server and the checksum file is updated with the new checksum. If the two checksums are the same, the file is unmodified and is not re-uploaded. This can help prevent unnecessary bandwidth usage and is particularly useful when you have large data files which are not frequently modified.
 
 \end{document}
