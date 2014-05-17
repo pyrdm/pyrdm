@@ -17,11 +17,13 @@
 #    You should have received a copy of the GNU General Public License
 #    along with PyRDM.  If not, see <http://www.gnu.org/licenses/>.
 
+import sys, os
+import unittest
+
 import requests
 from requests_oauthlib import OAuth1
 import json
 
-import sys, os
 from urllib2 import urlopen
 from urllib import urlencode
 
@@ -211,3 +213,61 @@ class Figshare:
       results = json.loads(response.content)
       return results
 
+
+class TestLog(unittest.TestCase):
+   """ Unit test suite for PyRDM's Figshare module. """
+
+   def setUp(self):
+      # NOTE: This requires the user to have their Figshare authentication details in the file "/home/<user_name>/pyrdm.config".
+      from pyrdm.publisher import Publisher
+      self.publisher = Publisher()
+      self.figshare = Figshare(client_key = self.publisher.config["client_key"], client_secret = self.publisher.config["client_secret"],
+                     resource_owner_key = self.publisher.config["resource_owner_key"], resource_owner_secret = self.publisher.config["resource_owner_secret"])
+                     
+      # Create a test article
+      print "Creating test article..."
+      publication_details = self.figshare.create_article(title="PyRDM Test", description="PyRDM Test Article", defined_type="code", status="Drafts")
+      print publication_details
+      self.article_id = publication_details["article_id"]
+      return
+
+   def tearDown(self):
+      print "Deleting test article..."
+      results = self.figshare.delete_article(self.article_id)
+      print results
+      assert("success" in results.keys())
+      return
+
+   def test_search(self):
+      print "Searching for test article..."
+      results = self.figshare.search(self, "PyRDM Test")
+      print results
+      assert (len(results) >= 1)
+      return
+ 
+   def test_add_file(self):
+      print "Adding file to test article..."
+      f = open("test_file.txt", "w")
+      f.write("This is a test file for PyRDM's Figshare module unit tests")
+      f.close()
+      
+      results = self.figshare.add_file(self.article_id, "test_file.txt")
+      print results
+      assert(results["extension"] == "txt")
+      assert(results["name"] == "test_file.txt")
+      
+      return
+      
+   def test_get_article_details(self):
+      print "Getting article details..."
+
+      publication_details = self.figshare.get_article_details(self.article_id)
+      print 
+      assert(publication_details["count"] == 1)
+      assert(publication_details["items"][0]["title"] == "PyRDM Test")
+      assert(publication_details["items"][0]["description"] == "PyRDM Test Article")
+      
+      return
+      
+if(__name__ == '__main__'):
+   unittest.main()

@@ -47,6 +47,7 @@ class Publisher:
       else:
          print "Unsupported service: %s" % service
          sys.exit(1)
+
       return
       
    def _load_config(self, config_file_path):
