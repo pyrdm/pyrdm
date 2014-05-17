@@ -104,15 +104,15 @@ class Publisher:
       
       print "Downloading software from GitHub (URL: %s)..." % url
       f = urlopen(url)
-      output_file_name = self.config.get("github", "repository_name")+"-"+os.path.basename(url)
-      with open(self.config.get("github", "repository_name")+"-"+os.path.basename(url), "wb") as local_file:
+      file_name = self.config.get("github", "repository_name")+"_"+os.path.basename(url)
+      with open(file_name, "wb") as local_file:
          local_file.write(f.read())
       print "Download complete."
 
       # ...then upload it to Figshare.
       print "Creating article on Figshare for software..."
-      title='%s-%s' % (software_name, sha)
-      description='%s version %s' % (software_name, sha)
+      title='%s (%s)' % (software_name, sha)
+      description='%s (Version %s)' % (software_name, sha)
       publication_details = self.figshare.create_article(title=title, description=description, defined_type="code", status="Drafts")
       print "Article created with DOI: %s" % publication_details["doi"]
       
@@ -121,7 +121,7 @@ class Publisher:
       print "Tags added."
 
       print "Uploading software to Figshare..."
-      self.figshare.add_file(article_id=publication_details["article_id"], file_path="test.txt")
+      self.figshare.add_file(article_id=publication_details["article_id"], file_path=file_name)
       print "Software uploaded to Figshare."
 
       print "Adding all authors (with Figshare IDs) to the software article..."
