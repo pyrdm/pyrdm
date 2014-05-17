@@ -66,7 +66,7 @@ class Publisher:
       """ Checks if the software has already been published. If so, it returns the DOI.
       Otherwise it returns None. """
       
-      keyword = "%s-%s" % (software_name, sha)
+      keyword = "%s (%s)" % (software_name, sha)
       
       if(self.service == "figshare"):
          results = self.figshare.search(keyword, tag=sha)
@@ -133,6 +133,11 @@ class Publisher:
             self.figshare.add_author(publication_details["article_id"], author_id)
       print "All authors (with Figshare IDs) added."
 
+      # TODO: Uncomment this when we've finished testing.
+      #print "Making the code public..."
+      #self.figshare.make_public(article_id=publication_details["article_id"])
+      #print "The code has been made public."
+
       return publication_details
       
    def publish_data(self, parameters, article_id=None):
@@ -182,6 +187,11 @@ class Publisher:
          if(not exists):
             self.figshare.add_file(article_id=article_id, file_path=f)
          self.write_checksum(f)
+
+      # TODO: Uncomment this when we've finished testing.
+      #print "Making the data public..."
+      #self.figshare.make_public(article_id=article_id)
+      #print "The data has been made public."
 
       return publication_details
       

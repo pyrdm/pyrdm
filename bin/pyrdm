@@ -204,7 +204,11 @@ class PyRDM:
             # Write provenance data to the stat file.
             self.write_provenance_data()
 
-         parameters = {"title":"Fluidity-data-files-%s" % data_type, "description":"", "files":files}
+         if(data_type == "i"):
+            title = "Input data files for simulation: %s" % libspud.get_option("/simulation_name")
+         elif(data_type == "o"):
+            title = "Output data files for simulation: %s" % libspud.get_option("/simulation_name")
+         parameters = {"title":title, "description":"", "files":files}
          publication_details = self.publisher.publish_data(parameters, article_id)
 
          # Write the article_id and DOI to the options file for next time.
