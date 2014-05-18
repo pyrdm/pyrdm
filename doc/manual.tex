@@ -47,17 +47,65 @@ PyRDM is released under the GNU General Public License. Further details can be f
 \section{System requirements}
 A standard Python installation is required, as well as any additional Python modules that are listed in the README file under the ``Dependencies'' section. PyRDM is designed to run on the Linux operating system. All development and testing takes place on the Ubuntu Precise (12.04) distribution.
 
-\section{Installation and running}
+\section{Installation}
 It is recommended that users use the terminal to install and run PyRDM. After navigating to the base directory of PyRDM (i.e. the directory that the Makefile is in), use the following command to install the PyRDM library:
 
   \texttt{make install}
 
-Note: \texttt{sudo} may be needed for this if the default install directory is located outside of \texttt{/home}.
+\textbf{Note 1:} \texttt{sudo} may be needed for this if the default install directory is located outside of \texttt{/home}. This will yield a system-wide install of PyRDM.
+
+\textbf{Note 2:} In order for Python to find the PyRDM module, you will need to add the PyRDM base directory to your \texttt{PYTHONPATH} environment variable, unless you have used \texttt{sudo} as mentioned in Note 1 above. This can be achieved using:
+
+  \texttt{export PYTHONPATH=\$PYTHONPATH:/path/to/pyrdm}
+
+You may wish to add this statement to your \texttt{/home/your\_username/.bashrc} or \texttt{/etc/bash.bashrc} files so the \texttt{PYTHONPATH} is set correctly each time you log in.
+
+\section{Configuration}
+You should copy the contents of the file \texttt{pyrdm.ini.example} to a new file called \texttt{pyrdm.ini} and save it in the \texttt{/home/your\_username/.config} directory. If this directory does not exist, please create it first using
+
+  \texttt{mkdir /home/your\_username/.config}
+
+The contents of the new file \texttt{pyrdm.ini} should then be modified as per the guidance in the following subsections.
+
+\subsection{GitHub repository}
+The URL (including the \texttt{http://} prefix) and the name of the GitHub repository which hosts the scientific software should be provided under the \texttt{github} section of the configuration file.
+
+\subsection{Figshare authentication}\label{sect:authentication}
+PyRDM requires a set of authentication details in order to publish and modify files using your Figshare account. You will need to login and use the Figshare web interface to generate these authentication details, after which you should paste them into the \texttt{figshare} section of the configuration file.
+
+\begin{enumerate}
+  \item Go to \texttt{http://figshare.com/account/applications}
+  \item Click \texttt{Create a new application}
+  \item Fill in the application details as per Figure \ref{fig:application_details}
+  \item Ensure that the application has read and write access to your Drafts, Private and Public articles, as per Figure \ref{fig:permissions}
+  \item Click \texttt{Save changes}. PyRDM should appear in your list of applications which can access your account.
+  \item Click \texttt{View} next to PyRDM and then click the \texttt{Access codes} tab to see the authentication details. The four fields should be pasted into the \texttt{pyrdm.ini} configuration file.
+\end{enumerate}
+
+\textbf{Note:} If you are publishing through a group account, you will need to ask the account's administrator for the authentication details.
+
+\begin{figure}
+  \centering
+  \includegraphics[width=1\columnwidth]{images/application_details.png}
+  \caption{The application details for PyRDM.}
+  \label{fig:application_details}
+\end{figure}
+
+\begin{figure}
+  \centering
+  \includegraphics[width=1\columnwidth]{images/permissions.png}
+  \caption{The set of permissions required by PyRDM.}
+  \label{fig:permissions}
+\end{figure}
+
+\section{Testing}
+PyRDM comes with a suite of unit tests which verify the correctness of its functionality. It is recommended that you run these unit tests before using PyRDM by executing:
+
+  \texttt{make unittest}
+  
+on the command line. Many of these tests require access to a Figshare accont, so please ensure that the \texttt{pyrdm.ini} setup file contains valid Figshare authentication tokens.
 
 \chapter{Publishing}
-
-\section{Figshare authentication}\label{sect:authentication}
-Figshare requires authentication keys in order to publish and modify files on the Figshare servers. If you are publishing through a group account, you will need to ask the account's administrator for the authentication details.
 
 \section{Publishing software}
 The publication of software is handled by the \texttt{publish\_software} method in the Publication class. This requires:

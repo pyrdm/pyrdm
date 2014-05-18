@@ -218,7 +218,7 @@ class TestLog(unittest.TestCase):
    """ Unit test suite for PyRDM's Figshare module. """
 
    def setUp(self):
-      # NOTE: This requires the user to have their Figshare authentication details in the file "/home/<user_name>/pyrdm.config".
+      # NOTE: This requires the user to have their Figshare authentication details in the file "/home/<user_name>/.config/pyrdm.ini".
       from pyrdm.publisher import Publisher
       self.publisher = Publisher(service="figshare")
       self.figshare = Figshare(client_key = self.publisher.config.get("figshare", "client_key"), client_secret = self.publisher.config.get("figshare", "client_secret"),

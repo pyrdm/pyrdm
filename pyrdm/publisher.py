@@ -82,6 +82,8 @@ class Publisher:
          raise NotImplementedError
 
    def get_authors_list(self, local_repo_location):
+      """ If an AUTHORS file exists in a given Git repository's base directory, then read it and
+      match any Figshare author IDs using a regular expression. Return all author IDs in a single list. """
       repo = git.Repo(local_repo_location)
       author_ids = []
       try:
