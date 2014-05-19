@@ -84,7 +84,7 @@ You should copy the contents of the file \texttt{pyrdm.ini.example} to a new fil
 The contents of the new file \texttt{pyrdm.ini} should then be modified as per the guidance in the following subsections.
 
 \subsection{GitHub repository}
-The URL (including the \texttt{http://} prefix) and the name of the GitHub repository which hosts the scientific software should be provided under the \texttt{github} section of the configuration file.
+PyRDM needs to know the URL (including the \texttt{http://} or \texttt{https://} prefix) and the name of the GitHub repository which hosts the scientific software that you wish to publish. PyRDM uses this information to download the software's source code and then upload it to Figshare. You will need to provide this information under the \texttt{github} section of the configuration file.
 
 \subsection{Figshare authentication}\label{sect:authentication}
 PyRDM requires a set of authentication details in order to publish and modify files using your Figshare account. You will need to login and use the Figshare web interface to generate these authentication details, after which you should paste them into the \texttt{figshare} section of the configuration file.
@@ -119,7 +119,7 @@ PyRDM comes with a suite of unit tests which verify the correctness of its funct
 
   \texttt{make unittest}
   
-on the command line. Many of these tests require access to a Figshare accont, so please ensure that the \texttt{pyrdm.ini} setup file contains valid Figshare authentication tokens.
+on the command line. Many of these tests require access to a Figshare account, so please ensure that the \texttt{pyrdm.ini} setup file contains valid Figshare authentication tokens.
 
 \chapter{Publishing}
 
@@ -156,5 +156,7 @@ The publication of software is handled by the \texttt{publish\_software} method 
 
 \subsection{MD5 cross-checks}
 When a data file is published, the file's MD5 checksum is stored in a corresponding checksum file. The next time the user tries to publish the file, its MD5 checksum is recomputed and compared against the MD5 checksum stored in its corresponding MD5 file. If the two MD5 checksums are different (or the checksum file does not exist), the file is uploaded to the Figshare server and the checksum file is updated with the new checksum. If the two checksums are the same, the file is unmodified and is not re-uploaded. This can help prevent unnecessary bandwidth usage and is particularly useful when you have large data files which are not frequently modified.
+
+\chapter{Application}
 
 \end{document}
