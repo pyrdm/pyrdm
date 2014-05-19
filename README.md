@@ -18,7 +18,7 @@
 PyRDM
 =====
 
-PyRDM is a Python program for research data management (RDM). It enables the citation of scientific software hosted by GitHub and associated input and output data files.
+PyRDM is a Python program for research data management (RDM). It facilitates the automated publication of scientific software and associated input and output data.
 
 Dependencies
 ------------
@@ -27,3 +27,8 @@ PyRDM depends on:
 
 * [GitPython](https://pypi.python.org/pypi/GitPython/)
 * [requests-oauthlib](https://github.com/requests/requests-oauthlib)
+
+Documentation
+-------------
+
+The user manual can be built by typing `make manual` at the command line, assuming that the current working directory is the PyRDM base directory (i.e. the same directory that this Makefile is in).
