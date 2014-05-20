@@ -71,7 +71,7 @@ class Publisher:
       if(self.service == "figshare"):
          results = self.figshare.search(keyword, tag=sha)
 
-         if(results["count"] >= 1):
+         if(len(results["items"]) != 0):
             print "Software %s has already been published (with SHA-1 %s)." % (software_name, sha)
             article_id = results["items"][-1]["article_id"]
             
