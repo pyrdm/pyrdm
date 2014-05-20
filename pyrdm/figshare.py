@@ -58,6 +58,8 @@ class Figshare:
       headers = {'content-type':'application/json'}
       response = self.client.post('http://api.figshare.com/v1/my_data/articles', auth=self.oauth,
                               data=json.dumps(body), headers=headers)
+      response.raise_for_status()
+      
       results = json.loads(response.content)
       return results
 

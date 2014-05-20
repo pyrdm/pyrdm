@@ -31,7 +31,7 @@ sys.path.insert(0, pyrdm_path)
 
 from pyrdm.publisher import Publisher
 
-class PyRDM:
+class FluidityPublish:
 
    def __init__(self, options_file):
       self.options_file = options_file
@@ -75,7 +75,8 @@ class PyRDM:
       while True:
          line = stat.readline()
          if(line == ""):
-            raise Exception("Unable to read .stat file header")
+            print "Unable to read .stat file header"
+            return
          xml = xml + line
          if(re.search(header_re, line)):
             break
@@ -102,8 +103,15 @@ class PyRDM:
       if(libspud.have_option("/publish/software/article_id")):
          if(libspud.get_option("/publish/software/article_id") != self.publisher.find_software("Fluidity", sha_in_statfile)):
             print "The version of Fluidity that created this output data is not the same as the published version of Fluidity."
-            print "Please re-publish the software with the correct version (or re-run the simulation with an updated version) and try again."
-            #sys.exit(1) #TODO: Re-enable this later.
+            while True:
+               response = raw_input("Are you sure you want to continue? (Y/N)\n")
+               if(response == "y" or response == "Y"):
+                  break
+               elif(response == "n" or response == "N"):
+                  print "Please re-publish the software with the correct version (or re-run the simulation with an updated version) and try again."
+                  sys.exit(1)
+               else:
+                  continue # Keep iterating until the user provides a valid response to the question.
 
       # Append the provenance data
       provenance_data = {}
@@ -143,8 +151,12 @@ class PyRDM:
 
       return
 
-   def publish(self, data_type, version=None):
+   def publish(self, data_type, version=None, private=False):
       libspud.load_options(self.options_file)
+      
+      if(not libspud.have_option("/publish")):
+         print "Error: Publishing has not been enabled in the simulation's configuration file. Please enable it and try again."
+         sys.exit(1)
 
       service = libspud.get_option("/publish/service")
       self.publisher = Publisher(service=service)
@@ -168,7 +180,7 @@ class PyRDM:
          options_path = "/publish/software/"
          if(article_id is None):
             # Software is not published already, so publish it now.            
-            publication_details = self.publisher.publish_software("Fluidity", sha, local_repo_location=sys.argv[-1])
+            publication_details = self.publisher.publish_software("Fluidity", sha, local_repo_location=sys.argv[-1], private=private)
             try:
                libspud.set_option(options_path + "/article_id", str(publication_details["article_id"]))
                libspud.set_option(options_path + "/doi", str(publication_details["doi"]))
@@ -226,7 +238,7 @@ class PyRDM:
          elif(data_type == "o"):
             title = "Output data files for simulation: %s" % libspud.get_option("/simulation_name")
          parameters = {"title":title, "description":"", "files":files}
-         publication_details = self.publisher.publish_data(parameters, article_id)
+         publication_details = self.publisher.publish_data(parameters, article_id=article_id, private=private)
 
          # Write the article_id and DOI to the options file for next time.
          if(article_id is None):
@@ -250,6 +262,7 @@ if(__name__ == "__main__"):
    parser.add_option("-i", "--input", help="Publish the input data files whose paths are specified in the options file.", action="store_true", default=False)
    parser.add_option("-o", "--output", help="Publish the output data files whose paths are specified in the options file.", action="store_true", default=False)
    parser.add_option("-v", "--version", help="Publish a specific version of the Fluidity source code identified by a given SHA-1 hash. Must be used in conjunction with the -s option.", action="store", type="string", default=None, metavar="HASH")
+   parser.add_option("-p", "--private", help="Publish the software or data, but keep it private. Note that any DOI generated will not be valid until the publication is made public.", action="store_true", default=False)
    (options, args) = parser.parse_args()
    
    # The data the user wants to publish (software, input data, or output data)
@@ -264,6 +277,6 @@ if(__name__ == "__main__"):
       parser.print_help()
       sys.exit(1)
       
-   rdm = PyRDM(options_file = sys.argv[-1])
-   rdm.publish(data_type = data_type, version = options.version)
+   rdm = FluidityPublish(options_file = sys.argv[-1])
+   rdm.publish(data_type = data_type, version = options.version, private=options.private)
    

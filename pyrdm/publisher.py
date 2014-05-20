@@ -71,7 +71,7 @@ class Publisher:
       if(self.service == "figshare"):
          results = self.figshare.search(keyword, tag=sha)
 
-         if(results["count"] >= 1):
+         if(len(results["items"]) != 0):
             print "Software %s has already been published (with SHA-1 %s)." % (software_name, sha)
             article_id = results["items"][-1]["article_id"]
             
@@ -107,7 +107,7 @@ class Publisher:
          print "Could not open AUTHORS file. Does it exist? Check read permissions?"
          return None
 
-   def publish_software(self, software_name, sha, local_repo_location):
+   def publish_software(self, software_name, sha, local_repo_location, private=False):
       """ Publishes the software in the current repository to Figshare. """
 
       # Download the .zip file from GitHub...
@@ -121,11 +121,11 @@ class Publisher:
       print "Download complete."
 
       # ...then upload it to Figshare.
-      print "Creating article on Figshare for software..."
+      print "Creating code repository on Figshare for software..."
       title='%s (%s)' % (software_name, sha)
       description='%s (Version %s)' % (software_name, sha)
       publication_details = self.figshare.create_article(title=title, description=description, defined_type="code", status="Drafts")
-      print "Article created with DOI: %s" % publication_details["doi"]
+      print "Code repository created with ID: %s and DOI: %s" % (str(publication_details["article_id"]), publication_details["doi"])
       
       print "Adding tags..."
       self.figshare.add_tag(article_id=publication_details["article_id"], tag_name=sha)
@@ -135,7 +135,7 @@ class Publisher:
       self.figshare.add_file(article_id=publication_details["article_id"], file_path=file_name)
       print "Software uploaded to Figshare."
 
-      print "Adding all authors (with Figshare IDs) to the software article..."
+      print "Adding all authors (with Figshare IDs) to the code..."
       author_ids = self.get_authors_list(local_repo_location)
       print "List of author IDs: ", author_ids
       if(author_ids is not None):
@@ -143,14 +143,15 @@ class Publisher:
             self.figshare.add_author(publication_details["article_id"], author_id)
       print "All authors (with Figshare IDs) added."
 
-      # TODO: Uncomment this when we've finished testing.
-      #print "Making the code public..."
-      #self.figshare.make_public(article_id=publication_details["article_id"])
-      #print "The code has been made public."
+      # If we are not keeping the code private, then make it public.
+      if(not private):
+         print "Making the code public..."
+         self.figshare.make_public(article_id=publication_details["article_id"])
+         print "The code has been made public."
 
       return publication_details
       
-   def publish_data(self, parameters, article_id=None):
+   def publish_data(self, parameters, article_id=None, private=False):
       """ Create a new dataset on the Figshare server. 
       Returns a dictionary of details about the new dataset once created. """
          
@@ -160,14 +161,12 @@ class Publisher:
             print "Creating dataset on Figshare for data..."
             # NOTE: The defined_type needs to be a 'fileset' to allow multiple files to be uploaded separately.
             publication_details = self.figshare.create_article(title=parameters["title"], description=parameters["description"], defined_type="fileset", status="Drafts")
-            print "Dataset created with DOI: %s" % publication_details["doi"]
-            print publication_details
+            print "Dataset created with ID: %s and DOI: %s" % (str(publication_details["article_id"]), publication_details["doi"])
 
             article_id = publication_details["article_id"]
          elif(self.service == "zenodo"):
             print "Creating dataset on Zenodo for data..."
             publication_details = self.zenodo.create_deposition(title=parameters["title"], description=parameters["description"], upload_type="dataset", state="inprogress")
-            print publication_details
             print "Dataset created with DOI: %s" % publication_details["doi"]
 
             article_id = publication_details["id"]
@@ -196,10 +195,11 @@ class Publisher:
             self.figshare.add_file(article_id=article_id, file_path=f)
          self.write_checksum(f)
 
-      # TODO: Uncomment this when we've finished testing.
-      #print "Making the data public..."
-      #self.figshare.make_public(article_id=article_id)
-      #print "The data has been made public."
+      # If we are not keeping the data private, then make it public.
+      if(not private):
+         print "Making the data public..."
+         self.figshare.make_public(article_id=article_id)
+         print "The data has been made public."
 
       return publication_details
       
