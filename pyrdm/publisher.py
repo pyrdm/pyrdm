@@ -66,7 +66,7 @@ class Publisher:
       """ Checks if the software has already been published. If so, it returns the DOI.
       Otherwise it returns None. """
       
-      keyword = "%s (%s)" % (software_name, sha)
+      keyword = "%s" % (software_name)
       
       if(self.service == "figshare"):
          results = self.figshare.search(keyword, tag=sha)

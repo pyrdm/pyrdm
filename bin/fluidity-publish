@@ -39,7 +39,7 @@ class FluidityPublish:
 
    def get_fluidity_version(self):
       """ Return the Fluidity version (in the form of the SHA-1 hash of the HEAD of its Git repository). """
-      print "Reading SHA-1 hash..."
+      print "Reading SHA-1 hash...\n"
       # FIXME: Here we are assuming that the Fluidity binary is in the same Git repository as the options file. Is there a better way of doing this?
       try:
          repo = git.Repo(sys.argv[-1])
@@ -56,9 +56,9 @@ class FluidityPublish:
          sha = l.split()[-1].replace("\"", "")
          f.close()
       except:
-         print "Unable to determine the Fluidity version from the file 'version.h'. Fluidity might not have been compiled yet.\n"
+         print "Unable to determine the Fluidity version from the file 'version.h'. Fluidity might not have been compiled yet."
          while True:
-            response = raw_input("Do you want to assume that the version of Fluidity you want to publish is the same as the local Git repository's HEAD? (Y/N)\n"
+            response = raw_input("Do you want to assume that the version of Fluidity you want to publish is the same as the local Git repository's HEAD? (Y/N)\n")
             if(response == "y" or response == "Y"):
                sha = repo.head.commit.hexsha
                return sha
