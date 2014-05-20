@@ -20,6 +20,15 @@ PyRDM
 
 PyRDM is a Python program for research data management (RDM). It facilitates the automated publication of scientific software and associated input and output data.
 
+Quick Start
+-----------
+
+In order to use PyRDM you must build as well as configure the package. Build the package carrying out the following steps:
+
+1. Install GitPython by ```sudo pip install gitpython```
+2. Install requests-oauthlib by ```sudo pip install requests requests_oauthlib```
+3. ```sudo make install
+
 Dependencies
 ------------
 
