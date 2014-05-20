@@ -27,6 +27,7 @@ PyRDM depends on:
 
 * [GitPython](https://pypi.python.org/pypi/GitPython/)
 * [requests-oauthlib](https://github.com/requests/requests-oauthlib)
+* pdflatex (to build the user manual)
 
 Documentation
 -------------
