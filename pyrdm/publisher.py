@@ -107,7 +107,7 @@ class Publisher:
          print "Could not open AUTHORS file. Does it exist? Check read permissions?"
          return None
 
-   def publish_software(self, software_name, sha, local_repo_location, keep_private=False):
+   def publish_software(self, software_name, sha, local_repo_location, private=False):
       """ Publishes the software in the current repository to Figshare. """
 
       # Download the .zip file from GitHub...
@@ -144,14 +144,14 @@ class Publisher:
       print "All authors (with Figshare IDs) added."
 
       # If we are not keeping the code private, then make it public.
-      if(not keep_private):
+      if(not private):
          print "Making the code public..."
          self.figshare.make_public(article_id=publication_details["article_id"])
          print "The code has been made public."
 
       return publication_details
       
-   def publish_data(self, parameters, article_id=None, keep_private=False):
+   def publish_data(self, parameters, article_id=None, private=False):
       """ Create a new dataset on the Figshare server. 
       Returns a dictionary of details about the new dataset once created. """
          
@@ -196,7 +196,7 @@ class Publisher:
          self.write_checksum(f)
 
       # If we are not keeping the data private, then make it public.
-      if(not keep_private):
+      if(not private):
          print "Making the data public..."
          self.figshare.make_public(article_id=article_id)
          print "The data has been made public."
