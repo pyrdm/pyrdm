@@ -75,7 +75,8 @@ class FluidityPublish:
       while True:
          line = stat.readline()
          if(line == ""):
-            raise Exception("Unable to read .stat file header")
+            print "Unable to read .stat file header"
+            return
          xml = xml + line
          if(re.search(header_re, line)):
             break
@@ -102,8 +103,15 @@ class FluidityPublish:
       if(libspud.have_option("/publish/software/article_id")):
          if(libspud.get_option("/publish/software/article_id") != self.publisher.find_software("Fluidity", sha_in_statfile)):
             print "The version of Fluidity that created this output data is not the same as the published version of Fluidity."
-            print "Please re-publish the software with the correct version (or re-run the simulation with an updated version) and try again."
-            #sys.exit(1) #TODO: Re-enable this later.
+            while True:
+               response = raw_input("Are you sure you want to continue? (Y/N)\n")
+               if(response == "y" or response == "Y"):
+                  break
+               elif(response == "n" or response == "N"):
+                  print "Please re-publish the software with the correct version (or re-run the simulation with an updated version) and try again."
+                  sys.exit(1)
+               else:
+                  continue # Keep iterating until the user provides a valid response to the question.
 
       # Append the provenance data
       provenance_data = {}
@@ -143,7 +151,7 @@ class FluidityPublish:
 
       return
 
-   def publish(self, data_type, version=None, keep_private=False):
+   def publish(self, data_type, version=None, private=False):
       libspud.load_options(self.options_file)
 
       service = libspud.get_option("/publish/service")
@@ -168,7 +176,7 @@ class FluidityPublish:
          options_path = "/publish/software/"
          if(article_id is None):
             # Software is not published already, so publish it now.            
-            publication_details = self.publisher.publish_software("Fluidity", sha, local_repo_location=sys.argv[-1], keep_private=keep_private)
+            publication_details = self.publisher.publish_software("Fluidity", sha, local_repo_location=sys.argv[-1], private=private)
             try:
                libspud.set_option(options_path + "/article_id", str(publication_details["article_id"]))
                libspud.set_option(options_path + "/doi", str(publication_details["doi"]))
@@ -226,7 +234,7 @@ class FluidityPublish:
          elif(data_type == "o"):
             title = "Output data files for simulation: %s" % libspud.get_option("/simulation_name")
          parameters = {"title":title, "description":"", "files":files}
-         publication_details = self.publisher.publish_data(parameters, article_id=article_id, keep_private=keep_private)
+         publication_details = self.publisher.publish_data(parameters, article_id=article_id, private=private)
 
          # Write the article_id and DOI to the options file for next time.
          if(article_id is None):
