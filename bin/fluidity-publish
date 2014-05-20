@@ -38,12 +38,13 @@ class FluidityPublish:
       return
 
    def get_fluidity_version(self):
+      """ Return the Fluidity version (in the form of the SHA-1 hash of the HEAD of its Git repository). """
       print "Reading SHA-1 hash..."
       # FIXME: Here we are assuming that the Fluidity binary is in the same Git repository as the options file. Is there a better way of doing this?
       try:
          repo = git.Repo(sys.argv[-1])
       except:
-         print "Could not open the local Git repository. Are you sure that the Fluidity options file is inside a Git repository? Check read permissions?"
+         print "Could not open the local Git repository. Are you sure that the Fluidity options file is inside a Git repository? Check read permissions?\n"
          return None
          
       # Try to find the version information for the Fluidity binary. This can be found in the version.h file which is written at compile-time.
@@ -55,14 +56,14 @@ class FluidityPublish:
          sha = l.split()[-1].replace("\"", "")
          f.close()
       except:
-         print "Unable to determine the Fluidity version from the file 'version.h'. Fluidity might not have been compiled yet."
+         print "Unable to determine the Fluidity version from the file 'version.h'. Fluidity might not have been compiled yet.\n"
          while True:
             response = raw_input("Do you want to assume that the version of Fluidity you want to publish is the same as the local Git repository's HEAD? (Y/N)\n"
             if(response == "y" or response == "Y"):
                sha = repo.head.commit.hexsha
                return sha
             elif(response == "n" or response == "N"):
-               print "Please compile Fluidity and try again, or supply a version (in the form of a SHA-1 hash) using the -v option at the command line."
+               print "Please compile Fluidity and try again, or supply a version (in the form of a SHA-1 hash) using the -v option at the command line.\n"
                sys.exit(1)
             else:
                continue # Keep iterating until the user provides a valid response to the question.
@@ -71,12 +72,18 @@ class FluidityPublish:
       return sha
 
    def write_provenance_data(self):
+      """ Write the DOIs of the software and input data publications to the .stat file. """
       # Get the path to the stat file.
       simulation_name = libspud.get_option("/simulation_name")
       stat_path = os.path.dirname(sys.argv[-1]) + "/" + simulation_name + ".stat"
 
       # The following code is based on fluidity_tools.py:
-      stat = open(stat_path, "r")
+      try:
+         stat = open(stat_path, "r")
+      except IOError:
+         print "Unable to open the stat file for reading. Perhaps the simulation has not been run yet? Check read permissions?\n"
+         return
+         
       header_re = re.compile(r"</header>")
 
       # Get the header.
@@ -111,13 +118,13 @@ class FluidityPublish:
             break
       if(libspud.have_option("/publish/software/article_id")):
          if(libspud.get_option("/publish/software/article_id") != self.publisher.find_software("Fluidity", sha_in_statfile)):
-            print "The version of Fluidity that created this output data is not the same as the published version of Fluidity."
+            print "The version of Fluidity that created this output data is not the same as the published version of Fluidity.\n"
             while True:
                response = raw_input("Are you sure you want to continue? (Y/N)\n")
                if(response == "y" or response == "Y"):
                   break
                elif(response == "n" or response == "N"):
-                  print "Please re-publish the software with the correct version (or re-run the simulation with an updated version) and try again."
+                  print "Please re-publish the software with the correct version (or re-run the simulation with an updated version) and try again.\n"
                   sys.exit(1)
                else:
                   continue # Keep iterating until the user provides a valid response to the question.
@@ -154,17 +161,23 @@ class FluidityPublish:
       # Write the changes to the stat file.
       header = xml.toprettyxml(newl="", indent="")
       header = header.replace("<?xml version=\"1.0\" ?>", "")
-      stat = open(stat_path, "w")
-      stat.write(header + "\n" + body)
-      stat.close()
+      
+      try:
+         stat = open(stat_path, "w")
+         stat.write(header + "\n" + body)
+         stat.close()
+      except IOError:
+         print "Unable to write to the stat file. Check permissions?\n"
+         return
 
       return
 
    def publish(self, data_type, version=None, private=False):
+      """ Publish the Fluidity source code or simulation data. """
       libspud.load_options(self.options_file)
       
       if(not libspud.have_option("/publish")):
-         print "Error: Publishing has not been enabled in the simulation's configuration file. Please enable it and try again."
+         print "Error: Publishing has not been enabled in the simulation's configuration file. Please enable it and try again.\n"
          sys.exit(1)
 
       service = libspud.get_option("/publish/service")
@@ -177,7 +190,7 @@ class FluidityPublish:
          if(version is None):
             sha = self.get_fluidity_version()
             if(sha is None):
-               print "Could not obtain the version (SHA-1 hash) of the Fluidity binary. If it is not in the 'version.h' file, then please use the -v option to specify it."
+               print "Could not obtain the version (SHA-1 hash) of the Fluidity binary. If it is not in the 'version.h' file, then please use the -v option to specify it.\n"
                sys.exit(1)
          else:
             print "Using the software version provided: %s" % version
@@ -196,7 +209,7 @@ class FluidityPublish:
             except:
                pass # Ignore any SPUD_NEW_KEY_WARNING warnings
          else:
-            print "This version of Fluidity has already been published. Re-using the article_id (%s) and DOI (%s)" % (str(article_id), str(doi))
+            print "This version of Fluidity has already been published. Re-using the article_id (%s) and DOI (%s)...\n" % (str(article_id), str(doi))
             try:
                libspud.set_option(options_path + "/article_id", str(article_id))
                if(doi is not None):
