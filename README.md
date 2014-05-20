@@ -27,7 +27,12 @@ In order to use PyRDM you must build as well as configure the package. Build the
 
 1. Install GitPython by ```sudo pip install gitpython```
 2. Install requests-oauthlib by ```sudo pip install requests requests_oauthlib```
-3. ```sudo make install
+3. Make a clone of this repository by ```git clone https://YOUR_BB_USERNAME@bitbucket.org/ctjacobs/pyrdm.git pyrdm```
+4. Build the package by ```cd pyrdm; sudo make install```
+
+The configuration procedure ties the PyRDM package to a particular GidHub repository and your figshare account. The GitHub repository should contains the fluidity code that you use for simulations and need to publish with your data as a file set. To configure PyRDM carry out the following steps:
+
+1. 
 
 Dependencies
 ------------
