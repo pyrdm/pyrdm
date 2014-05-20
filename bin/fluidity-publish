@@ -153,6 +153,10 @@ class FluidityPublish:
 
    def publish(self, data_type, version=None, private=False):
       libspud.load_options(self.options_file)
+      
+      if(not libspud.have_option("/publish")):
+         print "Error: Publishing has not been enabled in the simulation's configuration file. Please enable it and try again."
+         sys.exit(1)
 
       service = libspud.get_option("/publish/service")
       self.publisher = Publisher(service=service)
