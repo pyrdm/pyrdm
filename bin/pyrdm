@@ -156,7 +156,7 @@ class PyRDM:
          if(version is None):
             sha = self.get_fluidity_version()
             if(sha is None):
-               print "Could not obtain the version (SHA-1 hash) of the Fluidity binary. If it is not in the version.h file, then please use PyRDM's -v option to specify it."
+               print "Could not obtain the version (SHA-1 hash) of the Fluidity binary. If it is not in the version.h file, then please use the -v option to specify it."
                sys.exit(1)
          else:
             print "Using the software version provided: %s" % version
