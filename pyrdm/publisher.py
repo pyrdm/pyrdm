@@ -74,9 +74,17 @@ class Publisher:
          if(results["count"] >= 1):
             print "Software %s has already been published (with SHA-1 %s)." % (software_name, sha)
             article_id = results["items"][-1]["article_id"]
-            return article_id # TODO: Also return the DOI.
+            
+            # Try to find the DOI as well.
+            # FIXME: This try-except block might not be necessary if we are always searching public articles.
+            try:
+               doi = results["items"][-1]["doi"]
+            except:
+               print "DOI not found."
+               doi = None
+            return article_id, doi
          else:
-            return None
+            return None, None
       else:
          # TODO: Add in Zenodo searching.
          raise NotImplementedError

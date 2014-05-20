@@ -40,13 +40,24 @@ class PyRDM:
    def get_fluidity_version(self):
       print "Reading SHA-1 hash..."
       # FIXME: Here we are assuming that the Fluidity binary is in the same Git repository as the options file. Is there a better way of doing this?
-      repo = git.Repo(sys.argv[-1])
-      f = open(repo.working_dir + "/include/version.h", "r")
-      f.readline()
-      f.readline()
-      l = f.readline()
+      try:
+         repo = git.Repo(sys.argv[-1])
+      except:
+         print "Could not open the local Git repository. Are you sure that the Fluidity options file is inside a Git repository? Check read permissions?"
+         return None
+         
+      # Try to find the version information for the Fluidity binary. This can be found in the version.h file which is written at compile-time.
+      try:
+         f = open(repo.working_dir + "/include/version.h", "r")
+         f.readline()
+         f.readline()
+         l = f.readline()
+         f.close()
+      except IOError:
+         print "Unable to open and/or read version.h. Check permissions?"
+         return None
+         
       sha = l.split()[-1].replace("\"", "")
-      f.close()
       print "SHA-1 hash: ", sha
       return sha
 
@@ -144,13 +155,15 @@ class PyRDM:
          # Get the SHA-1 hash of the software version.
          if(version is None):
             sha = self.get_fluidity_version()
+            if(sha is None):
+               print "Could not obtain the version (SHA-1 hash) of the Fluidity binary. If it is not in the version.h file, then please use PyRDM's -v option to specify it."
+               sys.exit(1)
          else:
             print "Using the software version provided: %s" % version
             sha = version
 
          # Search for the software, in case it has already been published.
-         article_id = self.publisher.find_software("Fluidity", sha)
-         print article_id
+         article_id, doi = self.publisher.find_software("Fluidity", sha)
          
          options_path = "/publish/software/"
          if(article_id is None):
@@ -158,15 +171,18 @@ class PyRDM:
             publication_details = self.publisher.publish_software("Fluidity", sha, local_repo_location=sys.argv[-1])
             try:
                libspud.set_option(options_path + "/article_id", str(publication_details["article_id"]))
+               libspud.set_option(options_path + "/doi", str(publication_details["doi"]))
             except:
                pass # Ignore any SPUD_NEW_KEY_WARNING warnings
-            #libspud.set_option("/publish/software/doi", str(doi)) # FIXME: Uncomment this once the article status is set to 'public'.
          else:
+            print "This version of Fluidity has already been published. Re-using the article_id (%s) and DOI (%s)" % (str(article_id), str(doi))
             try:
                libspud.set_option(options_path + "/article_id", str(article_id))
+               if(doi is not None):
+                  libspud.set_option(options_path + "/doi", str(doi))
             except:
                pass # Ignore any SPUD_NEW_KEY_WARNING warnings
-            #libspud.set_option("/publish/software/doi", str(doi)) # FIXME: Uncomment this once the article status is set to 'public'.
+               
          libspud.write_options(self.options_file)
             
       else:
@@ -181,6 +197,7 @@ class PyRDM:
             
          if(libspud.have_option(options_path + "/article_id")):
             article_id = libspud.get_option(options_path + "/article_id")
+            print "Re-using fileset with article_id %s..." % str(article_id)
          else:
             article_id = None
 
