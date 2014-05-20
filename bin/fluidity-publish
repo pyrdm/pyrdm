@@ -52,13 +52,22 @@ class FluidityPublish:
          f.readline()
          f.readline()
          l = f.readline()
+         sha = l.split()[-1].replace("\"", "")
          f.close()
-      except IOError:
-         print "Unable to open and/or read version.h. Check permissions?"
-         return None
+      except:
+         print "Unable to determine the Fluidity version from the file 'version.h'. Fluidity might not have been compiled yet."
+         while True:
+            response = raw_input("Do you want to assume that the version of Fluidity you want to publish is the same as the local Git repository's HEAD? (Y/N)\n"
+            if(response == "y" or response == "Y"):
+               sha = repo.head.commit.hexsha
+               return sha
+            elif(response == "n" or response == "N"):
+               print "Please compile Fluidity and try again, or supply a version (in the form of a SHA-1 hash) using the -v option at the command line."
+               sys.exit(1)
+            else:
+               continue # Keep iterating until the user provides a valid response to the question.
          
-      sha = l.split()[-1].replace("\"", "")
-      print "SHA-1 hash: ", sha
+      print "SHA-1 hash: %s" % sha
       return sha
 
    def write_provenance_data(self):
@@ -75,7 +84,7 @@ class FluidityPublish:
       while True:
          line = stat.readline()
          if(line == ""):
-            print "Unable to read .stat file header"
+            print "Unable to read .stat file header."
             return
          xml = xml + line
          if(re.search(header_re, line)):
@@ -168,7 +177,7 @@ class FluidityPublish:
          if(version is None):
             sha = self.get_fluidity_version()
             if(sha is None):
-               print "Could not obtain the version (SHA-1 hash) of the Fluidity binary. If it is not in the version.h file, then please use the -v option to specify it."
+               print "Could not obtain the version (SHA-1 hash) of the Fluidity binary. If it is not in the 'version.h' file, then please use the -v option to specify it."
                sys.exit(1)
          else:
             print "Using the software version provided: %s" % version
