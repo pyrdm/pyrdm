@@ -29,7 +29,7 @@
 \vspace*{3cm}
 \huge{PyRDM User Manual}\\\vspace*{2cm}
 \includegraphics[width=0.4\columnwidth]{images/rdm.png}\\\vspace*{2cm}
-\LARGE{Version 0.1a-dev}
+\LARGE{Version 0.1b}
 
 \end{center}
 \end{titlepage}
@@ -159,6 +159,16 @@ The publication of software is handled by the \texttt{publish\_software} method 
 \subsection{MD5 cross-checks}
 When a data file is published, the file's MD5 checksum is stored in a corresponding checksum file. The next time the user tries to publish the file, its MD5 checksum is recomputed and compared against the MD5 checksum stored in its corresponding MD5 file. If the two MD5 checksums are different (or the checksum file does not exist), the file is uploaded to the Figshare server and the checksum file is updated with the new checksum. If the two checksums are the same, the file is unmodified and is not re-uploaded. This can help prevent unnecessary bandwidth usage and is particularly useful when you have large data files which are not frequently modified.
 
-\chapter{Application}
+\chapter{Application: Fluidity-Publish}
+Fluidity-Publish is a Python program which uses the PyRDM library. It is designed specifically for the Fluidity computational fluid dynamics code. Since every piece of scientific software can operate in different ways, the amount of automation offered by PyRDM is limited. For example,  publishing the source code and any simulation 
+
+At the command-line
+
+\begin{itemize}
+   \item -s : Publish the Fluidity source code. This can be used in conjunction with the -v option to explicitly choose the version of Fluidity that you want to publish.
+   \item -i : Publish the input data files whose paths are specified in the options file.
+   \item -o : Publish the output data files whose paths are specified in the options file.
+   \item -p : Publish the software or data, but keep it private. Note that any DOI generated will not be valid until the publication is made public.
+\end{itemize}
 
 \end{document}
