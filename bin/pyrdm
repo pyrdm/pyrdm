@@ -227,11 +227,12 @@ class PyRDM:
          
 if(__name__ == "__main__"):
    # Parse the command line arguments
-   parser = optparse.OptionParser()
-   parser.add_option("-s", "--software", action="store_true", default=False)
-   parser.add_option("-i", "--input", action="store_true", default=False)
-   parser.add_option("-o", "--output", action="store_true", default=False)
-   parser.add_option("-v", "--version", action="store", type="string", default=None)
+   usage = "Usage: %prog [options] path_to_options_file"
+   parser = optparse.OptionParser(usage=usage)
+   parser.add_option("-s", "--software", help="Publish the Fluidity source code.", action="store_true", default=False)
+   parser.add_option("-i", "--input", help="Publish the input data files whose paths are specified in the options file.", action="store_true", default=False)
+   parser.add_option("-o", "--output", help="Publish the output data files whose paths are specified in the options file.", action="store_true", default=False)
+   parser.add_option("-v", "--version", help="Publish a specific version of the Fluidity source code identified by a given SHA-1 hash. Must be used in conjunction with the -s option.", action="store", type="string", default=None, metavar="HASH")
    (options, args) = parser.parse_args()
    
    # The data the user wants to publish (software, input data, or output data)
@@ -242,7 +243,8 @@ if(__name__ == "__main__"):
    elif(options.output):
       data_type = "o"
    else:
-      print "No data type given."
+      print "You need to specify what you would like to publish: software, input data, or output data.\n"
+      parser.print_help()
       sys.exit(1)
       
    rdm = PyRDM(options_file = sys.argv[-1])
