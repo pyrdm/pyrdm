@@ -31,7 +31,7 @@ sys.path.insert(0, pyrdm_path)
 
 from pyrdm.publisher import Publisher
 
-class PyRDM:
+class FluidityPublish:
 
    def __init__(self, options_file):
       self.options_file = options_file
@@ -264,6 +264,6 @@ if(__name__ == "__main__"):
       parser.print_help()
       sys.exit(1)
       
-   rdm = PyRDM(options_file = sys.argv[-1])
+   rdm = FluidityPublish(options_file = sys.argv[-1])
    rdm.publish(data_type = data_type, version = options.version)
    
