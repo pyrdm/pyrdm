@@ -18,7 +18,7 @@
 PyRDM
 =====
 
-PyRDM is a Python program for research data management (RDM). It facilitates the automated publication of scientific software and associated input and output data.
+PyRDM is a Python module for research data management (RDM). It facilitates the automated publication of scientific software and associated input and output data.
 
 Dependencies
 ------------
