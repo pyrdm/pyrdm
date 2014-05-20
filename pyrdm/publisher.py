@@ -76,7 +76,7 @@ class Publisher:
             article_id = results["items"][-1]["article_id"]
             
             # Try to find the DOI as well.
-            # FIXME: This try-except block might not be necessary if we are always searching public articles.
+            # This try-except block might not be necessary if we are always searching public articles.
             try:
                doi = results["items"][-1]["doi"]
             except:
@@ -153,8 +153,6 @@ class Publisher:
    def publish_data(self, parameters, article_id=None):
       """ Create a new dataset on the Figshare server. 
       Returns a dictionary of details about the new dataset once created. """
-
-      # FIXME: Does Figshare prevent the creation of the same article (or dataset) twice? If not, we'll need to check for this here.
          
       print "Publishing data..."      
       if(article_id is None):

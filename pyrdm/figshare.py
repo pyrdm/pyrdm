@@ -85,7 +85,7 @@ class Figshare:
       results = json.loads(response.content)
       return results
 
-   def search(self, keyword, search_private=True, from_date=None, to_date=None, author=None, title=None, category=None, tag=None, page=None):
+   def search(self, keyword, search_private=False, from_date=None, to_date=None, author=None, title=None, category=None, tag=None, page=None):
       """ Searches public and private articles using a keyword. """
 
       if(search_private):
