@@ -123,8 +123,26 @@ class Publisher:
             return False
       return True
 
+   def check_upload(self, article_id, files):
+      """ Perform a sanity check on the file upload. """
+      if(self.is_uploaded(article_id=article_id, files=files)):
+         print "All files successfully uploaded."
+      else:
+         print "Not all files were successfully uploaded. Perhaps you ran out of space on the server?\n"
+         while True:
+            response = raw_input("Are you sure you want to continue? (Y/N)\n")
+            if(response == "y" or response == "Y"):
+               break
+            elif(response == "n" or response == "N"):
+               # Clean up and exit
+               self.figshare.delete_article(article_id)
+               sys.exit(1)
+            else:
+               continue
+      return
+
    def publish_software(self, software_name, sha, local_repo_location, private=False):
-      """ Publishes the software in the current repository to Figshare. """
+      """ Publishes the software in the current repository. """
 
       # Download the .zip file from GitHub...
       url = "%s/archive/%s.zip" % (self.config.get("github", "repository_url"), sha)
@@ -149,7 +167,7 @@ class Publisher:
 
       print "Uploading software to Figshare..."
       self.figshare.add_file(article_id=publication_details["article_id"], file_path=file_name)
-      print "Software uploaded to Figshare."
+      self.check_upload(article_id=publication_details["article_id"], files=[file_name])
 
       print "Adding all authors (with Figshare IDs) to the code..."
       author_ids = self.get_authors_list(local_repo_location)
@@ -212,13 +230,7 @@ class Publisher:
             self.figshare.add_file(article_id=article_id, file_path=f)
          self.write_checksum(f)
 
-      # Perform a sanity check on the file upload.
-      if(self.is_uploaded(article_id=article_id, files=modified_files)):
-         print "All files successfully uploaded to Figshare."
-      else:
-         print "Something went wrong in the file upload process. Perhaps you ran out of space on the Figshare server?"
-         # TODO: Delete the code repository too.
-         sys.exit(1)
+      self.check_upload(article_id=article_id, files=modified_files)
 
       # If we are not keeping the data private, then make it public.
       if(not private):
