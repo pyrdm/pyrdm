@@ -234,7 +234,7 @@ class TestLog(unittest.TestCase):
    """ Unit test suite for PyRDM's Publisher module. """
 
    def setUp(self):
-      self.publisher = Publisher(service="figshare") # NOTE: The service can be anything here - it doesn't even matter if the Figshare authentication details are correct or not.
+      self.publisher = Publisher(service="figshare")
       
       f = open("test_file.txt", "w")
       f.write("Hello World! This is a file for the MD5 functionality test.")
