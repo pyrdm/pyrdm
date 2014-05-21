@@ -259,7 +259,7 @@ class FluidityPublish:
             title = "Input data files for simulation: %s" % libspud.get_option("/simulation_name")
          elif(data_type == "o"):
             title = "Output data files for simulation: %s" % libspud.get_option("/simulation_name")
-         parameters = {"title":title, "description":"", "files":files}
+         parameters = {"title":title, "description":title, "files":files}
          publication_details = self.publisher.publish_data(parameters, article_id=article_id, private=private)
 
          # Write the article_id and DOI to the options file for next time.
