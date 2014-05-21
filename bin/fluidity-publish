@@ -40,7 +40,7 @@ class FluidityPublish:
    def get_fluidity_version(self):
       """ Return the Fluidity version (in the form of the SHA-1 hash of the HEAD of its Git repository). """
       print "Reading SHA-1 hash...\n"
-      # FIXME: Here we are assuming that the Fluidity binary is in the same Git repository as the options file. Is there a better way of doing this?
+      # NOTE: Here we are assuming that the Fluidity binary is in the same Git repository as the options file. Is there a better way of doing this?
       try:
          repo = git.Repo(sys.argv[-1])
       except:
