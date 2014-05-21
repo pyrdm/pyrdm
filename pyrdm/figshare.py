@@ -44,13 +44,14 @@ class Figshare:
       # to check that the authentication is successful.
       print "Testing Figshare authentication..."
       try:
-         response = self.client.get('http://api.figshare.com/v1/my_data/articles/%s' % str(article_id), auth=self.oauth)
+         response = self.client.get('http://api.figshare.com/v1/my_data/articles', auth=self.oauth)
+         print "* Server returned response %d" % response.status_code
          if(response.status_code != requests.codes.ok): # If the status is not "OK", then exit here.
             raise Exception("Could not authenticate with the Figshare server.")
          else:
-            print "...Authentication test successful."
+            print "Authentication test successful.\n"
       except:
-         print "Error: Could not authenticate with the Figshare server. Check Internet connection? Check Figshare authentication keys in ~/.config/pyrdm.ini ?"
+         print "Error: Could not authenticate with the Figshare server. Check Internet connection? Check Figshare authentication keys in ~/.config/pyrdm.ini ?\n"
          sys.exit(1)
 
       return
