@@ -39,6 +39,20 @@ class Figshare:
 
       # Set up a new session.
       self.oauth, self.client = self.create_session()
+
+      # Before doing any creating/uploading on Figshare, try something simple like listing the user's articles
+      # to check that the authentication is successful.
+      print "Testing Figshare authentication..."
+      try:
+         response = self.client.get('http://api.figshare.com/v1/my_data/articles/%s' % str(article_id), auth=self.oauth)
+         if(response.status_code != requests.codes.ok): # If the status is not "OK", then exit here.
+            raise Exception("Could not authenticate with the Figshare server.")
+         else:
+            print "...Authentication test successful."
+      except:
+         print "Error: Could not authenticate with the Figshare server. Check Internet connection? Check Figshare authentication keys in ~/.config/pyrdm.ini ?"
+         sys.exit(1)
+
       return
 
    def create_session(self):
