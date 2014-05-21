@@ -279,7 +279,7 @@ class TestLog(unittest.TestCase):
 
       publication_details = self.figshare.get_article_details(self.article_id)
       print publication_details
-      assert(publication_details["count"] == 1)
+      assert(len(publication_details["items"]) == 1)
       assert(publication_details["items"][0]["title"] == "PyRDM Test")
       assert(publication_details["items"][0]["description"] == "PyRDM Test Article")
       
