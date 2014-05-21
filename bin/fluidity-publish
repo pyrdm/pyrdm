@@ -254,6 +254,7 @@ class FluidityPublish:
 
          if(data_type == "o"):
             # Write provenance data to the stat file.
+            print "Writing provenance data to .stat file..."
             self.write_provenance_data()
 
          if(data_type == "i"):
@@ -275,6 +276,7 @@ class FluidityPublish:
                pass # Ignore any SPUD_NEW_KEY_WARNING warnings
             libspud.write_options(self.options_file)
 
+      print "Finished publishing."
       return
          
 if(__name__ == "__main__"):
