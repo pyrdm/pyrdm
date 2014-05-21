@@ -108,7 +108,7 @@ class Publisher:
          return None
 
    def is_uploaded(self, article_id, files):
-      """ Verify that all files in the list 'files' have been uploaded. """
+      """ Return True if the files in the list 'files' are all present on the server. Otherwise, return False. """
       files_on_server = self.figshare.get_file_details(article_id)["files"]
       for f in files:
          exists = False
@@ -123,8 +123,8 @@ class Publisher:
             return False
       return True
 
-   def check_upload(self, article_id, files):
-      """ Perform a sanity check on the file upload. """
+   def verify_upload(self, article_id, files):
+      """ Verify that all files in the list 'files' have been uploaded. """
       if(self.is_uploaded(article_id=article_id, files=files)):
          print "All files successfully uploaded."
       else:
@@ -167,7 +167,7 @@ class Publisher:
 
       print "Uploading software to Figshare..."
       self.figshare.add_file(article_id=publication_details["article_id"], file_path=file_name)
-      self.check_upload(article_id=publication_details["article_id"], files=[file_name])
+      self.verify_upload(article_id=publication_details["article_id"], files=[file_name])
 
       print "Adding all authors (with Figshare IDs) to the code..."
       author_ids = self.get_authors_list(local_repo_location)
@@ -219,7 +219,7 @@ class Publisher:
          exists = False
          for e in existing_files:
             if(e["name"] == os.path.basename(f)):
-               print "File already exists on Figshare server. Over-writing..."
+               print "File already exists on the server. Over-writing..."
                exists = True
                # FIXME: It is currently not possible to over-write an existing file via the Figshare API.
                # We have to delete the file and then add it again.
@@ -230,7 +230,7 @@ class Publisher:
             self.figshare.add_file(article_id=article_id, file_path=f)
          self.write_checksum(f)
 
-      self.check_upload(article_id=article_id, files=modified_files)
+      self.verify_upload(article_id=article_id, files=modified_files)
 
       # If we are not keeping the data private, then make it public.
       if(not private):
