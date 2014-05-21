@@ -135,7 +135,7 @@ class Publisher:
                break
             elif(response == "n" or response == "N"):
                # Clean up and exit
-               self.figshare.delete_article(article_id)
+               self.figshare.delete_article(article_id) # NOTE: This should only delete draft code/filesets.
                sys.exit(1)
             else:
                continue
