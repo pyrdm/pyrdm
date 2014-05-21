@@ -62,85 +62,6 @@ class Publisher:
          sys.exit(1)
       return config
 
-   def find_software(self, software_name, sha):
-      """ Checks if the software has already been published. If so, it returns the DOI.
-      Otherwise it returns None. """
-      
-      keyword = "%s" % (software_name)
-      
-      if(self.service == "figshare"):
-         results = self.figshare.search(keyword, tag=sha)
-
-         if(len(results["items"]) != 0):
-            print "Software %s has already been published (with SHA-1 %s).\n" % (software_name, sha)
-            article_id = results["items"][-1]["article_id"]
-            
-            # Try to find the DOI as well.
-            # This try-except block might not be necessary if we are always searching public articles.
-            try:
-               doi = results["items"][-1]["doi"]
-            except:
-               print "DOI not found."
-               doi = None
-            return article_id, doi
-         else:
-            return None, None
-      else:
-         # TODO: Add in Zenodo searching.
-         raise NotImplementedError
-
-   def get_authors_list(self, local_repo_location):
-      """ If an AUTHORS file exists in a given Git repository's base directory, then read it and
-      match any Figshare author IDs using a regular expression. Return all author IDs in a single list. """
-      repo = git.Repo(local_repo_location)
-      author_ids = []
-      try:
-         # Assumes that the AUTHORS file is in the root directory of the project.
-         f = open(repo.working_dir + "/AUTHORS", "r")
-         for line in f.readlines():
-            m = re.search("figshare:([0-9]+)", line)
-            if(m is not None):
-               author_id = int(m.group(1))
-               author_ids.append(author_id)
-         return author_ids
-      except IOError:
-         print "Could not open AUTHORS file. Does it exist? Check read permissions?"
-         return None
-
-   def is_uploaded(self, article_id, files):
-      """ Return True if the files in the list 'files' are all present on the server. Otherwise, return False. """
-      files_on_server = self.figshare.get_file_details(article_id)["files"]
-      for f in files:
-         exists = False
-         for s in files_on_server:
-            if(s["name"] == os.path.basename(f)):
-               exists = True
-               break
-         if(exists):
-            continue
-         else:
-            print "Warning: Could not find file %s on the Figshare server.\n" % f
-            return False
-      return True
-
-   def verify_upload(self, article_id, files):
-      """ Verify that all files in the list 'files' have been uploaded. """
-      if(self.is_uploaded(article_id=article_id, files=files)):
-         print "All files successfully uploaded."
-      else:
-         print "Not all files were successfully uploaded. Perhaps you ran out of space on the server?\n"
-         while True:
-            response = raw_input("Are you sure you want to continue? (Y/N)\n")
-            if(response == "y" or response == "Y"):
-               break
-            elif(response == "n" or response == "N"):
-               # Clean up and exit
-               self.figshare.delete_article(article_id) # NOTE: This should only delete draft code/filesets.
-               sys.exit(1)
-            else:
-               continue
-      return
-
    def publish_software(self, software_name, sha, local_repo_location, private=False):
       """ Publishes the software in the current repository. """
 
@@ -266,6 +187,84 @@ class Publisher:
             
       return modified
 
+   def find_software(self, software_name, sha):
+      """ Checks if the software has already been published. If so, it returns the DOI.
+      Otherwise it returns None. """
+      
+      keyword = "%s" % (software_name)
+      
+      if(self.service == "figshare"):
+         results = self.figshare.search(keyword, tag=sha)
+
+         if(len(results["items"]) != 0):
+            print "Software %s has already been published (with SHA-1 %s).\n" % (software_name, sha)
+            article_id = results["items"][-1]["article_id"]
+            
+            # Try to find the DOI as well.
+            # This try-except block might not be necessary if we are always searching public articles.
+            try:
+               doi = results["items"][-1]["doi"]
+            except:
+               print "DOI not found."
+               doi = None
+            return article_id, doi
+         else:
+            return None, None
+      else:
+         # TODO: Add in Zenodo searching.
+         raise NotImplementedError
+
+   def get_authors_list(self, local_repo_location):
+      """ If an AUTHORS file exists in a given Git repository's base directory, then read it and
+      match any Figshare author IDs using a regular expression. Return all author IDs in a single list. """
+      repo = git.Repo(local_repo_location)
+      author_ids = []
+      try:
+         # Assumes that the AUTHORS file is in the root directory of the project.
+         f = open(repo.working_dir + "/AUTHORS", "r")
+         for line in f.readlines():
+            m = re.search("figshare:([0-9]+)", line)
+            if(m is not None):
+               author_id = int(m.group(1))
+               author_ids.append(author_id)
+         return author_ids
+      except IOError:
+         print "Could not open AUTHORS file. Does it exist? Check read permissions?"
+         return None
+
+   def is_uploaded(self, article_id, files):
+      """ Return True if the files in the list 'files' are all present on the server. Otherwise, return False. """
+      files_on_server = self.figshare.get_file_details(article_id)["files"]
+      for f in files:
+         exists = False
+         for s in files_on_server:
+            if(s["name"] == os.path.basename(f)):
+               exists = True
+               break
+         if(exists):
+            continue
+         else:
+            print "Warning: Could not find file %s on the Figshare server.\n" % f
+            return False
+      return True
+
+   def verify_upload(self, article_id, files):
+      """ Verify that all files in the list 'files' have been uploaded. """
+      if(self.is_uploaded(article_id=article_id, files=files)):
+         print "All files successfully uploaded."
+      else:
+         print "Not all files were successfully uploaded. Perhaps you ran out of space on the server?\n"
+         while True:
+            response = raw_input("Are you sure you want to continue? (Y/N)\n")
+            if(response == "y" or response == "Y"):
+               break
+            elif(response == "n" or response == "N"):
+               # Clean up and exit
+               self.figshare.delete_article(article_id) # NOTE: This should only delete draft code/filesets.
+               sys.exit(1)
+            else:
+               continue
+      return
 
 class TestLog(unittest.TestCase):
    """ Unit test suite for PyRDM's Publisher module. """
