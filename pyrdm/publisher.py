@@ -72,7 +72,7 @@ class Publisher:
          results = self.figshare.search(keyword, tag=sha)
 
          if(len(results["items"]) != 0):
-            print "Software %s has already been published (with SHA-1 %s)." % (software_name, sha)
+            print "Software %s has already been published (with SHA-1 %s).\n" % (software_name, sha)
             article_id = results["items"][-1]["article_id"]
             
             # Try to find the DOI as well.
@@ -106,6 +106,22 @@ class Publisher:
       except IOError:
          print "Could not open AUTHORS file. Does it exist? Check read permissions?"
          return None
+
+   def is_uploaded(self, article_id, files):
+      """ Verify that all files in the list 'files' have been uploaded. """
+      files_on_server = self.figshare.get_file_details(article_id)["files"]
+      for f in files:
+         exists = False
+         for s in files_on_server:
+            if(s["name"] == os.path.basename(f)):
+               exists = True
+               break
+         if(exists):
+            continue
+         else:
+            print "Warning: Could not find file %s on the Figshare server.\n" % f
+            return False
+      return True
 
    def publish_software(self, software_name, sha, local_repo_location, private=False):
       """ Publishes the software in the current repository to Figshare. """
@@ -191,9 +207,18 @@ class Publisher:
                # We have to delete the file and then add it again.
                self.figshare.delete_file(article_id=article_id, file_id=e["id"])
                self.figshare.add_file(article_id=article_id, file_path=f)
+               break
          if(not exists):
             self.figshare.add_file(article_id=article_id, file_path=f)
          self.write_checksum(f)
+
+      # Perform a sanity check on the file upload.
+      if(self.is_uploaded(article_id=article_id, files=modified_files)):
+         print "All files successfully uploaded to Figshare."
+      else:
+         print "Something went wrong in the file upload process. Perhaps you ran out of space on the Figshare server?"
+         # TODO: Delete the code repository too.
+         sys.exit(1)
 
       # If we are not keeping the data private, then make it public.
       if(not private):

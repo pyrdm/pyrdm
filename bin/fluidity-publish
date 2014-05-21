@@ -239,6 +239,7 @@ class FluidityPublish:
          temp = eval(libspud.get_option(options_path + "/files"))
          # Change the file paths to be relative to the directory where the options file is stored.
          for i in range(len(temp)):
+            # FIXME
             temp[i] = os.path.dirname(sys.argv[-1]) + "/" + temp[i]
 
          files = []
