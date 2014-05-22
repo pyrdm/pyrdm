@@ -144,6 +144,14 @@ class Figshare:
       results = json.loads(response.content)
       return results
 
+   def get_categories(self):
+      """ Get the full list of available categories. No authentication is required. """
+      headers = {'content-type':'application/json'}
+      response = self.client.get('http://api.figshare.com/v1/categories',
+                              headers=headers)
+      results = json.loads(response.content)
+      return results
+
    def add_tag(self, article_id, tag_name):
       """ For an article with a given article_id, add a tag with a given tag_name. """
       body = {'tag_name':tag_name}

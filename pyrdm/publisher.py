@@ -153,6 +153,20 @@ class Publisher:
 
       self.verify_upload(article_id=article_id, files=modified_files)
 
+      # Add category
+      print "Adding category..."
+      if(parameters["category_id"] is not None):
+         self.figshare.add_category(article_id, parameters["category_id"])
+
+      # Add tag(s)
+      print "Adding tag(s)..."
+      if(parameters["tag_name"] is not None):
+         if(type(parameters["tag_name"]) == list):
+            for tag_name in parameters["tag_name"]:
+               self.figshare.add_tag(article_id, tag_name)
+         else:
+            self.figshare.add_tag(article_id, parameters["tag_name"])
+
       # If we are not keeping the data private, then make it public.
       if(not private):
          print "Making the data public..."
