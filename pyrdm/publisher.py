@@ -131,15 +131,17 @@ class Publisher:
             print "Dataset created with DOI: %s" % publication_details["doi"]
 
             article_id = publication_details["id"]
+
+         # This is a new article, so upload ALL the files!
+         modified_files = parameters["files"]
+         existing_files = []
       else:
          publication_details = None
-         
-      # Check whether any files have been modified.
-      modified_files = self.find_modified(parameters["files"])
+         # This is an existing publication, so check whether any files have been modified since they were last published.
+         modified_files = self.find_modified(parameters["files"])
+         existing_files = self.figshare.get_file_details(article_id)["files"]
+
       print "The following files have been marked for uploading: ", modified_files
-
-      existing_files = self.figshare.get_file_details(article_id)["files"]
-
       uploaded_files = []
       for f in modified_files:
          # Check whether the file actually exists locally.
@@ -161,7 +163,7 @@ class Publisher:
             self.write_checksum(f)
             uploaded_files.append(f)
          else:
-            print "File %s not present on the local system. Skipping..."
+            print "File %s not present on the local system. Skipping..." % f
             continue
 
       self.verify_upload(article_id=article_id, files=uploaded_files)
