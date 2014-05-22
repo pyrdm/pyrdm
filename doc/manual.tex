@@ -123,7 +123,7 @@ PyRDM comes with a suite of unit tests which verify the correctness of its funct
   
 on the command line. Many of these tests require access to a Figshare account, so please ensure that the \texttt{pyrdm.ini} setup file contains valid Figshare authentication tokens.
 
-\chapter{Publishing}
+\chapter{Publishing with PyRDM}
 
 \section{Publishing software}
 The publication of software is handled by the \texttt{publish\_software} method in the Publication class. This requires:
@@ -160,9 +160,20 @@ The publication of software is handled by the \texttt{publish\_software} method 
 When a data file is published, the file's MD5 checksum is stored in a corresponding checksum file. The next time the user tries to publish the file, its MD5 checksum is recomputed and compared against the MD5 checksum stored in its corresponding MD5 file. If the two MD5 checksums are different (or the checksum file does not exist), the file is uploaded to the Figshare server and the checksum file is updated with the new checksum. If the two checksums are the same, the file is unmodified and is not re-uploaded. This can help prevent unnecessary bandwidth usage and is particularly useful when you have large data files which are not frequently modified.
 
 \chapter{Application: Fluidity-Publish}
-Fluidity-Publish is a Python program which uses the PyRDM library. It is designed specifically for use with the Fluidity computational fluid dynamics code.
+Fluidity-Publish is a Python program which uses the PyRDM library. It is designed specifically for use with the Fluidity computational fluid dynamics code, located at \texttt{https://github.com/FluidityProject/fluidity}. Currently, you must use a fork of Fluidity which contains the publishing functionality. This is available here:
 
-If we wanted to publish the Fluidity source code used to run a particular simulation, along with the input and output data, we first need to enable publishing in the simulation's configuration file (the ``.flml'' file), as shown in Figure \ref{fig:diamond}. Simply select which publishing service you wish to use (e.g. Figshare or Zenodo), and enter the paths to the input and output files you wish to publish. You may use wildcard characters here (e.g. ``vtu'' to publish all VTK-based simulation output). Instead of creating a new code repository or fileset on Figshare or Zenodo, you may also publish to an existing one by entering its ID under e.g. \texttt{/publish/\{software,input\_data,output\_data\}/article\_id}.
+\texttt{https://github.com/ctjacobs/fluidity-rdm}
+
+but will soon be merged into Fluidity's master branch.
+
+\section{Enable publishing}
+If we want to publish the Fluidity source code used to run a particular simulation, along with the input and output data, we first need to enable the `publish' option in that simulation's configuration/options file (the ``.flml'' file), as shown in Figure \ref{fig:diamond}. Simply select which publishing service you wish to use (e.g. Figshare or Zenodo), and under the \texttt{input\_files} and \texttt{output\_files} sub-options (see Figure \ref{fig:diamond}), enter the paths (relative to the options file) to the input and output files you wish to publish in the following format (a Python list of strings): 
+
+\texttt{["path/to/file1", "path/to/file2", "path/to/file3"]}
+
+You may use wildcard characters here (e.g. ``*vtu'' to publish all VTK-based simulation output). Instead of creating a new code repository or fileset on Figshare or Zenodo, you may also publish to an existing one by entering its ID in the following option(s):
+
+\texttt{/publish/\{software,input\_data,output\_data\}/article\_id}
 
 \begin{figure}
   \centering
@@ -171,16 +182,25 @@ If we wanted to publish the Fluidity source code used to run a particular simula
   \label{fig:diamond}
 \end{figure}
 
-To publish, you will need to use the \texttt{fluidity-publish} program at the command line; this expects the path to the simulation's configuration file, and one or more of the following options:
+\section{Using Fluidity-Publish}
+To publish, you will need to use the \texttt{fluidity-publish} program at the command line; this expects one or more of the following options, followed by the (relative or absolute) path to the simulation's configuration file:
 \begin{itemize}
-   \item -s : Publish the Fluidity source code. This can be used in conjunction with the -v option to explicitly choose the version of Fluidity that you want to publish.
-   \item -i : Publish the input data files whose paths are specified in the options file.
-   \item -o : Publish the output data files whose paths are specified in the options file.
-   \item -p : Publish the software or data, but keep it private. Note that any DOI generated will not be valid until the publication is made public.
+   \item \texttt{-s} : Publish the Fluidity source code. This can be used in conjunction with the \texttt{-v} option to explicitly choose the version of Fluidity (in the form of the Git SHA-1 hash of a particular commit) that you want to publish.
+   \item \texttt{-i} : Publish the input data files whose paths are specified in the options file.
+   \item \texttt{-o} : Publish the output data files whose paths are specified in the options file.
+   \item \texttt{-p} : Publish the software or data, but keep it private. Note that any DOI generated will not be valid until the publication is made public.
 \end{itemize}
+
 e.g. \texttt{fluidity-publish -i /data/fluidity/tests/top\_hat\_cg\_supg/top\_hat\_cg\_supg.flml}
+
 Note that the software, input data and output data must be published separately. You cannot yet use the -s, -i and -o options together.
 
 Once the publication process has finished, the ID and DOI of the publication will be added to the simulation's configuration file for future reference. If you wish to publish the simulation data again, the ID and DOI will be re-used (unless you remove them from the configuration file).
+
+\subsection{Software version}
+Unless you provide a particular version of Fluidity at the command-line using the \texttt{-v} option, Fluidity-Publish will automatically obtain the version of Fluidity from the file \texttt{version.h} stored in the \texttt{include} directory of the local Fluidity repository on your computer. This file is created at compile-time when the Fluidity binary is built. If this file is not present (perhaps because you haven't built Fluidity yet), then Fluidity-Publish will instead use the version (SHA-1 key) of the HEAD commit of the local repository.
+
+\subsection{Provenance data}
+Fluidity writes a limited amount of provenance data to the header of the simulation's `stat' file. If you choose to publish the output data (which should include the `stat' file) using the \texttt{-o} option, then Fluidity-Publish will (if available) retrieve the IDs and DOIs of the recently published software and input data from the simulation's options file. It will then add those to the existing provenance data before publishing the output data files that you have specified.
 
 \end{document}
