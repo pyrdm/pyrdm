@@ -41,5 +41,5 @@ clean:
 	@echo **********Cleaning pyrdm directory
 	cd pyrdm; rm -rf *.pyc; cd ..
 	@echo **********Cleaning doc directory
-	cd doc; rm -rf *.log *.aux *.dvi *.pdf *.ps *.toc *.out; cd ..
+	cd doc; rm -rf *.log *.aux *.dvi *.pdf *.ps *.toc *.out *.fdb_latexmk; cd ..
 
