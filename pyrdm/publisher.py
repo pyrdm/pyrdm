@@ -87,7 +87,7 @@ class Publisher:
       self.verify_upload(article_id=publication_details["article_id"], files=[file_name])
 
       print "Adding the SHA-1 hash as a tag..."
-      self.figshare.add_tag(article_id=publication_details["article_id"], tag_name=sha)
+      self.figshare.add_tag(article_id=publication_details["article_id"], tag_name=software_sha)
       print "Tag added."
 
       if(category_id is not None):
