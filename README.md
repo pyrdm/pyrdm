@@ -25,14 +25,13 @@ Quick Start
 
 In order to use PyRDM you must build as well as configure the package. Build the package carrying out the following steps:
 
-1. Install GitPython by ```sudo pip install gitpython```
-2. Install requests-oauthlib by ```sudo pip install requests requests_oauthlib```
-3. Make a clone of this repository by ```git clone https://YOUR_BB_USERNAME@bitbucket.org/ctjacobs/pyrdm.git pyrdm```
-4. Build the package by ```cd pyrdm; sudo make install```
+1. Install GitPython by `sudo pip install gitpython`
+2. Install requests-oauthlib by `sudo pip install requests requests_oauthlib`
+3. Make a clone of this repository by `git clone https://YOUR_BB_USERNAME@bitbucket.org/ctjacobs/pyrdm.git pyrdm`
+4. Build the package by `cd pyrdm; sudo make install`
+5. Build the user manual by `make manual`. This will produce a PDF version of the manual in the `doc` directory.
 
-The configuration procedure ties the PyRDM package to a particular GidHub repository and your figshare account. The GitHub repository should contains the fluidity code that you use for simulations and need to publish with your data as a file set. To configure PyRDM carry out the following steps:
-
-1. 
+The configuration procedure ties the PyRDM package to a particular GitHub repository and your figshare account. Please see the user manual that you have just built for a graphical guide on how to do this.
 
 Dependencies
 ------------
@@ -43,8 +42,3 @@ PyRDM depends on:
 * [requests-oauthlib](https://github.com/requests/requests-oauthlib)
 * pdflatex - to build the user manual.
 * [libspud](https://launchpad.net/spud) - this package is not necessary if you do not wish to run the PyRDM-based publication tool `fluidity-publish` specifically designed for the Fluidity CFD code.
-
-Documentation
--------------
-
-The user manual can be built by typing `make manual` at the command line, assuming that the current working directory is the PyRDM base directory (i.e. the same directory that this Makefile is in).
