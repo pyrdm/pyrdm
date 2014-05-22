@@ -29,7 +29,7 @@ install:
 
 manual:
 	@echo **********Compiling the user manual
-	cd doc; pdflatex manual.tex; cd ..
+	cd doc; pdflatex manual.tex; pdflatex manual.tex; cd ..
 
 unittest:
 	@echo **********Running the unit tests
