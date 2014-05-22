@@ -293,6 +293,13 @@ class Publisher:
                continue
       return
 
+   def article_exists(self, article_id):
+      results = self.figshare.get_article_details(article_id)
+      if("error" in results.keys()):
+         return False
+      else:
+         return True
+
 class TestLog(unittest.TestCase):
    """ Unit test suite for PyRDM's Publisher module. """
 

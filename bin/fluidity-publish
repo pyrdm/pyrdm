@@ -242,9 +242,14 @@ class FluidityPublish:
             print "Data type not recognised."
             sys.exit(1)
             
+         # Even if the user has provided an article ID, check that it still exists on the server.
          if(libspud.have_option(options_path + "/article_id")):
             article_id = libspud.get_option(options_path + "/article_id")
-            print "Re-using fileset with article_id %s..." % str(article_id)
+            if(self.publisher.article_exists(article_id)):
+               print "Re-using fileset with article_id %s..." % str(article_id)
+            else:
+               print "Fileset with ID %s does not exist. Creating a new one..." % str(article_id)
+               article_id = None
          else:
             article_id = None
 
