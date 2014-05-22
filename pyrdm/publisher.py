@@ -120,6 +120,7 @@ class Publisher:
 
             article_id = publication_details["article_id"]
          elif(self.service == "zenodo"):
+            raise NotImplementedError # FIXME: Remove this line once the Zenodo interface is ready.
             print "Creating dataset on Zenodo for data..."
             publication_details = self.zenodo.create_deposition(title=parameters["title"], description=parameters["description"], upload_type="dataset", state="inprogress")
             print "Dataset created with DOI: %s" % publication_details["doi"]
@@ -134,24 +135,31 @@ class Publisher:
 
       existing_files = self.figshare.get_file_details(article_id)["files"]
 
+      uploaded_files = []
       for f in modified_files:
-         print "Uploading %s..." % f
-         # Check whether the file already exists on the server. If so, over-write the version on the server.
-         exists = False
-         for e in existing_files:
-            if(e["name"] == os.path.basename(f)):
-               print "File already exists on the server. Over-writing..."
-               exists = True
-               # FIXME: It is currently not possible to over-write an existing file via the Figshare API.
-               # We have to delete the file and then add it again.
-               self.figshare.delete_file(article_id=article_id, file_id=e["id"])
+         # Check whether the file actually exists locally.
+         if(os.path.exists(f)):
+            print "Uploading %s..." % f
+            # Check whether the file already exists on the server. If so, over-write the version on the server.
+            exists = False
+            for e in existing_files:
+               if(e["name"] == os.path.basename(f)):
+                  print "File already exists on the server. Over-writing..."
+                  exists = True
+                  # FIXME: It is currently not possible to over-write an existing file via the Figshare API.
+                  # We have to delete the file and then add it again.
+                  self.figshare.delete_file(article_id=article_id, file_id=e["id"])
+                  self.figshare.add_file(article_id=article_id, file_path=f)
+                  break
+            if(not exists):
                self.figshare.add_file(article_id=article_id, file_path=f)
-               break
-         if(not exists):
-            self.figshare.add_file(article_id=article_id, file_path=f)
-         self.write_checksum(f)
+            self.write_checksum(f)
+            uploaded_files.append(f)
+         else:
+            print "File %s not present on the local system. Skipping..."
+            continue
 
-      self.verify_upload(article_id=article_id, files=modified_files)
+      self.verify_upload(article_id=article_id, files=uploaded_files)
 
       # Add category
       print "Adding category..."
