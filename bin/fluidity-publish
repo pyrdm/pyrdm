@@ -75,10 +75,9 @@ class FluidityPublish:
       """ Write the DOIs of the software and input data publications to the .stat file. """
       # Get the path to the stat file.
       simulation_name = libspud.get_option("/simulation_name")
+      stat_path = simulation_name + ".stat"
       if(os.path.dirname(sys.argv[-1]) != ""):
-         stat_path = os.path.dirname(sys.argv[-1]) + "/" + simulation_name + ".stat"
-      else:
-         stat_path = simulation_name + ".stat" # If we are in the same directory as the .stat file, then don't add a preceding "/" character.
+         stat_path = os.path.dirname(sys.argv[-1]) + "/" + stat_path
 
       # The following code is based on fluidity_tools.py:
       try:
