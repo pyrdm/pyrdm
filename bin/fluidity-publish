@@ -113,7 +113,6 @@ class FluidityPublish:
       xml = minidom.parseString(xml)
 
       # Check that the FLUIDITY_VERSION in the stat file is the same as the published version.
-      sha = self.get_fluidity_version()
       for element in xml.getElementsByTagName('constant'):
          if(element.attributes["name"].value == "FluidityVersion"):
             sha_in_statfile = element.attributes["value"].value
