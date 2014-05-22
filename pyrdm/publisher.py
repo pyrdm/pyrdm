@@ -80,7 +80,7 @@ class Publisher:
       title='%s (%s)' % (software_name, software_sha)
       description='%s (Version %s)' % (software_name, software_sha)
       publication_details = self.figshare.create_article(title=title, description=description, defined_type="code", status="Drafts")
-      print "Code repository created with ID: %s and DOI: %s" % (str(publication_details["article_id"]), publication_details["doi"])
+      print "Code repository created with ID: %d and DOI: %s" % (publication_details["article_id"], publication_details["doi"])
 
       print "Uploading software to Figshare..."
       self.figshare.add_file(article_id=publication_details["article_id"], file_path=file_name)
@@ -121,7 +121,7 @@ class Publisher:
             print "Creating dataset on Figshare for data..."
             # NOTE: The defined_type needs to be a 'fileset' to allow multiple files to be uploaded separately.
             publication_details = self.figshare.create_article(title=parameters["title"], description=parameters["description"], defined_type="fileset", status="Drafts")
-            print "Dataset created with ID: %s and DOI: %s" % (str(publication_details["article_id"]), publication_details["doi"])
+            print "Dataset created with ID: %d and DOI: %s" % (publication_details["article_id"], publication_details["doi"])
 
             article_id = publication_details["article_id"]
          elif(self.service == "zenodo"):
