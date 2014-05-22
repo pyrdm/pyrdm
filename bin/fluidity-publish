@@ -120,7 +120,7 @@ class FluidityPublish:
             break
       if(libspud.have_option("/publish/software/article_id")):
          if(libspud.get_option("/publish/software/article_id") != self.publisher.find_software("Fluidity", sha_in_statfile)[0]):
-            print "The version of Fluidity that created this output data is not the same as the published version of Fluidity.\n"
+            print "The version of Fluidity that created this output data is either: (a) not published (and made public) yet, or (b) inconsistent with the version referred to by the article_id in the options file (%d).\n" % libspud.get_option("/publish/software/article_id")
             while True:
                response = raw_input("Are you sure you want to continue? (Y/N)\n")
                if(response == "y" or response == "Y"):
