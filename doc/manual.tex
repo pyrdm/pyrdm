@@ -123,7 +123,7 @@ PyRDM comes with a suite of unit tests which verify the correctness of its funct
   
 on the command line. Many of these tests require access to a Figshare account, so please ensure that the \texttt{pyrdm.ini} setup file contains valid Figshare authentication tokens.
 
-\chapter{Publishing with PyRDM}
+\chapter{PyRDM Functionality}
 
 \section{Publishing software}
 The publication of software is handled by the \texttt{publish\_software} method in the Publication class. This requires:
@@ -131,8 +131,9 @@ The publication of software is handled by the \texttt{publish\_software} method 
 \begin{itemize}
   \item The Figshare authentication details (see Section \ref{sect:authentication}).
   \item The software's name.
-  \item The version of the software that you would like to publish (for GitHub repositories, this is the SHA-1 commit hash).
+  \item The version of the software that you would like to publish (for Git repositories, this is the SHA-1 commit hash).
   \item The location of the software's Git repository (or the location of any file within that repository) on your local hard drive.
+  \item The ID of a category in Figshare's categories list. The full list of categories can be found here: \texttt{http://api.figshare.com/v1/categories}.
 \end{itemize}
 
 \subsection{Author attribution}
@@ -152,6 +153,8 @@ The publication of software is handled by the \texttt{publish\_software} method 
       \item \texttt{title}: the title of the dataset
       \item \texttt{description}: a description of the dataset
       \item \texttt{files}: a list of paths to the files within the dataset.
+      \item \texttt{category\_id}: the ID of a category in Figshare's categories list
+      \item \texttt{tag\_name}: a single string, or list of strings, to tag the data's fileset with
     \end{itemize}
   \item Optionally, an \texttt{article\_id} if the dataset already exists on the Figshare servers and you wish to update it. By default, this is set to \texttt{None}.
 \end{itemize}
