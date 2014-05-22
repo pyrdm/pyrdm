@@ -181,7 +181,7 @@ class FluidityPublish:
             category_id = category["id"]
             break
       if(category_id is None):
-         print "Warning: Could not find a suitable category! The publication will remain private until one is added."
+         print "Warning: Could not find the category '%s'! The publication cannot be made public until a category is added." % category_name
       return category_id
 
    def publish(self, data_type, version=None, private=False):
@@ -214,7 +214,8 @@ class FluidityPublish:
          options_path = "/publish/software/"
          if(article_id is None):
             # Software is not published already, so publish it now.
-            publication_details = self.publisher.publish_software("Fluidity", sha, local_repo_location=sys.argv[-1], private=private)
+            publication_details = self.publisher.publish_software(software_name="Fluidity", software_sha=sha, software_local_repo_location=sys.argv[-1], 
+                                                                  category_id=self.get_category_id("Computational Physics"), private=private)
             try:
                libspud.set_option(options_path + "/article_id", str(publication_details["article_id"]))
                libspud.set_option(options_path + "/doi", str(publication_details["doi"]))

@@ -62,11 +62,11 @@ class Publisher:
          sys.exit(1)
       return config
 
-   def publish_software(self, software_name, sha, local_repo_location, private=False):
+   def publish_software(self, software_name, software_sha, software_local_repo_location, category_id, private=False):
       """ Publishes the software in the current repository. """
 
       # Download the .zip file from GitHub...
-      url = "%s/archive/%s.zip" % (self.config.get("github", "repository_url"), sha)
+      url = "%s/archive/%s.zip" % (self.config.get("github", "repository_url"), software_sha)
       
       print "Downloading software from GitHub (URL: %s)..." % url
       f = urlopen(url)
@@ -77,21 +77,26 @@ class Publisher:
 
       # ...then upload it to Figshare.
       print "Creating code repository on Figshare for software..."
-      title='%s (%s)' % (software_name, sha)
-      description='%s (Version %s)' % (software_name, sha)
+      title='%s (%s)' % (software_name, software_sha)
+      description='%s (Version %s)' % (software_name, software_sha)
       publication_details = self.figshare.create_article(title=title, description=description, defined_type="code", status="Drafts")
       print "Code repository created with ID: %s and DOI: %s" % (str(publication_details["article_id"]), publication_details["doi"])
-      
-      print "Adding tags..."
-      self.figshare.add_tag(article_id=publication_details["article_id"], tag_name=sha)
-      print "Tags added."
 
       print "Uploading software to Figshare..."
       self.figshare.add_file(article_id=publication_details["article_id"], file_path=file_name)
       self.verify_upload(article_id=publication_details["article_id"], files=[file_name])
 
+      print "Adding the SHA-1 hash as a tag..."
+      self.figshare.add_tag(article_id=publication_details["article_id"], tag_name=sha)
+      print "Tag added."
+
+      if(category_id is not None):
+         print "Adding category..."
+         self.figshare.add_category(article_id=publication_details["article_id"], category_id=category_id)
+         print "Category added."
+
       print "Adding all authors (with Figshare IDs) to the code..."
-      author_ids = self.get_authors_list(local_repo_location)
+      author_ids = self.get_authors_list(software_local_repo_location)
       print "List of author IDs: ", author_ids
       if(author_ids is not None):
          for author_id in author_ids:
@@ -213,10 +218,10 @@ class Publisher:
       """ Checks if the software has already been published. If so, it returns the DOI.
       Otherwise it returns None. """
       
-      keyword = "%s" % (software_name)
+      keyword = "%s" % (software_name) # We always include the software's name in the title, so use it as the keyword
       
       if(self.service == "figshare"):
-         results = self.figshare.search(keyword, tag=sha)
+         results = self.figshare.search(keyword, tag=sha) # We always tag the software with the SHA-1 hash.
 
          if(len(results["items"]) != 0):
             print "Software %s has already been published (with SHA-1 %s).\n" % (software_name, sha)
