@@ -39,7 +39,7 @@ class FluidityPublish:
 
    def get_fluidity_version(self):
       """ Return the Fluidity version (in the form of the SHA-1 hash of the HEAD of its Git repository). """
-      print "Reading SHA-1 hash...\n"
+      print "Reading SHA-1 hash..."
       # NOTE: Here we are assuming that the Fluidity binary is in the same Git repository as the options file. Is there a better way of doing this?
       try:
          repo = git.Repo(sys.argv[-1])
@@ -75,8 +75,10 @@ class FluidityPublish:
       """ Write the DOIs of the software and input data publications to the .stat file. """
       # Get the path to the stat file.
       simulation_name = libspud.get_option("/simulation_name")
-      if(os.path.dirname(sys.argv[-1]) != ""): # If we are in the same directory as the .stat file, then don't add a preceding "/" character.
+      if(os.path.dirname(sys.argv[-1]) != ""):
          stat_path = os.path.dirname(sys.argv[-1]) + "/" + simulation_name + ".stat"
+      else:
+         stat_path = simulation_name + ".stat" # If we are in the same directory as the .stat file, then don't add a preceding "/" character.
 
       # The following code is based on fluidity_tools.py:
       try:
@@ -266,13 +268,16 @@ class FluidityPublish:
                # Expand out any wildcard expressions.
                expanded = glob.glob(temp[i])
                for j in range(len(expanded)):
-                  files.append(expanded[j])
+                  if(expanded[j].endswith(".md5")):
+                     continue # Ignore any MD5 checksum files.
+                  else:
+                     files.append(expanded[j])
             else:
                files.append(temp[i])
 
          if(data_type == "o"):
             # Write provenance data to the stat file.
-            print "Writing provenance data to .stat file..."
+            print "Writing provenance data to .stat file...\n"
             self.write_provenance_data()
 
          tags = [libspud.get_option("/simulation_name"), "Fluidity", "simulation"]
