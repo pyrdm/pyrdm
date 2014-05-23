@@ -70,7 +70,7 @@ class Publisher:
       origin_url = repo.remotes.origin.url
       if(origin_url.endswith(".git")):
          origin_url = origin_url.replace(".git", "")
-      repository_name = origin_url.split("/")[-1]
+      repository_name = os.path.basename(origin_url)
 
       # Download the .zip file from GitHub...
       url = "%s/archive/%s.zip" % (origin_url, software_sha)
