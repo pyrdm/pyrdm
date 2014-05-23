@@ -26,7 +26,7 @@ setup(name='PyRDM',
       url='https://bitbucket.org/ctjacobs/pyrdm',
       packages=['pyrdm'],
       package_dir = {'pyrdm': 'pyrdm'},
-      scripts=["bin/fluidity-publish"],
+      scripts=["bin/fluidity-publish", "bin/pyrdm-publish"],
       data_files=[]
      )
 
