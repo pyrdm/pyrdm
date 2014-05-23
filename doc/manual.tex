@@ -164,7 +164,7 @@ Fluidity-Publish is a Python program which uses the PyRDM library. It is designe
 
 \texttt{https://github.com/ctjacobs/fluidity-rdm}
 
-but will soon be merged into Fluidity's master branch. Note that you must build Fluidity (or at least satisfy the libspud dependency noted in the README file) before using Fluidity-Publish.
+but will soon be merged into Fluidity's master branch. Note that you must build Fluidity (or at least satisfy the libspud dependency noted in the README file) before using Fluidity-Publish. You may need to add Fluidity's 'python' directory to your \texttt{PYTHONPATH} environment variable in order for the libspud module to be found.
 
 \section{Enable publishing}
 If we want to publish the Fluidity source code used to run a particular simulation, along with the input and output data, we first need to enable the `publish' option in that simulation's configuration/options file (the ``.flml'' file), as shown in Figure \ref{fig:diamond}. Simply select which publishing service you wish to use (e.g. Figshare or Zenodo), and under the \texttt{input\_files} and \texttt{output\_files} sub-options (see Figure \ref{fig:diamond}), enter the paths (relative to the options file) to the input and output files you wish to publish in the following format (a Python list of strings): 
