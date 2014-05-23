@@ -65,12 +65,19 @@ class Publisher:
    def publish_software(self, software_name, software_sha, software_local_repo_location, category_id, private=False):
       """ Publishes the software in the current repository. """
 
+      # Obtain the origin's URL and get the repository name from that.
+      repo = git.Repo(software_local_repo_location)
+      origin_url = repo.remotes.origin.url
+      if(origin_url.endswith(".git")):
+         origin_url = origin_url.replace(".git", "")
+      repository_name = origin_url.split("/")[-1]
+
       # Download the .zip file from GitHub...
-      url = "%s/archive/%s.zip" % (self.config.get("github", "repository_url"), software_sha)
+      url = "%s/archive/%s.zip" % (origin_url, software_sha)
       
       print "Downloading software from GitHub (URL: %s)..." % url
       f = urlopen(url)
-      file_name = self.config.get("github", "repository_name")+"_"+os.path.basename(url)
+      file_name = repository_name + "_" + os.path.basename(url)
       with open(file_name, "wb") as local_file:
          local_file.write(f.read())
       print "Download complete."
