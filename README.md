@@ -31,7 +31,7 @@ In order to use PyRDM you must build as well as configure the package. Build the
 4. Build the package by `cd pyrdm; sudo make install`
 5. Build the user manual by `make manual`. This will produce a PDF version of the manual in the `doc` directory.
 
-The configuration procedure ties the PyRDM package to a particular GitHub repository and your figshare account. Please see the user manual that you have just built for a graphical guide on how to do this.
+The configuration procedure allows PyRDM to access and upload files to your Figshare account. Please see the user manual that you have just built for a graphical guide on how to do this.
 
 Dependencies
 ------------
