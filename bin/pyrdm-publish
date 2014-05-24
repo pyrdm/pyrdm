@@ -83,7 +83,7 @@ class PyRDMPublish:
       if(article_id is None):
          # Software is not published already, so publish it now.
          publication_details = self.publisher.publish_software(software_name="PyRDM", software_sha=sha, software_local_repo_location=sys.argv[-1], 
-                                                               category_id=self.get_category_id("Computational Physics"), private=private)
+                                                               category_id=self.get_category_id("Computer Software"), private=private)
          print "Published PyRDM. Figshare publication ID: %d, DOI: %s" % (publication_details["article_id"], str(publication_details["doi"]))                                                       
       else:
          print "This version of PyRDM has already been published. Re-using the article_id (%d) and DOI (%s)...\n" % (article_id, str(doi))
