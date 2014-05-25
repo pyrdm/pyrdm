@@ -70,7 +70,7 @@ It is recommended that users use the terminal to install and run PyRDM. After na
 
   \texttt{make install}
 
-\textbf{Note 1:} \texttt{sudo} may be needed for this if the default install directory is located outside of \texttt{/home}. This will yield a system-wide install of PyRDM.
+\textbf{Note 1:} \texttt{sudo} may be needed for this if the default install directory is located outside of \texttt{/home}. This will yield a system-wide install of PyRDM, which is recommended.
 
 \textbf{Note 2:} In order for Python to find the PyRDM module, you will need to add the PyRDM base directory to your \texttt{PYTHONPATH} environment variable, unless you have used \texttt{sudo} as mentioned in Note 1 above. This can be achieved using:
 
@@ -188,10 +188,16 @@ To publish, you will need to use the \texttt{fluidity-publish} program (located 
    \item \texttt{-s} : Publish the Fluidity source code. This can be used in conjunction with the \texttt{-v} option to explicitly choose the version of Fluidity (in the form of the Git SHA-1 hash of a particular commit) that you want to publish.
    \item \texttt{-i} : Publish the input data files whose paths are specified in the options file.
    \item \texttt{-o} : Publish the output data files whose paths are specified in the options file.
-   \item \texttt{-p} : Publish the software or data, but keep it private. Note that any DOI generated will not be valid until the publication is made public.
+   \item \texttt{-p} : Publish the software or data, but keep it private. Must be used in conjunction with the \texttt{-s}, \texttt{-i} or \texttt{-o} option. Note that any DOI generated will not be valid until the publication is made public.
 \end{itemize}
 
 e.g. \texttt{fluidity-publish -i /data/fluidity/tests/top\_hat\_cg\_supg/top\_hat\_cg\_supg.flml}
+
+or, if you did not install PyRDM, change directory (\texttt{cd}) to the PyRDM base directory 
+
+(e.g. \texttt{cd /home/my\_username\_here/pyrdm}) and use:
+
+\texttt{python bin/fluidity-publish -i /data/fluidity/tests/top\_hat\_cg\_supg/top\_hat\_cg\_supg.flml}
 
 Note that the software, input data and output data must be published separately. You cannot yet use the -s, -i and -o options together.
 
@@ -202,5 +208,15 @@ Unless you provide a particular version of Fluidity at the command-line using th
 
 \subsection{Provenance data}
 Fluidity writes a limited amount of provenance data to the header of the simulation's `stat' file. If you choose to publish the output data (which should include the `stat' file) using the \texttt{-o} option, then Fluidity-Publish will (if available) retrieve the IDs and DOIs of the recently published software and input data from the simulation's options file. It will then add those to the existing provenance data before publishing the output data files that you have specified.
+
+
+\chapter{Application: PyRDM-Publish}
+Another publishing tool (see \texttt{bin/pyrdm-publish}) has been created to publish PyRDM itself to Figshare. At the moment this is only used as an example program to demonstrate PyRDM's functionality without the need to install libspud (or Fluidity and libspud) as a dependency, and therefore any Figshare publications produced using this tool will be kept private in your Figshare account. You can visit the "My data" page on Figshare to view the publication details.
+
+Only the source code hosted on PyRDM's GitHub repository can be published; the publishing tool does not publish any input/output files. To use \texttt{pyrdm-publish}, you will need to provide the path to the local Git repository on your computer containing PyRDM. For example,
+
+\texttt{pyrdm-publish -i /home/my\_username\_here/pyrdm}
+
+(or \texttt{python /path/to/pyrdm/bin/pyrdm-publish /path/to/pyrdm}, if you did not install PyRDM).
 
 \end{document}
