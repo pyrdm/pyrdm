@@ -22,7 +22,6 @@ import ConfigParser
 import optparse
 import re
 
-import libspud
 import git
 from xml.dom import minidom
 
