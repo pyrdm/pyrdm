@@ -253,6 +253,7 @@ class TestLog(unittest.TestCase):
       print "Creating test article..."
       publication_details = self.figshare.create_article(title="PyRDM Test", description="PyRDM Test Article", defined_type="code", status="Drafts")
       print publication_details
+      assert(not ("error" in publication_details.keys()))
       self.article_id = publication_details["article_id"]
       return
 
@@ -282,7 +283,25 @@ class TestLog(unittest.TestCase):
       assert(results["name"] == "test_file.txt")
       
       return
+
+   def test_figshare_add_tag(self):
+      print "Adding tag to test article..."
       
+      results = self.figshare.add_tag(self.article_id, "test_file_tag")
+      print results
+      assert("success" in results.keys())
+      
+      return
+
+   def test_figshare_add_category(self):
+      print "Adding category 'Computational Physics' to test article..."
+      
+      results = self.figshare.add_category(self.article_id, 109)
+      print results
+      assert("success" in results.keys())
+      
+      return
+
    def test_figshare_get_article_details(self):
       print "Getting article details..."
 
