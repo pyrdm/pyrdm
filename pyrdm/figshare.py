@@ -266,7 +266,7 @@ class TestLog(unittest.TestCase):
 
    def test_figshare_search(self):
       print "Searching for test article..."
-      results = self.figshare.search(self, "PyRDM Test")
+      results = self.figshare.search("PyRDM Test", search_private=True)
       print results
       assert (len(results) >= 1)
       return
