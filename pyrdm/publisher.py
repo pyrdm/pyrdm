@@ -355,6 +355,14 @@ class TestLog(unittest.TestCase):
       modified = self.publisher.find_modified(["test_file.txt"])
       print "Modified files: ", modified
       assert(modified == ["test_file.txt"])
-      
+
+   def test_get_authors_list(self):
+      authors_list = self.publisher.get_authors_list(".") # Assume that the unittests are being run from the PyRDM base directory
+      print "authors_list = ", authors_list
+      assert(554577 in authors_list)
+      assert(566335 in authors_list)
+      assert(444083 in authors_list)
+      assert(565687 in authors_list)
+
 if(__name__ == '__main__'):
    unittest.main()
