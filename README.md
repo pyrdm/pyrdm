@@ -42,3 +42,8 @@ PyRDM depends on:
 * [requests-oauthlib](https://github.com/requests/requests-oauthlib)
 * pdflatex - to build the user manual.
 * [libspud](https://launchpad.net/spud) - this package is not necessary if you do not wish to run the PyRDM-based publication tool `fluidity-publish` specifically designed for the Fluidity CFD code.
+
+Contact
+-------
+
+If you have any questions or comments about PyRDM, please send them via email to <c.jacobs10@imperial.ac.uk>.
