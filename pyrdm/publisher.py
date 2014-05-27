@@ -253,7 +253,13 @@ class Publisher:
    def get_authors_list(self, local_repo_location):
       """ If an AUTHORS file exists in a given Git repository's base directory, then read it and
       match any Figshare author IDs using a regular expression. Return all author IDs in a single list. """
-      repo = git.Repo(local_repo_location)
+
+      try:
+         repo = git.Repo(local_repo_location)
+      except git.InvalidGitRepositoryError:
+         print "Cannot obtain authors list because the Git repository location is not valid or does not exist. This is expected if you downloaded PyRDM as a .zip or .tar.gz file."
+         return None
+
       author_ids = []
       try:
          # Assumes that the AUTHORS file is in the root directory of the project.
@@ -357,6 +363,12 @@ class TestLog(unittest.TestCase):
       assert(modified == ["test_file.txt"])
 
    def test_get_authors_list(self):
+      try:
+         repo = git.Repo(".")
+      except git.InvalidGitRepositoryError:
+         print "Warning: Skipping the 'get_authors_list' test because the Git repository could not be opened. This is expected if you downloaded PyRDM as a .zip or .tar.gz file, but not if you used 'git clone'."
+         return
+
       authors_list = self.publisher.get_authors_list(".") # Assume that the unittests are being run from the PyRDM base directory
       print "authors_list = ", authors_list
       assert(554577 in authors_list)
