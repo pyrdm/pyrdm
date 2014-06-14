@@ -28,6 +28,7 @@ from urllib2 import urlopen
 
 from pyrdm.figshare import Figshare
 from pyrdm.zenodo import Zenodo
+from pyrdm.repo_handlers import GitRepoHandler, BzrRepoHandler
 
 class Publisher:
    """ A Python module for publishing scientific software and data on Figshare or Zenodo. """
@@ -64,24 +65,30 @@ class Publisher:
 
    def publish_software(self, software_name, software_sha, software_local_repo_location, category_id, private=False):
       """ Publishes the software in the current repository. """
-
-      # Obtain the origin's URL and get the repository name from that.
-      repo = git.Repo(software_local_repo_location)
-      origin_url = repo.remotes.origin.url
-      if(origin_url.endswith(".git")):
-         origin_url = origin_url.replace(".git", "")
-      repository_name = os.path.basename(origin_url)
-
-      # Download the .zip file from GitHub...
-      url = "%s/archive/%s.zip" % (origin_url, software_sha)
       
-      print "Downloading software from GitHub (URL: %s)..." % url
-      f = urlopen(url)
-      file_name = repository_name + "_" + os.path.basename(url)
-      with open(file_name, "wb") as local_file:
-         local_file.write(f.read())
-      print "Download complete."
+      repo_handler = None
+      try:
+         repo_handler = GitRepoHandler(software_local_repo_location)
+      except git.InvalidGitRepositoryError:
+         pass
+         
+      if(repo_handler is None):
+         print "Error: Either the software is not under version control, or the version control system has not been detected."
+         sys.exit(1)
 
+      # The desired path to the archive file.
+      archive_path = software_name + "-" + software_sha + ".zip"
+      
+      # Create the archive. First try archiving the local repository.
+      success = repo_handler.archive(software_sha, archive_path)
+      if(not success):
+         # Perhaps the local version of the software is out-of-date, or corrupted.
+         # Let's try and download the .zip file from GitHub instead...
+         success = repo_handler.get_github_archive_from_server(software_sha, archive_path)
+         if(not success):
+            print "Error: Could not obtain a .zip archive of the software at the specified version."
+            sys.exit(1)      
+      
       # ...then upload it to Figshare.
       print "Creating code repository on Figshare for software..."
       title='%s (%s)' % (software_name, software_sha)
@@ -90,8 +97,8 @@ class Publisher:
       print "Code repository created with ID: %d and DOI: %s" % (publication_details["article_id"], publication_details["doi"])
 
       print "Uploading software to Figshare..."
-      self.figshare.add_file(article_id=publication_details["article_id"], file_path=file_name)
-      self.verify_upload(article_id=publication_details["article_id"], files=[file_name])
+      self.figshare.add_file(article_id=publication_details["article_id"], file_path=archive_path)
+      self.verify_upload(article_id=publication_details["article_id"], files=[archive_path])
 
       print "Adding the SHA-1 hash as a tag..."
       self.figshare.add_tag(article_id=publication_details["article_id"], tag_name=software_sha)
