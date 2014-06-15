@@ -29,24 +29,23 @@ from urllib import urlencode
 class Zenodo:
    """ A Python interface to Zenodo via the Zenodo API. """
 
-   def __init__(self, api_key):
+   def __init__(self, access_token):
       # The Zenodo authentication tokens.
-      self.api_key = api_key
+      self.access_token = access_token
+      self.api_url = "https://zenodo.org/api"
       return
 
    def create_deposition(self, title, description, upload_type, state="inprogress"):
       """ Creates a new 'deposition' on Zenodo. Requires a title, description and upload_type (e.g. software, dataset). 
       Returns a dictionary of information about the created article. """
 
-      base_url = "https://zenodo.org/api/deposit/depositions"
+      url = self.api_url + "/deposit/depositions"
       headers = {"content-type": "application/json"}
       data = {}
-      print self.api_key
-      url = base_url + "?apikey=" + self.api_key
+      url = url + "?access_token=" + self.access_token
       print url
 
       response = requests.get(url)
       results = json.loads(response.content)
       return results
-
 
