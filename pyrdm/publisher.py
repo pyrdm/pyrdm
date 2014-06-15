@@ -63,7 +63,7 @@ class Publisher:
          sys.exit(1)
       return config
 
-   def publish_software(self, software_name, software_sha, software_local_repo_location, category_id, private=False):
+   def publish_software(self, software_name, software_local_repo_location, software_sha=None, category="Computer Software", private=False):
       """ Publishes the software in the current repository. """
       
       repo_handler = None
@@ -75,6 +75,10 @@ class Publisher:
       if(repo_handler is None):
          print "Error: Either the software is not under version control, or the version control system has not been detected."
          sys.exit(1)
+
+      # If no software version is given, use the version of the local repository's HEAD.
+      if(software_sha is None):
+         software_sha = repo_handler.get_head_sha()
 
       # The desired path to the archive file.
       archive_path = software_name + "-" + software_sha + ".zip"
@@ -104,10 +108,9 @@ class Publisher:
       self.figshare.add_tag(article_id=publication_details["article_id"], tag_name=software_sha)
       print "Tag added."
 
-      if(category_id is not None):
-         print "Adding category..."
-         self.figshare.add_category(article_id=publication_details["article_id"], category_id=category_id)
-         print "Category added."
+      print "Adding category..."
+      self.figshare.add_category(article_id=publication_details["article_id"], category=category)
+      print "Category added."
 
       print "Adding all authors (with Figshare IDs) to the code..."
       author_ids = self.get_authors_list(software_local_repo_location)
@@ -184,8 +187,8 @@ class Publisher:
 
       # Add category
       print "Adding category..."
-      if(parameters["category_id"] is not None):
-         self.figshare.add_category(article_id, parameters["category_id"])
+      if(parameters["category"] is not None):
+         self.figshare.add_category(article_id, parameters["category"])
 
       # Add tag(s)
       print "Adding tag(s)..."

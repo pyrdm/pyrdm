@@ -30,7 +30,10 @@ from urllib2 import urlopen
 class GitRepoHandler:
 
    def __init__(self, repository_location):
-      self.repo = git.Repo(repository_location)      
+      try:
+         self.repo = git.Repo(repository_location)
+      except:
+         print "Could not open the local Git repository. Check read permissions?\n"
       return
       
    def get_github_archive_from_server(self, sha, archive_path):
