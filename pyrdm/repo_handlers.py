@@ -23,7 +23,7 @@ import re
 
 # VCS interfaces
 import git
-import bzrlib.repository
+import bzrlib.branch, bzrlib.export
 
 from urllib2 import urlopen
 
@@ -71,11 +71,17 @@ class GitRepoHandler:
       
 class BzrRepoHandler:
    def __init__(self, repository_location):
-      self.repo = bzrlib.repository.Repository()
+      self.branch, self.subdir = bzrlib.branch.Branch.open_containing(repository_location)
       return
       
-      
-     
+   def archive(self, revno, archive_path):
+      try:
+         rev_id = self.branch.get_rev_id(revno)
+         tree = bzrlib.revisiontree.RevisionTree(self.branch, rev_id)
+         bzrlib.export.export(tree, archive_path, format="zip")
+      except:
+         return False
+      return True
       
       
       
