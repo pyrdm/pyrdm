@@ -53,8 +53,7 @@ class Publisher:
       return
       
    def load_config(self, config_file_path):
-      """ Load the configuration file containing the OAuth keys and information about the software name, etc
-      into a dictionary called 'config' and return it. """
+      """ Load the configuration file and return a dictionary containing the OAuth keys. """
 
       config = ConfigParser.ConfigParser()
       have_config = (config.read(config_file_path) != [])
