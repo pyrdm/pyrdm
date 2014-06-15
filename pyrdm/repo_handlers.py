@@ -23,7 +23,7 @@ import re
 
 # VCS interfaces
 import git
-import bzrlib.branch, bzrlib.export
+import bzrlib.branch, bzrlib.export, bzrlib.revisiontree
 
 from urllib2 import urlopen
 
