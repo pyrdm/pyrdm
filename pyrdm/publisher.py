@@ -63,12 +63,12 @@ class Publisher:
          sys.exit(1)
       return config
 
-   def publish_software(self, software_name, software_local_repo_location, software_sha=None, category="Computer Software", private=False):
+   def publish_software(self, name, local_repo_location, version=None, category="Computer Software", private=False):
       """ Publishes the software in the current repository. """
       
       repo_handler = None
       try:
-         repo_handler = GitRepoHandler(software_local_repo_location)
+         repo_handler = GitRepoHandler(local_repo_location)
       except git.InvalidGitRepositoryError:
          pass
          
@@ -77,26 +77,26 @@ class Publisher:
          sys.exit(1)
 
       # If no software version is given, use the version of the local repository's HEAD.
-      if(software_sha is None):
-         software_sha = repo_handler.get_head_sha()
+      if(version is None):
+         version = repo_handler.get_head_version()
 
       # The desired path to the archive file.
-      archive_path = software_name + "-" + software_sha + ".zip"
+      archive_path = name + "-" + version + ".zip"
       
       # Create the archive. First try archiving the local repository.
-      success = repo_handler.archive(software_sha, archive_path)
+      success = repo_handler.archive(version, archive_path)
       if(not success):
          # Perhaps the local version of the software is out-of-date, or corrupted.
          # Let's try and download the .zip file from GitHub instead...
-         success = repo_handler.get_github_archive_from_server(software_sha, archive_path)
+         success = repo_handler.get_github_archive_from_server(version, archive_path)
          if(not success):
             print "Error: Could not obtain a .zip archive of the software at the specified version."
             sys.exit(1)      
       
       # ...then upload it to Figshare.
       print "Creating code repository on Figshare for software..."
-      title='%s (%s)' % (software_name, software_sha)
-      description='%s (Version %s)' % (software_name, software_sha)
+      title='%s (%s)' % (name, version)
+      description='%s (Version %s)' % (name, version)
       publication_details = self.figshare.create_article(title=title, description=description, defined_type="code", status="Drafts")
       print "Code repository created with ID: %d and DOI: %s" % (publication_details["article_id"], publication_details["doi"])
 
@@ -105,7 +105,7 @@ class Publisher:
       self.verify_upload(article_id=publication_details["article_id"], files=[archive_path])
 
       print "Adding the SHA-1 hash as a tag..."
-      self.figshare.add_tag(article_id=publication_details["article_id"], tag_name=software_sha)
+      self.figshare.add_tag(article_id=publication_details["article_id"], tag_name=version)
       print "Tag added."
 
       print "Adding category..."
@@ -233,17 +233,17 @@ class Publisher:
             
       return modified
 
-   def find_software(self, software_name, sha):
+   def find_software(self, name, version):
       """ Checks if the software has already been published. If so, it returns the DOI.
       Otherwise it returns None. """
       
-      keyword = "%s" % (software_name) # We always include the software's name in the title, so use it as the keyword
+      keyword = "%s" % (name) # We always include the software's name in the title, so use it as the keyword
       
       if(self.service == "figshare"):
-         results = self.figshare.search(keyword, tag=sha) # We always tag the software with the SHA-1 hash.
+         results = self.figshare.search(keyword, tag=version) # We always tag the software with its version (the SHA-1 hash for Git repositories).
 
          if(len(results["items"]) != 0):
-            print "Software %s has already been published (with SHA-1 %s).\n" % (software_name, sha)
+            print "Software %s has already been published (with version %s).\n" % (name, version)
             article_id = results["items"][-1]["article_id"]
             # Try to find the DOI as well.
             # This try-except block might not be necessary if we are always searching public articles.
