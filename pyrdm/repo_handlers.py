@@ -104,17 +104,16 @@ class RepoHandler(GitRepoHandler, BzrRepoHandler):
       elif(repo_type == "bzr"):
          BzrRepoHandler.__init__(self, repository_location)
       else:
-         print "Error: Either the scientific software is not under version control, or the version control system has not been detected."
-         print "Note that this error is expected if you downloaded the scientific software as an archived (e.g. .zip or .tar.gz) file, since the control directory (e.g. .git or .bzr) is often not included.\n"
+         print "ERROR: Either the scientific software is not under version control, or the version control system has not been detected."
+         print "Perhaps you downloaded the scientific software as an archived (e.g. .zip or .tar.gz) file and the version control directory (e.g. .git or .bzr) was not included.\n"
          sys.exit(1)
-
       return
 
    def determine_repo_type(self, repository_location):
       # Determine the repository type.
       repo_type = None
 
-      # Try a Git repository.
+      # Try opening the repository with Git.
       try:
          repo = git.Repo(repository_location)
          repo_type = "git"
@@ -122,7 +121,7 @@ class RepoHandler(GitRepoHandler, BzrRepoHandler):
       except:
          pass
 
-      # Try a Bazaar repository.
+      # Try opening the repository with Bazaar.
       try:
          branch, subdir = bzrlib.branch.Branch.open_containing(repository_location)
          repo_type = "bzr"

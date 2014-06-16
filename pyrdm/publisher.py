@@ -73,7 +73,7 @@ class Publisher:
       # Search for the software, in case it has already been published.
       pid, doi = self.find_software(name, version)
       if(pid is not None):
-         print "INFO: This version of the software has already been published. Re-using the publication ID (%d) and DOI (%s)...\n" % (pid, doi)
+         print "INFO: Version %s of the software has already been published. Re-using the publication ID (%d) and DOI (%s)...\n" % (version, pid, doi)
          return pid, doi
 
       # The desired path to the archive file.
