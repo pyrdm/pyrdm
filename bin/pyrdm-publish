@@ -36,37 +36,15 @@ class PyRDMPublish:
       self.location = location
       return
 
-   def get_pyrdm_version(self):
-      """ Return the PyRDM version (in the form of the SHA-1 hash of the HEAD of its Git repository). """
-      print "Reading SHA-1 hash..."
-      try:
-         repo = git.Repo(self.location)
-      except:
-         print "Could not open the local Git repository. Check read permissions?\n"
-         return None
-      sha = repo.head.commit.hexsha
-      print "SHA-1 hash: %s" % sha
-      return sha
-
    def publish(self, version=None, private=False):
       """ Publish the PyRDM source code. """
 
       self.publisher = Publisher(service="figshare")
 
       # Publish the software
-         
-      # Get the SHA-1 hash of the software version.
-      if(version is None):
-         sha = self.get_pyrdm_version()
-         if(sha is None):
-            print "Could not obtain the version (SHA-1 hash) of PyRDM. Please use the -v option to specify it.\n"
-            sys.exit(1)
-      else:
-         print "Using the software version provided: %s" % version
-         sha = version
-
-      pid, doi = self.publisher.publish_software(name="PyRDM", local_repo_location=sys.argv[-1], version=sha, private=private)
+      pid, doi = self.publisher.publish_software(name="PyRDM", local_repo_location=sys.argv[-1], version=version, private=private)
       print "PyRDM has been published. Publication ID: %d, DOI: %s" % (pid, doi)
+
       return
          
 if(__name__ == "__main__"):

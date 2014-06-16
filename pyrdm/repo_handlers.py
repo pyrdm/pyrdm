@@ -49,7 +49,6 @@ class GitRepoHandler:
 
    def get_archive_from_server(self, sha, archive_path):
       """ Download a GitHub .zip archive. """
-      # FIXME: This currently supports public repositories only.
       
       # Obtain the origin's URL and get the repository name from that.
       origin_url = self.repo.remotes.origin.url

@@ -68,12 +68,12 @@ class Publisher:
       # If no software version is given, use the version of the local repository's HEAD.
       if(version is None):
          version = repo_handler.get_head_version()
-         print "No version information provided. Using the local repository's HEAD as the version to publish (%s).\n" % version
+         print "INFO: No version information provided. Using the local repository's HEAD as the version to publish (%s).\n" % version
 
       # Search for the software, in case it has already been published.
       pid, doi = self.find_software(name, version)
       if(pid is not None):
-         print "This version of the software has already been published. Re-using the publication ID (%d) and DOI (%s)...\n" % (pid, doi)
+         print "INFO: This version of the software has already been published. Re-using the publication ID (%d) and DOI (%s)...\n" % (pid, doi)
          return pid, doi
 
       # The desired path to the archive file.
@@ -82,8 +82,8 @@ class Publisher:
       # Create the archive. First archive the local repository...
       success = repo_handler.archive(version, archive_path)
       if(not success):
-         print "Error: Could not obtain an archive of the software at the specified version."
-         sys.exit(1)      
+         print "ERROR: Could not obtain an archive of the software at the specified version."
+         sys.exit(1)
       
       # ...then upload it to the citable repository service.
       print "Creating code repository for software..."
