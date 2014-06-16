@@ -32,11 +32,12 @@ class GitRepoHandler:
    def __init__(self, repository_location):
       try:
          self.repo = git.Repo(repository_location)
-      except:
-         print "Could not open the local Git repository. Check read permissions?\n"
+      except git.InvalidGitRepositoryError:
+         print "The Git repository location is not valid or the repository does not exist.  Check read permissions?\n"
+         print "Note that this error is expected if you downloaded the scientific software as an archived (e.g. .zip or .tar.gz) file, since the .git control directory is often not included.\n"
       return
       
-   def get_github_archive_from_server(self, sha, archive_path):
+   def get_archive_from_server(self, sha, archive_path):
       """ Download a GitHub .zip archive. """
       # FIXME: This currently supports public repositories only.
       
@@ -68,12 +69,18 @@ class GitRepoHandler:
          self.repo.archive(f, format="zip")
          f.close()
       except:
-         return False
+         # Perhaps the local version of the software is out-of-date, or corrupted.
+         # Let's try and download the .zip file from GitHub instead...
+         success = self.get_archive_from_server(version, archive_path)
+         return success
       return True
 
    def get_head_version(self):
       return self.repo.head.commit.hexsha
-      
+
+   def get_working_directory(self):
+      return self.repo.working_dir
+
       
 class BzrRepoHandler:
    def __init__(self, repository_location):
@@ -89,5 +96,6 @@ class BzrRepoHandler:
          return False
       return True
       
-      
+   def get_head_version(self):
+      return self.branch.revno()
       
