@@ -25,7 +25,7 @@ import bzrlib.branch, bzrlib.export, bzrlib.revisiontree
 
 from urllib2 import urlopen
 
-class GitRepoHandler:
+class GitHandler:
 
    def __init__(self, repository_location):
       try:
@@ -77,7 +77,7 @@ class GitRepoHandler:
       return self.repo.working_dir
 
       
-class BzrRepoHandler:
+class BzrHandler:
    def __init__(self, repository_location):
       self.branch, self.subdir = bzrlib.branch.Branch.open_containing(repository_location)
       return
@@ -85,7 +85,8 @@ class BzrRepoHandler:
    def archive(self, revno, archive_path):
       try:
          rev_id = self.branch.get_rev_id(revno)
-         tree = bzrlib.revisiontree.RevisionTree(self.branch, rev_id)
+         #tree = bzrlib.revisiontree.RevisionTree(self.branch, rev_id)
+         tree = self.branch.basis_tree()
          bzrlib.export.export(tree, archive_path, format="zip")
       except:
          return False
@@ -95,39 +96,39 @@ class BzrRepoHandler:
       return self.branch.revno()
 
 
-class RepoHandler(GitRepoHandler, BzrRepoHandler):
+class VCSHandler:
    def __init__(self, repository_location):
-      repo_type = self.determine_repo_type(repository_location)
+      vcs_name = self.determine_vcs(repository_location)
 
-      if(repo_type == "git"):
-         GitRepoHandler.__init__(self, repository_location)
-      elif(repo_type == "bzr"):
-         BzrRepoHandler.__init__(self, repository_location)
+      if(vcs_name == "git"):
+         self.vcs = GitHandler(repository_location)
+      elif(vcs_name == "bzr"):
+         self.vcs = BzrHandler(repository_location)
       else:
          print "ERROR: Either the scientific software is not under version control, or the version control system has not been detected."
          print "Perhaps you downloaded the scientific software as an archived (e.g. .zip or .tar.gz) file and the version control directory (e.g. .git or .bzr) was not included.\n"
          sys.exit(1)
       return
 
-   def determine_repo_type(self, repository_location):
-      # Determine the repository type.
-      repo_type = None
+   def determine_vcs(self, repository_location):
+      # Determine the name of the version control system (VCS).
+      vcs_name = None
 
       # Try opening the repository with Git.
       try:
          repo = git.Repo(repository_location)
-         repo_type = "git"
-         print "Git repository found."
+         vcs_name = "git"
+         print "INFO: Git VCS found."
       except:
          pass
 
       # Try opening the repository with Bazaar.
       try:
          branch, subdir = bzrlib.branch.Branch.open_containing(repository_location)
-         repo_type = "bzr"
-         print "Bazaar repository found."
+         vcs_name = "bzr"
+         print "INFO: Bazaar VCS found."
       except:
          pass
 
-      return repo_type
+      return vcs_name
 

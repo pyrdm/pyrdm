@@ -28,7 +28,7 @@ from urllib2 import urlopen
 
 from pyrdm.figshare import Figshare
 from pyrdm.zenodo import Zenodo
-from pyrdm.repo_handlers import RepoHandler#GitRepoHandler, BzrRepoHandler
+from pyrdm.repo_handlers import VCSHandler
 
 class Publisher:
    """ A Python module for publishing scientific software and data on Figshare or Zenodo. """
@@ -63,11 +63,11 @@ class Publisher:
    def publish_software(self, name, local_repo_location, version=None, category="Computer Software", private=False):
       """ Publishes the software in the current repository. """
       
-      repo_handler = RepoHandler(local_repo_location)
+      vcs_handler = VCSHandler(local_repo_location)
 
       # If no software version is given, use the version of the local repository's HEAD.
       if(version is None):
-         version = repo_handler.get_head_version()
+         version = vcs_handler.vcs.get_head_version()
          print "INFO: No version information provided. Using the local repository's HEAD as the version to publish (%s).\n" % version
 
       # Search for the software, in case it has already been published.
@@ -77,10 +77,10 @@ class Publisher:
          return pid, doi
 
       # The desired path to the archive file.
-      archive_path = name + "-" + version + ".zip"
+      archive_path = name + "-" + str(version) + ".zip"
       
       # Create the archive. First archive the local repository...
-      success = repo_handler.archive(version, archive_path)
+      success = vcs_handler.vcs.archive(version, archive_path)
       if(not success):
          print "ERROR: Could not obtain an archive of the software at the specified version."
          sys.exit(1)
@@ -109,7 +109,7 @@ class Publisher:
       print "Category added."
 
       print "Adding all authors (with author IDs) to the code..."
-      author_ids = self.get_authors_list(repo_handler)
+      author_ids = self.get_authors_list(vcs_handler)
       print "List of author IDs: ", author_ids
       if(author_ids is not None):
          for author_id in author_ids:
@@ -253,14 +253,14 @@ class Publisher:
          # TODO: Add in Zenodo searching.
          raise NotImplementedError
 
-   def get_authors_list(self, repo_handler):
+   def get_authors_list(self, vcs_handler):
       """ If an AUTHORS file exists in a given repository's base directory, then read it and
       match any author IDs using a regular expression. Return all author IDs in a single list. """
 
       author_ids = []
       try:
          # Assumes that the AUTHORS file is in the root directory of the project.
-         f = open(repo_handler.get_working_directory() + "/AUTHORS", "r")
+         f = open(vcs_handler.vcs.get_working_directory() + "/AUTHORS", "r")
          for line in f.readlines():
             m = re.search("%s:([0-9]+)" % self.service, line)
             if(m is not None):
