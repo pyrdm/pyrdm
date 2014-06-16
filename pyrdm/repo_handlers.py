@@ -70,6 +70,9 @@ class GitRepoHandler:
       except:
          return False
       return True
+
+   def get_head_version(self):
+      return self.repo.head.commit.hexsha
       
       
 class BzrRepoHandler:
