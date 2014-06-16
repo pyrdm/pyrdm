@@ -94,10 +94,9 @@ class Publisher:
          pid = publication_details["article_id"]
          doi = str(publication_details["doi"])
       elif(self.service == "zenodo"):
-         publication_details = self.zenodo.create_deposition(title=title, description=description, upload_type="software", creators=[{"name":"", "affiliation":""}]) #TODO: Obtain the names and affiliations.
-         print publication_details
+         publication_details = self.zenodo.create_deposition(title=title, description=description, upload_type="software", creators=[{"name":"", "affiliation":""}], prereserve_doi=True) #TODO: Obtain the names and affiliations.
          pid = publication_details["id"]
-         doi = None # NOTE: The DOI will be generated once the deposition is published.
+         doi = str(publication_details["metadata"]["prereserve_doi"]["doi"])
 
       print "Code repository created with ID: %d and DOI: %s" % (pid, doi)
 
