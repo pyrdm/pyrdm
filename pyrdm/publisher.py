@@ -83,12 +83,8 @@ class Publisher:
       # Create the archive. First try archiving the local repository.
       success = repo_handler.archive(version, archive_path)
       if(not success):
-         # Perhaps the local version of the software is out-of-date, or corrupted.
-         # Let's try and download the .zip file from GitHub instead...
-         success = repo_handler.get_github_archive_from_server(version, archive_path)
-         if(not success):
-            print "Error: Could not obtain a .zip archive of the software at the specified version."
-            sys.exit(1)      
+         print "Error: Could not obtain an archive of the software at the specified version."
+         sys.exit(1)      
       
       # ...then upload it to Figshare.
       print "Creating code repository for software..."
@@ -259,21 +255,15 @@ class Publisher:
          raise NotImplementedError
 
    def get_authors_list(self, local_repo_location):
-      """ If an AUTHORS file exists in a given Git repository's base directory, then read it and
+      """ If an AUTHORS file exists in a given repository's base directory, then read it and
       match any author IDs using a regular expression. Return all author IDs in a single list. """
-
-      try:
-         repo = git.Repo(local_repo_location)
-      except git.InvalidGitRepositoryError:
-         print "Cannot obtain authors list because the Git repository location is not valid or does not exist. This is expected if you downloaded PyRDM as a .zip or .tar.gz file."
-         return None
 
       author_ids = []
       try:
          # Assumes that the AUTHORS file is in the root directory of the project.
-         f = open(repo.working_dir + "/AUTHORS", "r")
+         f = open(self.repo_handler.get_working_dir() + "/AUTHORS", "r")
          for line in f.readlines():
-            m = re.search("figshare:([0-9]+)", line)
+            m = re.search("%s:([0-9]+)" % self.service, line)
             if(m is not None):
                author_id = int(m.group(1))
                author_ids.append(author_id)
