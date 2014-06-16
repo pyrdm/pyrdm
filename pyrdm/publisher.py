@@ -28,7 +28,7 @@ from urllib2 import urlopen
 
 from pyrdm.figshare import Figshare
 from pyrdm.zenodo import Zenodo
-from pyrdm.repo_handlers import VCSHandler
+from pyrdm.vcs_handler import VCSHandler
 
 class Publisher:
    """ A Python module for publishing scientific software and data on Figshare or Zenodo. """
