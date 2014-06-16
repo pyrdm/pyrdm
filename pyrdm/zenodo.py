@@ -43,9 +43,10 @@ class Zenodo:
       headers = {"content-type": "application/json"}
       data = {}
       url = url + "?access_token=" + self.access_token
-      print url
 
       response = requests.get(url)
       results = json.loads(response.content)
       return results
 
+if(__name__ == '__main__'):
+   unittest.main()
