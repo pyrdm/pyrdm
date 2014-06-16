@@ -37,6 +37,19 @@ class GitRepoHandler:
          print "Note that this error is expected if you downloaded the scientific software as an archived (e.g. .zip or .tar.gz) file, since the .git control directory is often not included.\n"
       return
       
+   def archive(self, sha, archive_path):
+      try:
+         tree = self.repo.tree(sha)
+         f = open(archive_path, "wb")
+         self.repo.archive(f, format="zip")
+         f.close()
+      except:
+         # Perhaps the local version of the software is out-of-date, or corrupted.
+         # Let's try and download the .zip file from GitHub instead...
+         success = self.get_archive_from_server(version, archive_path)
+         return success
+      return True
+
    def get_archive_from_server(self, sha, archive_path):
       """ Download a GitHub .zip archive. """
       # FIXME: This currently supports public repositories only.
@@ -61,20 +74,6 @@ class GitRepoHandler:
       print "Download successful."
       return True
       
-      
-   def archive(self, sha, archive_path):
-      try:
-         tree = self.repo.tree(sha)
-         f = open(archive_path, "wb")
-         self.repo.archive(f, format="zip")
-         f.close()
-      except:
-         # Perhaps the local version of the software is out-of-date, or corrupted.
-         # Let's try and download the .zip file from GitHub instead...
-         success = self.get_archive_from_server(version, archive_path)
-         return success
-      return True
-
    def get_head_version(self):
       return self.repo.head.commit.hexsha
 

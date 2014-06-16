@@ -37,7 +37,7 @@ class Zenodo:
 
    def create_deposition(self, title, description, upload_type, state="inprogress"):
       """ Creates a new 'deposition' on Zenodo. Requires a title, description and upload_type (e.g. software, dataset). 
-      Returns a dictionary of information about the created article. """
+      Returns a dictionary of information about the created publication. """
 
       url = self.api_url + "/deposit/depositions"
       headers = {"content-type": "application/json"}

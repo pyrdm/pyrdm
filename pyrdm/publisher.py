@@ -76,24 +76,25 @@ class Publisher:
       # If no software version is given, use the version of the local repository's HEAD.
       if(version is None):
          version = repo_handler.get_head_version()
+         print "No version information provided. Using the local repository's HEAD as the version to publish (%s).\n" % version
 
       # The desired path to the archive file.
       archive_path = name + "-" + version + ".zip"
       
-      # Create the archive. First try archiving the local repository.
+      # Create the archive. First archive the local repository...
       success = repo_handler.archive(version, archive_path)
       if(not success):
          print "Error: Could not obtain an archive of the software at the specified version."
          sys.exit(1)      
       
-      # ...then upload it to Figshare.
+      # ...then upload it to the citable repository service.
       print "Creating code repository for software..."
       title='%s (%s)' % (name, version)
       description='%s (Version %s)' % (name, version)
       if(self.service == "figshare"):
          publication_details = self.figshare.create_article(title=title, description=description, defined_type="code", status="Drafts")
          pid = publication_details["article_id"]
-         doi = publication_details["doi"]
+         doi = str(publication_details["doi"])
 
       print "Code repository created with ID: %d and DOI: %s" % (pid, doi)
 
