@@ -33,40 +33,55 @@ class Zenodo:
       # The Zenodo authentication tokens.
       self.access_token = access_token
       self.api_url = "https://zenodo.org/api/"
+
+      print "Testing Zenodo authentication..."
+      try:
+         url = self.api_url + "deposit/depositions"
+         url = self._append_suffix(url)
+
+         response = requests.get(url)
+         print "* Server returned response %d" % response.status_code
+         if(response.status_code != requests.codes.ok): # If the status is not "OK", then exit here.
+            raise Exception("Could not authenticate with the Zenodo server.")
+         else:
+            print "Authentication test successful.\n"
+      except:
+         print "Error: Could not authenticate with the Zenodo server. Check Internet connection? Check Zenodo personal authentication token in ~/.config/pyrdm.ini ?\n"
+         sys.exit(1)
       return
 
-   def append_suffix(self, url):
+   def _append_suffix(self, url):
       return url + "?access_token=" + self.access_token
-
-   def create_deposition(self, title, description, upload_type, state="inprogress"):
-      """ Creates a new 'deposition' on Zenodo. Requires a title, description and upload_type (e.g. software, dataset). 
-      Returns a dictionary of information about the created publication. """
-
-      url = self.api_url + "deposit/depositions"
-      url = self.append_suffix(url)
-
-      headers = {"content-type": "application/json"}
-      data = {"metadata": {"title": title, "description": description, "upload_type": upload_type, "state": state}}
-
-      response = requests.post(url, data=json.dumps(data), headers=headers)
-      results = json.loads(response.content)
-      return results
 
    def list_depositions(self):
       """ Lists all depositions on Zenodo (associated with the user's account). """
 
       url = self.api_url + "deposit/depositions"
-      url = self.append_suffix(url)
+      url = self._append_suffix(url)
 
       response = requests.get(url)
       results = json.loads(response.content)
       return results
 
+   def create_deposition(self, title, description, upload_type, creators):
+      """ Creates a new deposition on Zenodo. Requires a title, description and upload_type (e.g. software, dataset). 
+      Returns a dictionary of information about the created publication. """
+
+      url = self.api_url + "deposit/depositions"
+      url = self._append_suffix(url)
+
+      headers = {"content-type": "application/json"}
+      data = {"metadata": {"title": title, "description": description, "upload_type": upload_type, "creators": creators}}
+
+      response = requests.post(url, data=json.dumps(data), headers=headers)
+      results = json.loads(response.content)
+      return results
+
    def retrieve_deposition(self, deposition_id):
-      """ Returns data about a deposition with a given ID (deposition_id). """
+      """ Returns details about a deposition with a given ID (deposition_id). """
 
       url = self.api_url + "deposit/depositions/%d" % deposition_id
-      url = self.append_suffix(url)
+      url = self._append_suffix(url)
 
       response = requests.get(url)
       results = json.loads(response.content)
@@ -76,7 +91,7 @@ class Zenodo:
       """ Update the metadata of a deposition with a given ID (deposition_id). """
 
       url = self.api_url + "deposit/depositions/%d" % deposition_id
-      url = self.append_suffix(url)
+      url = self._append_suffix(url)
 
       headers = {"content-type": "application/json"}
       data = {"metadata": {"title": title, "description": description, "upload_type": upload_type, "state": state}}
@@ -89,12 +104,35 @@ class Zenodo:
       """ Delete a deposition with a given ID (deposition_id). """
 
       url = self.api_url + "deposit/depositions/%d" % deposition_id
-      url = self.append_suffix(url)
+      url = self._append_suffix(url)
 
       requests.delete(url)
       results = json.loads(response.content)
       return results
 
+   def list_files(self, deposition_id):
+      """ Lists all files in a given depositions on Zenodo. """
+
+      url = self.api_url + "deposit/depositions/%d/files" % deposition_id
+      url = self._append_suffix(url)
+
+      response = requests.get(url)
+      results = json.loads(response.content)
+      return results
+
+   def create_file(self, deposition_id, file_path):
+      """ Creates a new deposition on Zenodo.  """
+
+      url = self.api_url + "deposit/depositions/%d/files" % deposition_id
+      url = self._append_suffix(url)
+
+      headers = {"content-type": "multipart/form-data"}
+      data = {'filename': os.path.basename(file_path)}
+      files = {'file': open(file_path, 'rb')}
+
+      response = requests.post(url, data=data, headers=headers, files=files)
+      results = json.loads(response.content)
+      return results
 
 if(__name__ == '__main__'):
    unittest.main()
