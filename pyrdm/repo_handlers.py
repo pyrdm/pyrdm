@@ -18,8 +18,6 @@
 #    along with PyRDM.  If not, see <http://www.gnu.org/licenses/>.
 
 import sys, os
-import unittest
-import re
 
 # VCS interfaces
 import git
@@ -33,8 +31,7 @@ class GitRepoHandler:
       try:
          self.repo = git.Repo(repository_location)
       except git.InvalidGitRepositoryError:
-         print "The Git repository location is not valid or the repository does not exist.  Check read permissions?\n"
-         print "Note that this error is expected if you downloaded the scientific software as an archived (e.g. .zip or .tar.gz) file, since the .git control directory is often not included.\n"
+         print "The Git repository location is not valid or the repository does not exist."
       return
       
    def archive(self, sha, archive_path):
@@ -97,4 +94,42 @@ class BzrRepoHandler:
       
    def get_head_version(self):
       return self.branch.revno()
-      
+
+
+class RepoHandler(GitRepoHandler, BzrRepoHandler):
+   def __init__(self, repository_location):
+      repo_type = self.determine_repo_type(repository_location)
+
+      if(repo_type == "git"):
+         GitRepoHandler.__init__(self, repository_location)
+      elif(repo_type == "bzr"):
+         BzrRepoHandler.__init__(self, repository_location)
+      else:
+         print "Error: Either the scientific software is not under version control, or the version control system has not been detected."
+         print "Note that this error is expected if you downloaded the scientific software as an archived (e.g. .zip or .tar.gz) file, since the control directory (e.g. .git or .bzr) is often not included.\n"
+         sys.exit(1)
+
+      return
+
+   def determine_repo_type(self, repository_location):
+      # Determine the repository type.
+      repo_type = None
+
+      # Try a Git repository.
+      try:
+         repo = git.Repo(repository_location)
+         repo_type = "git"
+         print "Git repository found."
+      except:
+         pass
+
+      # Try a Bazaar repository.
+      try:
+         branch, subdir = bzrlib.branch.Branch.open_containing(repository_location)
+         repo_type = "bzr"
+         print "Bazaar repository found."
+      except:
+         pass
+
+      return repo_type
+
