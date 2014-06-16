@@ -93,11 +93,19 @@ class Publisher:
          publication_details = self.figshare.create_article(title=title, description=description, defined_type="code", status="Drafts")
          pid = publication_details["article_id"]
          doi = str(publication_details["doi"])
+      elif(self.service == "zenodo"):
+         publication_details = self.zenodo.create_deposition(title=title, description=description, upload_type="software", creators=[{"name":"", "affiliation":""}]) #TODO: Obtain the names and affiliations.
+         print publication_details
+         pid = publication_details["id"]
+         doi = None # NOTE: The DOI will be generated once the deposition is published.
 
       print "Code repository created with ID: %d and DOI: %s" % (pid, doi)
 
       print "Uploading software..."
-      self.figshare.add_file(article_id=pid, file_path=archive_path)
+      if(self.service == "figshare"):
+         self.figshare.add_file(article_id=pid, file_path=archive_path)
+      elif(self.service == "zenodo"):
+         self.zenodo.create_file(deposition_id=pid, file_path=archive_path)
       self.verify_upload(pid=pid, files=[archive_path])
 
       print "Adding the software's version as a tag..."
@@ -249,9 +257,11 @@ class Publisher:
             return pid, doi
          else:
             return None, None
+      elif(self.service == "zenodo"):
+         return None, None
       else:
-         # TODO: Add in Zenodo searching.
-         raise NotImplementedError
+         print "Unknown service %s" % self.service
+         sys.exit(1)
 
    def get_authors_list(self, vcs_handler):
       """ If an AUTHORS file exists in a given repository's base directory, then read it and
