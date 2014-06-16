@@ -123,7 +123,7 @@ class Publisher:
          self.figshare.make_public(article_id=pid)
          print "The code has been made public."
 
-      return publication_details
+      return pid, doi
       
    def publish_data(self, parameters, pid=None, private=False):
       """ Create a new dataset on the online, citable repository's server. 
@@ -199,7 +199,7 @@ class Publisher:
          self.figshare.make_public(article_id=pid)
          print "The data has been made public."
 
-      return publication_details
+      return pid, doi
       
    def write_checksum(self, f):
       """ For a given file with path 'f', write a corresponding MD5 checksum file. """
@@ -306,7 +306,7 @@ class Publisher:
                continue
       return
 
-   def article_exists(self, pid):
+   def publication_exists(self, pid):
       results = self.figshare.get_article_details(pid)
       if("error" in results.keys()):
          return False
