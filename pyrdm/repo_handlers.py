@@ -86,17 +86,32 @@ class BzrHandler:
    def archive(self, revno, archive_path):
       """ Create a .zip archive of the bzr branch at a given revision number. Saves the archive to 'archive_path'. """
       try:
-         #FIXME: This only allows the publication of the HEAD version at the moment.
-         #revid = self.branch.get_rev_id(revno)
+         #FIXME: This is a hack to get around the "NotImplementedError" when using the commented-out line below.
+
+         # Save the current revision number and revision ID.
+         current_revno = self.branch.revno()
+         current_revid = self.branch.get_rev_id(current_revno)
+
+         revno = int(revno) # Cast to an integer here, in case the user inputs the revno as a string (e.g. at the command line).
+
+         # Set the branch to the desired revision and export it.
+         revid = self.branch.get_rev_id(revno)
          #tree = bzrlib.revisiontree.RevisionTree(self.branch, rev_id)
+         self.branch.set_last_revision_info(int(revno), revid)
          tree = self.branch.basis_tree()
          bzrlib.export.export(tree, archive_path, format="zip")
-      except:
+     
+         # Reset the revision information.
+         self.branch.set_last_revision_info(current_revno, current_revid)
+      except
          return False
       return True
       
    def get_head_version(self):
       return self.branch.revno()
+
+   def get_working_directory(self):
+      return self.branch.base.replace("file://", "")
 
 
 class VCSHandler:
