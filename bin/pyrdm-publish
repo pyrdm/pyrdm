@@ -65,17 +65,8 @@ class PyRDMPublish:
          print "Using the software version provided: %s" % version
          sha = version
 
-      # Search for the software, in case it has already been published.
-      pid, doi = self.publisher.find_software("PyRDM", sha)
-         
-      if(pid is None):
-         # Software is not published already, so publish it now.
-         pid, doi = self.publisher.publish_software(name="PyRDM", local_repo_location=sys.argv[-1], version=sha, private=private)
-         print "Published PyRDM. Figshare publication ID: %d, DOI: %s" % (pid, doi)                                                       
-      else:
-         print "This version of PyRDM has already been published. Re-using the publication ID (%d) and DOI (%s)...\n" % (pid, doi)
-   
-      print "Finished publishing."
+      pid, doi = self.publisher.publish_software(name="PyRDM", local_repo_location=sys.argv[-1], version=sha, private=private)
+      print "PyRDM has been published. Publication ID: %d, DOI: %s" % (pid, doi)
       return
          
 if(__name__ == "__main__"):

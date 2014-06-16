@@ -197,28 +197,15 @@ class FluidityPublish:
          else:
             print "Using the software version provided: %s" % version
             sha = version
-
-         # Search for the software, in case it has already been published.
-         pid, doi = self.publisher.find_software("Fluidity", sha)
          
          options_path = "/publish/software/"
-         if(pid is None):
-            # Software is not published already, so publish it now.
-            pid, doi = self.publisher.publish_software(name="Fluidity", local_repo_location=sys.argv[-1], version=sha,
-                                                                  category="Computational Physics", private=private)
-            try:
-               libspud.set_option(options_path + "/pid", pid)
-               libspud.set_option(options_path + "/doi", doi)
-            except:
-               pass # Ignore any SPUD_NEW_KEY_WARNING warnings
-         else:
-            print "This version of Fluidity has already been published. Re-using the publication ID (%d) and DOI (%s)...\n" % (pid, doi)
-            try:
-               libspud.set_option(options_path + "/pid", pid)
-               if(doi is not None):
-                  libspud.set_option(options_path + "/doi", doi)
-            except:
-               pass # Ignore any SPUD_NEW_KEY_WARNING warnings
+         pid, doi = self.publisher.publish_software(name="Fluidity", local_repo_location=sys.argv[-1], version=sha,
+                                                    category="Computational Physics", private=private)
+         try:
+            libspud.set_option(options_path + "/pid", pid)
+            libspud.set_option(options_path + "/doi", doi)
+         except:
+            pass # Ignore any SPUD_NEW_KEY_WARNING warnings
                
          libspud.write_options(self.options_file)
             

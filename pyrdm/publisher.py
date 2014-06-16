@@ -28,7 +28,7 @@ from urllib2 import urlopen
 
 from pyrdm.figshare import Figshare
 from pyrdm.zenodo import Zenodo
-from pyrdm.repo_handlers import GitRepoHandler, BzrRepoHandler
+from pyrdm.repo_handlers import RepoHandler#GitRepoHandler, BzrRepoHandler
 
 class Publisher:
    """ A Python module for publishing scientific software and data on Figshare or Zenodo. """
@@ -63,20 +63,18 @@ class Publisher:
    def publish_software(self, name, local_repo_location, version=None, category="Computer Software", private=False):
       """ Publishes the software in the current repository. """
       
-      repo_handler = None
-      try:
-         repo_handler = GitRepoHandler(local_repo_location)
-      except git.InvalidGitRepositoryError:
-         pass
-         
-      if(repo_handler is None):
-         print "Error: Either the software is not under version control, or the version control system has not been detected."
-         sys.exit(1)
+      repo_handler = RepoHandler(local_repo_location)
 
       # If no software version is given, use the version of the local repository's HEAD.
       if(version is None):
          version = repo_handler.get_head_version()
          print "No version information provided. Using the local repository's HEAD as the version to publish (%s).\n" % version
+
+      # Search for the software, in case it has already been published.
+      pid, doi = self.find_software(name, version)
+      if(pid is not None):
+         print "This version of the software has already been published. Re-using the publication ID (%d) and DOI (%s)...\n" % (pid, doi)
+         return pid, doi
 
       # The desired path to the archive file.
       archive_path = name + "-" + version + ".zip"
@@ -111,7 +109,7 @@ class Publisher:
       print "Category added."
 
       print "Adding all authors (with author IDs) to the code..."
-      author_ids = self.get_authors_list(local_repo_location)
+      author_ids = self.get_authors_list(repo_handler)
       print "List of author IDs: ", author_ids
       if(author_ids is not None):
          for author_id in author_ids:
@@ -142,7 +140,7 @@ class Publisher:
             publication_details = self.zenodo.create_deposition(title=parameters["title"], description=parameters["description"], upload_type="dataset", state="inprogress")
             pid = publication_details["id"]
 
-         print "Dataset created with ID: %d and DOI: %s" % (publication_details["article_id"], publication_details["doi"])
+         print "Fileset created with ID: %d and DOI: %s" % (publication_details["article_id"], publication_details["doi"])
 
          # This is a new article, so upload ALL the files!
          modified_files = parameters["files"]
@@ -255,14 +253,14 @@ class Publisher:
          # TODO: Add in Zenodo searching.
          raise NotImplementedError
 
-   def get_authors_list(self, local_repo_location):
+   def get_authors_list(self, repo_handler):
       """ If an AUTHORS file exists in a given repository's base directory, then read it and
       match any author IDs using a regular expression. Return all author IDs in a single list. """
 
       author_ids = []
       try:
          # Assumes that the AUTHORS file is in the root directory of the project.
-         f = open(self.repo_handler.get_working_dir() + "/AUTHORS", "r")
+         f = open(repo_handler.get_working_directory() + "/AUTHORS", "r")
          for line in f.readlines():
             m = re.search("%s:([0-9]+)" % self.service, line)
             if(m is not None):
@@ -285,7 +283,7 @@ class Publisher:
          if(exists):
             continue
          else:
-            print "Warning: Could not find file %s on the Figshare server.\n" % f
+            print "Warning: Could not find file %s on the repository server.\n" % f
             return False
       return True
 
@@ -294,14 +292,14 @@ class Publisher:
       if(self.is_uploaded(pid=pid, files=files)):
          print "All files successfully uploaded."
       else:
-         print "Not all files were successfully uploaded. Perhaps you ran out of space on the server?\n"
+         print "Not all files were successfully uploaded. Perhaps you ran out of space on the repository server?\n"
          while True:
             response = raw_input("Are you sure you want to continue? (Y/N)\n")
             if(response == "y" or response == "Y"):
                break
             elif(response == "n" or response == "N"):
                # Clean up and exit
-               self.figshare.delete_article(article_id=pid) # NOTE: This should only delete draft code/filesets.
+               self.figshare.delete_article(article_id=pid) # NOTE: This only deletes draft code/filesets.
                sys.exit(1)
             else:
                continue
