@@ -154,9 +154,9 @@ class Figshare:
       """ Return the integer ID of a given category. If not found, return None. """
       categories_list = self.get_categories()["items"]
       category_id = None
-      for category in categories_list:
-         if(category["name"] == category_name):
-            category_id = category["id"]
+      for c in categories_list:
+         if(c["name"] == category):
+            category_id = c["id"]
             break
       return category_id
 
@@ -310,9 +310,9 @@ class TestLog(unittest.TestCase):
       return
 
    def test_figshare_add_category(self):
-      print "Adding category 'Computational Physics' to test article..."
+      print "Adding category 'Computer Software' to test article..."
       
-      results = self.figshare.add_category(self.article_id, 109)
+      results = self.figshare.add_category(self.article_id, "Computer Software")
       print results
       assert("success" in results.keys())
       
