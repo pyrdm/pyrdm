@@ -103,7 +103,7 @@ class BzrHandler:
      
          # Reset the revision information.
          self.branch.set_last_revision_info(current_revno, current_revid)
-      except
+      except:
          return False
       return True
       
