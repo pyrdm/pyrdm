@@ -35,6 +35,7 @@ class GitHandler:
       return
       
    def archive(self, sha, archive_path):
+      """ Create a .zip archive of the git repository for a given SHA-1 hash. Saves the archive to 'archive_path'. """
       try:
          tree = self.repo.tree(sha)
          f = open(archive_path, "wb")
@@ -83,8 +84,10 @@ class BzrHandler:
       return
       
    def archive(self, revno, archive_path):
+      """ Create a .zip archive of the bzr branch at a given revision number. Saves the archive to 'archive_path'. """
       try:
-         rev_id = self.branch.get_rev_id(revno)
+         #FIXME: This only allows the publication of the HEAD version at the moment.
+         #revid = self.branch.get_rev_id(revno)
          #tree = bzrlib.revisiontree.RevisionTree(self.branch, rev_id)
          tree = self.branch.basis_tree()
          bzrlib.export.export(tree, archive_path, format="zip")
@@ -111,7 +114,8 @@ class VCSHandler:
       return
 
    def determine_vcs(self, repository_location):
-      # Determine the name of the version control system (VCS).
+      """ Return the name of the version control system (VCS). """
+
       vcs_name = None
 
       # Try opening the repository with Git.
