@@ -89,45 +89,63 @@ class Publisher:
       print "Creating code repository for software..."
       title='%s (%s)' % (name, version)
       description='%s (Version %s)' % (name, version)
+
       if(self.service == "figshare"):
          publication_details = self.figshare.create_article(title=title, description=description, defined_type="code", status="Drafts")
          pid = publication_details["article_id"]
          doi = str(publication_details["doi"])
+         print "Code repository created with ID: %d and DOI: %s" % (pid, doi)
+
+         print "Uploading software..."
+         self.figshare.add_file(article_id=pid, file_path=archive_path)
+         self.verify_upload(pid=pid, files=[archive_path])
+
+         print "Adding the software's version as a tag..."
+         self.figshare.add_tag(article_id=pid, tag_name=version)
+         print "Tag added."
+
+         print "Adding category..."
+         self.figshare.add_category(article_id=pid, category=category)
+         print "Category added."
+
+         print "Adding all authors (with author IDs) to the code..."
+         author_ids = self.get_authors_list(vcs_handler)
+         print "List of author IDs: ", author_ids
+         if(author_ids is not None):
+            for author_id in author_ids:
+               self.figshare.add_author(pid, author_id)
+         print "All authors (with author IDs) added."
+
+         # If we are not keeping the code private, then make it public.
+         if(not private):
+            print "Making the code public..."
+            self.figshare.make_public(article_id=pid)
+            print "The code has been made public."
+
       elif(self.service == "zenodo"):
-         publication_details = self.zenodo.create_deposition(title=title, description=description, upload_type="software", creators=[{"name":"", "affiliation":""}], prereserve_doi=True) #TODO: Obtain the names and affiliations.
+
+         # With Zenodo we have to obtain the authors list and tags *before* creating the deposition.
+         print "Obtaining author names and affiliations..."
+         authors = self.get_authors_list(vcs_handler)
+         print "List of author IDs: ", author_ids
+         if(authors is None or authors == []):
+            print "ERROR: Zenodo requires at least one author to be present in the author's list."
+            sys.exit(1)
+
+         publication_details = self.zenodo.create_deposition(title=title, description=description, upload_type="software", creators=authors, keywords=[version], prereserve_doi=True)
          pid = publication_details["id"]
          doi = str(publication_details["metadata"]["prereserve_doi"]["doi"])
+         print "Code repository created with ID: %d and DOI: %s" % (pid, doi)
 
-      print "Code repository created with ID: %d and DOI: %s" % (pid, doi)
-
-      print "Uploading software..."
-      if(self.service == "figshare"):
-         self.figshare.add_file(article_id=pid, file_path=archive_path)
-      elif(self.service == "zenodo"):
+         print "Uploading software..."
          self.zenodo.create_file(deposition_id=pid, file_path=archive_path)
-      self.verify_upload(pid=pid, files=[archive_path])
+         #self.verify_upload(pid=pid, files=[archive_path])
 
-      print "Adding the software's version as a tag..."
-      self.figshare.add_tag(article_id=pid, tag_name=version)
-      print "Tag added."
-
-      print "Adding category..."
-      self.figshare.add_category(article_id=pid, category=category)
-      print "Category added."
-
-      print "Adding all authors (with author IDs) to the code..."
-      author_ids = self.get_authors_list(vcs_handler)
-      print "List of author IDs: ", author_ids
-      if(author_ids is not None):
-         for author_id in author_ids:
-            self.figshare.add_author(pid, author_id)
-      print "All authors (with author IDs) added."
-
-      # If we are not keeping the code private, then make it public.
-      if(not private):
-         print "Making the code public..."
-         self.figshare.make_public(article_id=pid)
-         print "The code has been made public."
+         # If we are not keeping the code private, then make it public.
+         if(not private):
+            print "Making the code public..."
+            self.zenodo.publish_deposition(deposition_id=pid)
+            print "The code has been made public."
 
       return pid, doi
       

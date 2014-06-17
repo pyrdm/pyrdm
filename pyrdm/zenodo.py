@@ -63,7 +63,7 @@ class Zenodo:
       results = json.loads(response.content)
       return results
 
-   def create_deposition(self, title, description, upload_type, creators, prereserve_doi):
+   def create_deposition(self, title, description, upload_type, creators, keywords, prereserve_doi):
       """ Creates a new deposition on Zenodo. Requires a title, description and upload_type (e.g. software, dataset). 
       Returns a dictionary of information about the created publication. """
 
@@ -71,7 +71,7 @@ class Zenodo:
       url = self._append_suffix(url)
 
       headers = {"content-type": "application/json"}
-      data = {"metadata": {"title": title, "description": description, "upload_type": upload_type, "creators": creators, "prereserve_doi": prereserve_doi}}
+      data = {"metadata": {"title": title, "description": description, "upload_type": upload_type, "creators": creators, "keywords": keywords, "prereserve_doi": prereserve_doi}}
 
       response = requests.post(url, data=json.dumps(data), headers=headers)
       results = json.loads(response.content)
