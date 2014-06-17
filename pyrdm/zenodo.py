@@ -53,6 +53,9 @@ class Zenodo:
    def _append_suffix(self, url):
       return url + "?access_token=" + self.access_token
 
+   # -------------------------------------------
+   # Methods for depositions
+   # -------------------------------------------
    def list_depositions(self):
       """ Lists all depositions on Zenodo (associated with the user's account). """
 
@@ -110,6 +113,10 @@ class Zenodo:
       results = json.loads(response.content)
       return results
 
+
+   # -------------------------------------------
+   # Methods for deposition files
+   # -------------------------------------------
    def list_files(self, deposition_id):
       """ Lists all files in a given depositions on Zenodo. """
 
@@ -130,7 +137,89 @@ class Zenodo:
       data = {'filename': os.path.basename(file_path)}
       files = {'file': open(file_path, 'rb')}
 
-      response = requests.post(url, data=data, headers=headers, files=files)
+      response = requests.post(url, data=data, files=files)
+      results = json.loads(response.content)
+      return results
+
+   def sort_files(self, deposition_id, file_ids):
+      """ Sorts a list of files (with their file_ids in a list called 'file_ids') associated with a given deposition_id on Zenodo. """
+
+      url = self.api_url + "deposit/depositions/%d/files" % deposition_id
+      url = self._append_suffix(url)
+
+      headers = {"content-type": "application/json"}
+      data = []
+      for file_id in file_ids:
+         data.append({"id":file_id})
+
+      response = requests.put(url, data=json.dumps(data), headers=headers)
+      results = json.loads(response.content)
+      return results
+
+   def retrieve_file(self, deposition_id, file_id):
+      """ Retrieve details about a file (with a given file_id) in a deposition (with a given deposition_id) on Zenodo. """
+
+      url = self.api_url + "deposit/depositions/%d/files/%d" % (deposition_id, file_id)
+      url = self._append_suffix(url)
+
+      response = requests.get(url)
+      results = json.loads(response.content)
+      return results
+
+   def update_file(self, deposition_id, file_id, new_file_name):
+      """ Updates a file (with a given file_id) in a deposition (with a given deposition_id) on Zenodo. 
+          Currently this is only used to rename an existing file on the Zenodo servers. """
+
+      url = self.api_url + "deposit/depositions/%d/files/%d" % (deposition_id, file_id)
+      url = self._append_suffix(url)
+
+      headers = {"content-type": "application/json"}
+      data = {"filename": new_file_name}
+
+      response = requests.get(url, data=json.dumps(data), headers=headers)
+      results = json.loads(response.content)
+      return results
+
+   def delete_file(self, deposition_id, file_id):
+      """ Deletes a file (with a given file_id) in a deposition (with a given deposition_id) on Zenodo. """
+
+      url = self.api_url + "deposit/depositions/%d/files/%d" % (deposition_id, file_id)
+      url = self._append_suffix(url)
+
+      response = requests.delete(url)
+      results = json.loads(response.content)
+      return results
+
+   # -------------------------------------------
+   # Methods for deposition actions
+   # -------------------------------------------
+   def publish_deposition(self, deposition_id):
+      """ Publishes a deposition (with a given deposition_id) on Zenodo. """
+
+      url = self.api_url + "deposit/depositions/%d/actions/publish" % deposition_id
+      url = self._append_suffix(url)
+
+      response = requests.post(url)
+      results = json.loads(response.content)
+      return results
+
+   def edit_deposition(self, deposition_id):
+      """ Opens up a deposition (with a given deposition_id) on Zenodo for editing. """
+
+      url = self.api_url + "deposit/depositions/%d/actions/edit" % deposition_id
+      url = self._append_suffix(url)
+
+      response = requests.post(url)
+      results = json.loads(response.content)
+      return results
+
+   def discard_deposition(self, deposition_id):
+      """ Discards any changes (made in the current editing session) to a deposition (with a given deposition_id) on Zenodo. """
+
+      url = self.api_url + "deposit/depositions/%d/actions/discard" % deposition_id
+      url = self._append_suffix(url)
+
+      response = requests.post(url)
       results = json.loads(response.content)
       return results
 
