@@ -23,9 +23,6 @@ import unittest
 import requests
 import json
 
-from urllib2 import urlopen
-from urllib import urlencode
-
 class Zenodo:
    """ A Python interface to Zenodo via the Zenodo API. """
 

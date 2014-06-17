@@ -24,7 +24,6 @@ import requests
 from requests_oauthlib import OAuth1
 import json
 
-from urllib2 import urlopen
 from urllib import urlencode
 
 class Figshare:
