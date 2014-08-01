@@ -19,7 +19,7 @@
 
 import sys, os, glob
 import ConfigParser
-import optparse
+import argparse
 import re
 
 import git
@@ -32,17 +32,16 @@ from pyrdm.publisher import Publisher
 
 class PyRDMPublish:
 
-   def __init__(self, location):
-      self.location = location
+   def __init__(self):
       return
 
-   def publish(self, version=None, private=False):
+   def publish(self, path, version=None, private=False):
       """ Publish the PyRDM source code. """
 
       self.publisher = Publisher(service="figshare")
 
       # Publish the software
-      pid, doi = self.publisher.publish_software(name="PyRDM", local_repo_location=sys.argv[-1], version=version, private=private)
+      pid, doi = self.publisher.publish_software(name="PyRDM", local_repo_location=path, version=version, private=private)
       print "PyRDM has been published. Publication ID: %d, DOI: %s" % (pid, doi)
 
       return
@@ -50,15 +49,15 @@ class PyRDMPublish:
 if(__name__ == "__main__"):
    # Parse the command line arguments
    usage = "Usage: %prog [options] path_to_local_pyrdm_git_repository"
-   parser = optparse.OptionParser(usage=usage)
-   parser.add_option("-v", "--version", help="Publish a specific version of the PyRDM source code identified by a given SHA-1 hash.", action="store", type="string", default=None, metavar="HASH")
-   (options, args) = parser.parse_args()
+   parser = argparse.ArgumentParser(prog="pyrdm-publish", description="Publishes the PyRDM source code to an online citable repository.")
+   parser.add_argument("-v", "--version", help="Publish a specific version of the PyRDM source code identified by a given SHA-1 hash.", action="store", type=str, default=None, metavar="HASH")
+   parser.add_argument("path", help="The path to the local Git repository of PyRDM on your file system.", action="store", type=str)
+   args = parser.parse_args()
    
-   if(len(sys.argv) <= 1):
-      print "You need to provide the path to the local Git repository of PyRDM in order to publish it.\n"
-      parser.print_help()
+   if(os.path.exists(args.path)):
+      rdm = PyRDMPublish()
+      rdm.publish(path = args.path, version = args.version, private=True)
+   else:
+      print "The path to the local PyRDM directory does not exist."
       sys.exit(1)
-   
-   rdm = PyRDMPublish(location = sys.argv[-1])
-   rdm.publish(version = options.version, private=True)
    
