@@ -161,17 +161,20 @@ class Publisher:
             # NOTE: The defined_type needs to be a 'fileset' to allow multiple files to be uploaded separately.
             publication_details = self.figshare.create_article(title=parameters["title"], description=parameters["description"], defined_type="fileset", status="Drafts")
             pid = publication_details["article_id"]
+            doi = str(publication_details["doi"])
          elif(self.service == "zenodo"):
             publication_details = self.zenodo.create_deposition(title=parameters["title"], description=parameters["description"], upload_type="dataset", state="inprogress")
             pid = publication_details["id"]
+            doi = str(publication_details["metadata"]["prereserve_doi"]["doi"])
 
-         print "Fileset created with ID: %d and DOI: %s" % (publication_details["article_id"], publication_details["doi"])
+         print "Fileset created with ID: %d and DOI: %s" % (pid, doi)
 
          # This is a new article, so upload ALL the files!
          modified_files = parameters["files"]
          existing_files = []
       else:
          publication_details = None
+         doi = None # FIXME: We could try to look up the DOI associated with a given PID in the future.
          # This is an existing publication, so check whether any files have been modified since they were last published.
          modified_files = self.find_modified(parameters["files"])
          existing_files = self.figshare.get_file_details(pid)["files"]
