@@ -39,7 +39,7 @@ class GitHandler:
       try:
          tree = self.repo.tree(sha)
          f = open(archive_path, "wb")
-         self.repo.archive(f, format="zip")
+         self.repo.archive(f, treeish=tree, format="zip")
          f.close()
       except:
          # Perhaps the local version of the software is out-of-date, or corrupted.
