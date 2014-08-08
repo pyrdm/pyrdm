@@ -127,7 +127,7 @@ class Publisher:
          # With Zenodo we have to obtain the authors list and tags *before* creating the deposition.
          print "Obtaining author names and affiliations..."
          authors = self.get_authors_list(vcs_handler)
-         print "List of author IDs: ", author_ids
+         print "List of authors and affiliations: ", authors
          if(authors is None or authors == []):
             print "ERROR: Zenodo requires at least one author to be present in the author's list."
             sys.exit(1)
@@ -292,10 +292,20 @@ class Publisher:
          # Assumes that the AUTHORS file is in the root directory of the project.
          f = open(vcs_handler.vcs.get_working_directory() + "/AUTHORS", "r")
          for line in f.readlines():
-            m = re.search("%s:([0-9]+)" % self.service, line)
-            if(m is not None):
-               author_id = int(m.group(1))
-               author_ids.append(author_id)
+         
+            if(self.service == "figshare"):
+               m = re.search("<%s:([0-9]+)>" % self.service, line)
+               if(m is not None):
+                  author_id = int(m.group(1)) # Figshare expects integer author IDs.
+                  author_ids.append(author_id)
+                  
+            elif(self.service == "zenodo"):
+               m = re.search("<%s:(.+;.+)>" % self.service, line)
+               if(m is not None):
+                  s = m.group(1).split(";")
+                  author_id = {'name':s[0], 'affiliation':s[1]}
+                  author_ids.append(author_id)               
+               
          return author_ids
       except IOError:
          print "Could not open AUTHORS file. Does it exist? Check read permissions?"
