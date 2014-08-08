@@ -21,7 +21,7 @@ import sys, os
 
 # VCS interfaces
 import git
-import bzrlib.branch, bzrlib.export, bzrlib.revisiontree
+#import bzrlib.branch, bzrlib.export, bzrlib.revisiontree
 
 from urllib2 import urlopen
 
@@ -78,40 +78,40 @@ class GitHandler:
       return self.repo.working_dir
 
       
-class BzrHandler:
-   def __init__(self, repository_location):
-      self.branch, self.subdir = bzrlib.branch.Branch.open_containing(repository_location)
-      return
-      
-   def archive(self, revno, archive_path):
-      """ Create a .zip archive of the bzr branch at a given revision number. Saves the archive to 'archive_path'. """
-      try:
-         #FIXME: This is a hack to get around the "NotImplementedError" when using the commented-out line below.
-
-         # Save the current revision number and revision ID.
-         current_revno = self.branch.revno()
-         current_revid = self.branch.get_rev_id(current_revno)
-
-         revno = int(revno) # Cast to an integer here, in case the user inputs the revno as a string (e.g. at the command line).
-
-         # Set the branch to the desired revision and export it.
-         revid = self.branch.get_rev_id(revno)
-         #tree = bzrlib.revisiontree.RevisionTree(self.branch, rev_id)
-         self.branch.set_last_revision_info(int(revno), revid)
-         tree = self.branch.basis_tree()
-         bzrlib.export.export(tree, archive_path, format="zip")
-     
-         # Reset the revision information.
-         self.branch.set_last_revision_info(current_revno, current_revid)
-      except:
-         return False
-      return True
-      
-   def get_head_version(self):
-      return self.branch.revno()
-
-   def get_working_directory(self):
-      return self.branch.base.replace("file://", "")
+#class BzrHandler:
+#   def __init__(self, repository_location):
+#      self.branch, self.subdir = bzrlib.branch.Branch.open_containing(repository_location)
+#      return
+#      
+#   def archive(self, revno, archive_path):
+#      """ Create a .zip archive of the bzr branch at a given revision number. Saves the archive to 'archive_path'. """
+#      try:
+#         #FIXME: This is a hack to get around the "NotImplementedError" when using the commented-out line below.
+#
+#         # Save the current revision number and revision ID.
+#         current_revno = self.branch.revno()
+#         current_revid = self.branch.get_rev_id(current_revno)
+#
+#         revno = int(revno) # Cast to an integer here, in case the user inputs the revno as a string (e.g. at the command line).
+#
+#         # Set the branch to the desired revision and export it.
+#         revid = self.branch.get_rev_id(revno)
+#         #tree = bzrlib.revisiontree.RevisionTree(self.branch, rev_id)
+#         self.branch.set_last_revision_info(int(revno), revid)
+#         tree = self.branch.basis_tree()
+#         bzrlib.export.export(tree, archive_path, format="zip")
+#     
+#         # Reset the revision information.
+#         self.branch.set_last_revision_info(current_revno, current_revid)
+#      except:
+#         return False
+#      return True
+#      
+#   def get_head_version(self):
+#      return self.branch.revno()
+#
+#   def get_working_directory(self):
+#      return self.branch.base.replace("file://", "")
 
 
 class VCSHandler:
@@ -120,11 +120,11 @@ class VCSHandler:
 
       if(vcs_name == "git"):
          self.vcs = GitHandler(repository_location)
-      elif(vcs_name == "bzr"):
-         self.vcs = BzrHandler(repository_location)
+      #elif(vcs_name == "bzr"):
+      #   self.vcs = BzrHandler(repository_location)
       else:
          print "ERROR: Either the scientific software is not under version control, or the version control system has not been detected."
-         print "Perhaps you downloaded the scientific software as an archived (e.g. .zip or .tar.gz) file and the version control directory (e.g. .git or .bzr) was not included.\n"
+         print "Perhaps you downloaded the scientific software as an archived (e.g. .zip or .tar.gz) file and the version control directory (e.g. .git) was not included.\n"
          sys.exit(1)
       return
 
@@ -142,12 +142,12 @@ class VCSHandler:
          pass
 
       # Try opening the repository with Bazaar.
-      try:
-         branch, subdir = bzrlib.branch.Branch.open_containing(repository_location)
-         vcs_name = "bzr"
-         print "INFO: Bazaar VCS found."
-      except:
-         pass
+      #try:
+      #   branch, subdir = bzrlib.branch.Branch.open_containing(repository_location)
+      #   vcs_name = "bzr"
+      #   print "INFO: Bazaar VCS found."
+      #except:
+      #   pass
 
       return vcs_name
 
