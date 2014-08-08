@@ -344,7 +344,7 @@ class TestLog(unittest.TestCase):
 
    def setUp(self):
       self.publisher = Publisher(service="figshare")
-      
+            
       f = open("test_file.txt", "w")
       f.write("Hello World! This is a file for the MD5 functionality test.")
       f.close()
@@ -388,12 +388,12 @@ class TestLog(unittest.TestCase):
 
    def test_get_authors_list(self):
       try:
-         repo = git.Repo(".")
-      except git.InvalidGitRepositoryError:
+         vcs_handler = VCSHandler(".") # Assume that the unittests are being run from the PyRDM base directory
+      except:
          print "Warning: Skipping the 'get_authors_list' test because the Git repository could not be opened. This is expected if you downloaded PyRDM as a .zip or .tar.gz file, but not if you used 'git clone'."
          return
 
-      authors_list = self.publisher.get_authors_list(".") # Assume that the unittests are being run from the PyRDM base directory
+      authors_list = self.publisher.get_authors_list(vcs_handler)
       print "authors_list = ", authors_list
       assert(554577 in authors_list)
       assert(566335 in authors_list)
