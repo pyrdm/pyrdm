@@ -206,10 +206,10 @@ class FluidityPublish:
          except:
             pass # Ignore any SPUD_NEW_KEY_WARNING warnings
          try:
-            libspud.set_option(options_path + "/doi", doi)
+            libspud.set_option(options_path + "/doi", str(doi))
          except:
             pass # Ignore any SPUD_NEW_KEY_WARNING warnings
-                  
+
          libspud.write_options(self.options_file)
             
       else:
@@ -279,7 +279,7 @@ class FluidityPublish:
             except:
                pass # Ignore any SPUD_NEW_KEY_WARNING warnings
             try:
-               libspud.set_option(options_path + "/doi", doi)
+               libspud.set_option(options_path + "/doi", str(doi))
             except:
                pass # Ignore any SPUD_NEW_KEY_WARNING warnings
             libspud.write_options(self.options_file)
