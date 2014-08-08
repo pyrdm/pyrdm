@@ -203,10 +203,13 @@ class FluidityPublish:
                                                     category="Computational Physics", private=private)
          try:
             libspud.set_option(options_path + "/pid", pid)
+         except:
+            pass # Ignore any SPUD_NEW_KEY_WARNING warnings
+         try:
             libspud.set_option(options_path + "/doi", doi)
          except:
             pass # Ignore any SPUD_NEW_KEY_WARNING warnings
-               
+                  
          libspud.write_options(self.options_file)
             
       else:
