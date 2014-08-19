@@ -41,6 +41,9 @@ class Publisher:
       if(service == "figshare"):
          self.figshare = Figshare(client_key = self.config.get("figshare", "client_key"), client_secret = self.config.get("figshare", "client_secret"),
                         resource_owner_key = self.config.get("figshare", "resource_owner_key"), resource_owner_secret = self.config.get("figshare", "resource_owner_secret"))
+         # Before doing any creating/uploading on Figshare, try something simple like listing the user's articles
+         # to check that the authentication is successful.
+         self.figshare.test_authentication()
       elif(service == "zenodo"):
          # FIXME: The interface to the Zenodo API is currently not authenticating properly with the Zenodo servers.
          raise NotImplementedError

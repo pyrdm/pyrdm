@@ -27,6 +27,8 @@ import json
 from urllib2 import urlopen
 from urllib import urlencode
 
+import httpretty
+
 class Figshare:
    """ A Python interface to Figshare via the Figshare API. """
 
@@ -40,8 +42,18 @@ class Figshare:
       # Set up a new session.
       self.oauth, self.client = self.create_session()
 
-      # Before doing any creating/uploading on Figshare, try something simple like listing the user's articles
-      # to check that the authentication is successful.
+      return
+
+   def create_session(self):
+      """ Authenticates with the Figshare server, and creates a session object used to send requests to the server. """
+      oauth = OAuth1(client_key = self.client_key, client_secret = self.client_secret,
+                     resource_owner_key = self.resource_owner_key, resource_owner_secret = self.resource_owner_secret,
+                     signature_type = 'auth_header')
+
+      client = requests.session()
+      return oauth, client
+
+   def test_authentication(self):
       print "Testing Figshare authentication..."
       try:
          response = self.client.get('http://api.figshare.com/v1/my_data/articles', auth=self.oauth)
@@ -53,17 +65,6 @@ class Figshare:
       except:
          print "Error: Could not authenticate with the Figshare server. Check Internet connection? Check Figshare authentication keys in ~/.config/pyrdm.ini ?\n"
          sys.exit(1)
-
-      return
-
-   def create_session(self):
-      """ Authenticates with the Figshare server, and creates a session object used to send requests to the server. """
-      oauth = OAuth1(client_key = self.client_key, client_secret = self.client_secret,
-                     resource_owner_key = self.resource_owner_key, resource_owner_secret = self.resource_owner_secret,
-                     signature_type = 'auth_header')
-
-      client = requests.session()
-      return oauth, client
 
    def create_article(self, title, description, defined_type, status="Drafts"):
       """ Creates a new article on Figshare. Requires a title, description and defined_type. 
@@ -242,13 +243,19 @@ class Figshare:
 class TestLog(unittest.TestCase):
    """ Unit test suite for PyRDM's Figshare module. """
 
+   @httpretty.activate
    def setUp(self):
       # NOTE: This requires the user to have their Figshare authentication details in the file "/home/<user_name>/.config/pyrdm.ini".
-      from pyrdm.publisher import Publisher
-      self.publisher = Publisher(service="figshare")
-      self.figshare = Figshare(client_key = self.publisher.config.get("figshare", "client_key"), client_secret = self.publisher.config.get("figshare", "client_secret"),
-                        resource_owner_key = self.publisher.config.get("figshare", "resource_owner_key"), resource_owner_secret = self.publisher.config.get("figshare", "resource_owner_secret"))
-                     
+      import os
+      self.config = self.load_config(os.path.expanduser("~/.config/pyrdm.ini"))
+      self.figshare = Figshare(client_key = self.config.get("figshare", "client_key"), client_secret = self.config.get("figshare", "client_secret"),
+                        resource_owner_key = self.config.get("figshare", "resource_owner_key"), resource_owner_secret = self.config.get("figshare", "resource_owner_secret"))
+
+      # Mock the HTTP request and prepare some fake publication data which will be returned.
+      httpretty.register_uri(httpretty.POST, "http://api.figshare.com/v1/my_data/articles",
+                            body="""{"article_id": 1144483, "views": 0, "downloads": 0, "shares": 0, "version": 1, "doi": "http://dx.doi.org/10.6084/m9.figshare.1144483", "title": "PyRDM Test", "defined_type": "code", "status": "Drafts", "published_date": "18:58, Aug 18, 2014", "description": "PyRDM Test Article", "description_nohtml": "PyRDM Test Article", "total_size": false, "owner": {"id": 554577, "full_name": "Christian T. Jacobs"}, "authors": [{"first_name": "Christian t.", "last_name": "Jacobs", "id": 554577, "full_name": "Christian T. Jacobs"}], "tags": [], "categories": [], "files": []}""",
+                            content_type="application/json")
+
       # Create a test article
       print "Creating test article..."
       publication_details = self.figshare.create_article(title="PyRDM Test", description="PyRDM Test Article", defined_type="code", status="Drafts")
@@ -257,25 +264,42 @@ class TestLog(unittest.TestCase):
       self.article_id = publication_details["article_id"]
       return
 
+   @httpretty.activate
    def tearDown(self):
+
+      httpretty.register_uri(httpretty.DELETE, "http://api.figshare.com/v1/my_data/articles/%s" % str(self.article_id),
+                            body="""{"success": "Articles deleted!"}""",
+                            content_type="application/json")
+                            
       print "Deleting test article..."
       results = self.figshare.delete_article(self.article_id)
       print results
       assert("success" in results.keys())
       return
 
+   @httpretty.activate
    def test_figshare_search(self):
+
+      httpretty.register_uri(httpretty.GET, "http://api.figshare.com/v1/my_data/articles",
+                               body="""{"count": 1, "items": [{"article_id": 1144483, "title": "PyRDM Test", "master_publisher_id": 0, "defined_type": "code", "status": "Drafts", "version": 1, "published_date": "18:58, Aug 18, 2014", "description": "PyRDM Test Article", "description_nohtml": "PyRDM Test Article", "total_size": false, "authors": [{"first_name": "Christian t.", "last_name": "Jacobs", "id": 554577, "full_name": "Christian T. Jacobs"}], "tags": [], "categories": [], "files": [], "links": []}]}""",
+                               content_type="application/json")
+
       print "Searching for test article..."
       results = self.figshare.search("PyRDM Test", search_private=True)
       print results
       assert (len(results) >= 1)
       return
- 
+
+   @httpretty.activate
    def test_figshare_add_file(self):
       print "Adding file to test article..."
       f = open("test_file.txt", "w")
       f.write("This is a test file for PyRDM's Figshare module unit tests")
       f.close()
+      
+      httpretty.register_uri(httpretty.PUT, "http://api.figshare.com/v1/my_data/articles/%s/files" % str(self.article_id),
+                               body="""{"id": 1641711, "name": "test_file.txt", "size": "0 KB", "extension": "txt", "mime_type": "text/plain"}""",
+                               content_type="application/json")
       
       results = self.figshare.add_file(self.article_id, "test_file.txt")
       print results
@@ -284,17 +308,27 @@ class TestLog(unittest.TestCase):
       
       return
 
+   @httpretty.activate
    def test_figshare_add_tag(self):
       print "Adding tag to test article..."
       
+      httpretty.register_uri(httpretty.PUT, "http://api.figshare.com/v1/my_data/articles/%s/tags" % str(self.article_id),
+                               body="""{"success": "Link created"}""",
+                               content_type="application/json")
+                               
       results = self.figshare.add_tag(self.article_id, "test_file_tag")
       print results
       assert("success" in results.keys())
       
       return
 
+   @httpretty.activate
    def test_figshare_add_category(self):
       print "Adding category 'Computational Physics' to test article..."
+      
+      httpretty.register_uri(httpretty.PUT, "http://api.figshare.com/v1/my_data/articles/%s/categories" % str(self.article_id),
+                               body="""{"success": "Link created"}""",
+                               content_type="application/json")
       
       results = self.figshare.add_category(self.article_id, 109)
       print results
@@ -302,16 +336,34 @@ class TestLog(unittest.TestCase):
       
       return
 
+   @httpretty.activate
    def test_figshare_get_article_details(self):
       print "Getting article details..."
-
+   
+      httpretty.register_uri(httpretty.GET, "http://api.figshare.com/v1/my_data/articles/%s" % str(self.article_id),
+                               body="""{"count": 1, "items": [{"article_id": 1144487, "title": "PyRDM Test", "master_publisher_id": 0, "defined_type": "code", "status": "Drafts", "version": 1, "published_date": "18:58, Aug 18, 2014", "description": "PyRDM Test Article", "description_nohtml": "PyRDM Test Article", "total_size": false, "authors": [{"first_name": "Christian t.", "last_name": "Jacobs", "id": 554577, "full_name": "Christian T. Jacobs"}], "tags": [], "categories": [], "files": [], "links": []}]}""",
+                               content_type="application/json")
+                               
       publication_details = self.figshare.get_article_details(self.article_id)
       print publication_details
       assert(len(publication_details["items"]) == 1)
       assert(publication_details["items"][0]["title"] == "PyRDM Test")
       assert(publication_details["items"][0]["description"] == "PyRDM Test Article")
-      
+
       return
+
+   def load_config(self, config_file_path):
+      import ConfigParser
+      """ Load the configuration file containing the OAuth keys and information about the software name, etc
+      into a dictionary called 'config' and return it. """
+
+      config = ConfigParser.ConfigParser()
+      have_config = (config.read(config_file_path) != [])
+      if(not have_config):
+         print "Could not open the PyRDM configuration file. Check that the file 'pyrdm.ini' is in the ~/.config/ directory, and that it is readable."
+         sys.exit(1)
+      return config
+
       
 if(__name__ == '__main__'):
    unittest.main()
