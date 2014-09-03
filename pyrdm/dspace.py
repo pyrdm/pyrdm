@@ -45,6 +45,7 @@ class DSpace:
       return
     
    def get_history(self):
+      """ Return a full history of all transactions made with the DSpace server. """
       return self.connection.history
       
    def get_collection_by_title(self, title, workspace_id = 0):
