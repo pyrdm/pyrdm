@@ -24,15 +24,22 @@ class DSpace:
    """ A publishing interface to DSpace using the SWORD2 protocol. """
    
    def __init__(self, service_document_url, user_name, user_pass):
+      """ Initialise a new DSpace object. This begins by setting up a connection to the DSpace server
+      using the credentials provided by the user in the 'user_name' and 'user_pass' arguments. """
+   
+      # Set up a connection to the DSpace server.
       self.connection = sword2.Connection(service_document_url, user_name, user_pass)
-      self.connection.get_service_document()
       
+      # Get the Service Document.
+      self.connection.get_service_document()
       print self.connection.sd
       
+      # Check that the Service Document has been parsed successfully, and that it is a valid document.
       assert self.connection.sd != None
       assert self.connection.sd.parsed
       assert self.connection.sd.valid
       
+      # Retrieve the list of available workspaces.
       self.workspaces = self.connection.workspaces
       
       return
@@ -41,6 +48,8 @@ class DSpace:
       return self.connection.history
       
    def get_collection_by_title(self, title, workspace_id = 0):
+      """ Locate and return the Collection object with a given title. 
+      Return None if the collection cannot be found. """
       collections = self.workspaces[workspace_id][1]
       for i in range(len(collections)):
          if(collections[i].title == title):
@@ -48,6 +57,8 @@ class DSpace:
       return None
 
    def get_collection_by_index(self, index, workspace_id = 0):
+      """ Locate and return the Collection object with a given index. 
+      Return None if the collection cannot be found. """
       collections = self.workspaces[workspace_id][1]
       try:
          collection = collections[index]
@@ -56,6 +67,8 @@ class DSpace:
       return collection
       
    def create_deposit_from_file(self, collection, path):
+      """ Create a deposit in a specified collection by uploading a file with a given path.
+      Return a Receipt object for this transaction. """
       with open(path, "rb") as data:
          receipt = self.connection.create(col_iri = collection.href,
                            payload = data,
@@ -63,12 +76,16 @@ class DSpace:
          return receipt
   
    def create_deposit_from_metadata(self, collection, **metadata_kwargs):
+      """ Create a deposit in a specified collection by providing metadata in **metadata_kwargs.
+      Return a Receipt object for this transaction. """
       e = sword2.Entry()
       e.add_fields(**metadata_kwargs)
       receipt = self.connection.create(col_iri = collection.href, metadata_entry = e)
       return receipt
           
    def replace_deposit_file(self, path, receipt):
+      """ Replace a deposit's file with another, located at 'path'.
+      Return a Receipt object for this replacement action. """
       with open(path, "rb") as data:
          replace_receipt = self.connection.update(payload = data,
                            filename = os.path.basename(path),
@@ -77,6 +94,8 @@ class DSpace:
          return replace_receipt
        
    def replace_deposit_metadata(self, receipt, **metadata_kwargs):
+      """ Replace a deposit's metadata with that defined by **metadata_kwargs.
+      Return a Receipt object for this replacement action. """
       e = sword2.Entry()
       e.add_fields(**metadata_kwargs)
       replace_receipt = self.connection.update(metadata_entry = e,
@@ -85,6 +104,8 @@ class DSpace:
       return replace_receipt
       
    def append_file_to_deposit(self, path, receipt):
+      """ Append a new file, located at 'path', to a given deposit. 
+      Return a Receipt object for this action. """
       with open(path, "rb") as data:
          append_receipt = self.connection.append(payload = data,
                               filename = os.path.basename(path),
@@ -93,6 +114,7 @@ class DSpace:
          return append_receipt
       
    def delete_deposit(self, receipt):
+      """ Delete a deposit. Return a Receipt object for this action. """
       delete_receipt = self.connection.delete_container(dr = receipt)
       return delete_receipt
       
