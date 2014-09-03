@@ -59,9 +59,7 @@ class DSpace:
       with open(path, "rb") as data:
          receipt = self.connection.create(col_iri = collection.href,
                            payload = data,
-                           mimetype = "application/zip",
-                           filename = os.path.basename(path),
-                           packaging = "http://purl.org/net/sword/package/Binary")
+                           filename = os.path.basename(path))
          return receipt
   
    def create_deposit_from_metadata(self, collection, **metadata_kwargs):
@@ -73,9 +71,7 @@ class DSpace:
    def replace_deposit_file(self, path, receipt):
       with open(path, "rb") as data:
          replace_receipt = self.connection.update(payload = data,
-                           mimetype = "application/zip",
                            filename = os.path.basename(path),
-                           packaging = "http://purl.org/net/sword/package/Binary",
                            dr = receipt)
          assert replace_receipt.code == 200
          return replace_receipt
@@ -91,9 +87,7 @@ class DSpace:
    def append_file_to_deposit(self, path, receipt):
       with open(path, "rb") as data:
          append_receipt = self.connection.append(payload = data,
-                              mimetype = "application/zip",
                               filename = os.path.basename(path),
-                              packaging = "http://purl.org/net/sword/package/Binary",
                               dr = receipt)
          assert append_receipt.code == 201
          return append_receipt
