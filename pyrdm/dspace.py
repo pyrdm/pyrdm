@@ -40,29 +40,72 @@ class DSpace:
    def get_history(self):
       return self.connection.history
       
-   def get_collection_by_title(self, title):
-      collections = self.workspaces[0][1] # FIXME: Consider the first workspace only, for now.
+   def get_collection_by_title(self, title, workspace_id = 0):
+      collections = self.workspaces[workspace_id][1]
       for i in range(len(collections)):
          if(collections[i].title == title):
             return collections[i]
       return None
 
-   def get_collection_by_index(self, index):
-      collections = self.workspaces[0][1] # FIXME: Consider the first workspace only, for now.
+   def get_collection_by_index(self, index, workspace_id = 0):
+      collections = self.workspaces[workspace_id][1]
       try:
          collection = collections[index]
       except IndexError:
          collection = None
       return collection
       
-   def create_deposit(self, path, collection):
+   def create_deposit_from_file(self, path, collection):
       with open(path, "rb") as data:
          receipt = self.connection.create(col_iri = collection.href,
                            payload = data,
                            mimetype = "application/zip",
                            filename = os.path.basename(path),
                            packaging = "http://purl.org/net/sword/package/Binary")
+         return receipt
+  
+   def create_deposit_from_metadata(self, metadata, collection):
+      e = Entry()
+      
+      # Extract the kwargs from the metadata dictionary
+      args = []
+      for key, value in metadata:
+         s = key + "=" + value
+         exec(s)
+         args.append(s)
+      
+      receipt = self.connection.create(col_iri = collection.href, metadata_entry = e)
       return receipt
+          
+   def replace_deposit_file(self, path, receipt):
+      with open(path, "rb") as data:
+         update_receipt = self.connection.update(payload = data,
+                           mimetype = "application/zip",
+                           filename = os.path.basename(path),
+                           packaging = "http://purl.org/net/sword/package/Binary",
+                           dr = receipt)
+         assert update_receipt.code == 200
+         return update_receipt
+       
+   def replace_deposit_metadata(self, title, receipt):
+      e = Entry(title=title)
+      update_receipt = self.connection.update(col_iri = collection.href, metadata_entry = e)
+      assert update_receipt.code == 200
+      return update_receipt
+      
+   def append_file_to_deposit(self, path, receipt):
+      with open(path, "rb") as data:
+         append_receipt = self.connection.append(payload = data,
+                              mimetype = "application/zip",
+                              filename = os.path.basename(path),
+                              packaging = "http://purl.org/net/sword/package/Binary",
+                              dr = receipt)
+         assert append_receipt.code == 201
+         return append_receipt
+      
+   def delete_deposit(self, receipt):
+      delete_receipt = self.connection.delete_container(dr = receipt)
+      return delete_receipt
       
 url = "http://demo.dspace.org/swordv2/servicedocument"
 user_name = "dspacedemo+submit@gmail.com"
@@ -71,7 +114,11 @@ user_pass = "dspace"
 ds = DSpace(url, user_name, user_pass)
 
 collection = ds.get_collection_by_title("Collection of Sample Items")
-receipt = ds.create_deposit("test.png", collection)
+print collection.href
+
+receipt = ds.create_deposit_from_file("test.png", collection)
 print receipt
 
-print collection.href
+ds.delete_deposit(receipt)
+
+
