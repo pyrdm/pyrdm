@@ -39,11 +39,10 @@ class Zenodo:
          response = requests.get(url)
          print "* Server returned response %d" % response.status_code
          if(response.status_code != requests.codes.ok): # If the status is not "OK", then exit here.
-            raise Exception("Could not authenticate with the Zenodo server.")
+            raise Exception("Could not authenticate with the Zenodo server. Check Internet connection? Check Zenodo personal authentication token in ~/.config/pyrdm.ini ?\n")
          else:
             print "Authentication test successful.\n"
       except:
-         print "Error: Could not authenticate with the Zenodo server. Check Internet connection? Check Zenodo personal authentication token in ~/.config/pyrdm.ini ?\n"
          sys.exit(1)
       return
 
@@ -61,6 +60,9 @@ class Zenodo:
 
       response = requests.get(url)
       results = json.loads(response.content)
+      
+      response.raise_for_status()
+      
       return results
 
    def create_deposition(self, title, description, upload_type, creators, keywords, prereserve_doi):
@@ -96,7 +98,7 @@ class Zenodo:
       headers = {"content-type": "application/json"}
       data = {"metadata": {"title": title, "description": description, "upload_type": upload_type, "state": state}}
 
-      requests.put(url, data=json.dumps(data), headers=headers)
+      response = requests.put(url, data=json.dumps(data), headers=headers)
       results = json.loads(response.content)
       return results
 
@@ -107,8 +109,7 @@ class Zenodo:
       url = self._append_suffix(url)
 
       requests.delete(url)
-      results = json.loads(response.content)
-      return results
+      return
 
 
    # -------------------------------------------
