@@ -19,7 +19,7 @@
 
 import sys, os, glob
 import ConfigParser
-import optparse
+import argparse
 import re
 
 import git
@@ -32,76 +32,32 @@ from pyrdm.publisher import Publisher
 
 class PyRDMPublish:
 
-   def __init__(self, location):
-      self.location = location
+   def __init__(self):
       return
 
-   def get_pyrdm_version(self):
-      """ Return the PyRDM version (in the form of the SHA-1 hash of the HEAD of its Git repository). """
-      print "Reading SHA-1 hash..."
-      try:
-         repo = git.Repo(self.location)
-      except:
-         print "Could not open the local Git repository. Check read permissions?\n"
-         return None
-      sha = repo.head.commit.hexsha
-      print "SHA-1 hash: %s" % sha
-      return sha
-
-   def get_category_id(self, category_name):
-      categories_list = self.publisher.figshare.get_categories()["items"]
-      category_id = None
-      for category in categories_list:
-         if(category["name"] == category_name):
-            category_id = category["id"]
-            break
-      if(category_id is None):
-         print "Warning: Could not find the category '%s'! The publication cannot be made public until a category is added." % category_name
-      return category_id
-
-   def publish(self, version=None, private=False):
+   def publish(self, path, version=None, private=False):
       """ Publish the PyRDM source code. """
 
       self.publisher = Publisher(service="figshare")
 
       # Publish the software
-         
-      # Get the SHA-1 hash of the software version.
-      if(version is None):
-         sha = self.get_pyrdm_version()
-         if(sha is None):
-            print "Could not obtain the version (SHA-1 hash) of PyRDM. Please use the -v option to specify it.\n"
-            sys.exit(1)
-      else:
-         print "Using the software version provided: %s" % version
-         sha = version
+      pid, doi = self.publisher.publish_software(name="PyRDM", local_repo_location=path, version=version, private=private)
+      print "PyRDM has been published. Publication ID: %d, DOI: %s" % (pid, doi)
 
-      # Search for the software, in case it has already been published.
-      article_id, doi = self.publisher.find_software("PyRDM", sha)
-         
-      if(article_id is None):
-         # Software is not published already, so publish it now.
-         publication_details = self.publisher.publish_software(software_name="PyRDM", software_sha=sha, software_local_repo_location=sys.argv[-1], 
-                                                               category_id=self.get_category_id("Computer Software"), private=private)
-         print "Published PyRDM. Figshare publication ID: %d, DOI: %s" % (publication_details["article_id"], str(publication_details["doi"]))                                                       
-      else:
-         print "This version of PyRDM has already been published. Re-using the article_id (%d) and DOI (%s)...\n" % (article_id, str(doi))
-   
-      print "Finished publishing."
       return
          
 if(__name__ == "__main__"):
    # Parse the command line arguments
    usage = "Usage: %prog [options] path_to_local_pyrdm_git_repository"
-   parser = optparse.OptionParser(usage=usage)
-   parser.add_option("-v", "--version", help="Publish a specific version of the PyRDM source code identified by a given SHA-1 hash.", action="store", type="string", default=None, metavar="HASH")
-   (options, args) = parser.parse_args()
+   parser = argparse.ArgumentParser(prog="pyrdm-publish", description="Publishes the PyRDM source code to an online citable repository.")
+   parser.add_argument("-v", "--version", help="Publish a specific version of the PyRDM source code identified by a given SHA-1 hash.", action="store", type=str, default=None, metavar="HASH")
+   parser.add_argument("path", help="The path to the local Git repository of PyRDM on your file system.", action="store", type=str)
+   args = parser.parse_args()
    
-   if(len(sys.argv) <= 1):
-      print "You need to provide the path to the local Git repository of PyRDM in order to publish it.\n"
-      parser.print_help()
+   if(os.path.exists(args.path)):
+      rdm = PyRDMPublish()
+      rdm.publish(path = args.path, version = args.version, private=True)
+   else:
+      print "The path to the local PyRDM directory does not exist."
       sys.exit(1)
-   
-   rdm = PyRDMPublish(location = sys.argv[-1])
-   rdm.publish(version = options.version, private=True)
    
