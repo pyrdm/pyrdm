@@ -27,6 +27,7 @@ from urllib2 import urlopen
 
 from pyrdm.figshare import Figshare
 from pyrdm.zenodo import Zenodo
+from pyrdm.dspace import DSpace
 from pyrdm.git_handler import GitHandler
 
 class Publisher:
@@ -43,6 +44,8 @@ class Publisher:
                         resource_owner_key = self.config.get("figshare", "resource_owner_key"), resource_owner_secret = self.config.get("figshare", "resource_owner_secret"))
       elif(service == "zenodo"):
          self.zenodo = Zenodo(access_token = self.config.get("zenodo", "access_token"))
+      elif(service == "dspace"):
+         self.dspace = DSpace(service_document_url = self.config.get("dspace", "service_document_url"), user_name = self.config.get("dspace", "user_name"), user_pass = self.config.get("dspace", "user_pass"))
       else:
          print "Unsupported service: %s" % service
          sys.exit(1)
@@ -59,7 +62,7 @@ class Publisher:
          sys.exit(1)
       return config
 
-   def publish_software(self, name, local_repo_location, version=None, private=False):
+   def publish_software(self, name, local_repo_location, version=None, private=False, **kwargs):
       """ Publishes the software in the current repository. """
       
       git_handler = GitHandler(local_repo_location)
@@ -149,6 +152,17 @@ class Publisher:
             print "Making the code public..."
             self.zenodo.publish_deposition(deposition_id=pid)
             print "The code has been made public."
+            
+      elif(self.service == "dspace"):
+         collection = self.dspace.get_collection_by_title(kwargs["collection_title"])
+         publication_details = self.dspace.create_deposit_from_file(collection=collection, path="test.png")
+         pid = publication_details.id
+         doi = publication_details.alternate
+         
+         authors = ["test", "test"]#self.get_authors_list(git_handler.get_working_directory())
+         
+         self.dspace.replace_deposit_metadata(publication_details, dcterms_title="test", dcterms_description="test", 
+                                              dcterms_type="Software", dcterms_contributor=", ".join(authors))
 
       return pid, doi
       
@@ -309,10 +323,14 @@ class Publisher:
             return pid, doi
          else:
             return None, None
+            
       elif(self.service == "zenodo"):
          # FIXME: There is currently no way of easily searching for a Zenodo deposit based on its keywords via the API.
          # Therefore, assume for now that the software has not been published.
          return None, None
+         
+      elif(self.service == "dspace"):
+         return None, None   
 
    def get_authors_list(self, wd):
       """ If an AUTHORS file exists in a given repository's base directory, then read it and
@@ -335,7 +353,7 @@ class Publisher:
                if(m is not None):
                   s = m.group(1).split(";")
                   author_id = {'name':s[0], 'affiliation':s[1]}
-                  author_ids.append(author_id)               
+                  author_ids.append(author_id)
                
          return author_ids
       except IOError:

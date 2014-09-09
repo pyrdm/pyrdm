@@ -10,3 +10,8 @@ resource_owner_secret = mnopqr
 
 [zenodo]
 access_token = abcde
+
+[dspace]
+user_name = abc
+user_pass = xyz
+service_document_url = http://example.org/swordv2/servicedocument

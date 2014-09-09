@@ -41,6 +41,7 @@ class DSpace:
       
       # Retrieve the list of available workspaces.
       self.workspaces = self.connection.workspaces
+      print self.workspaces
       
       return
     
@@ -91,7 +92,6 @@ class DSpace:
          replace_receipt = self.connection.update(payload = data,
                            filename = os.path.basename(path),
                            dr = receipt)
-         assert replace_receipt.code == 200
          return replace_receipt
        
    def replace_deposit_metadata(self, receipt, **metadata_kwargs):
@@ -101,7 +101,6 @@ class DSpace:
       e.add_fields(**metadata_kwargs)
       replace_receipt = self.connection.update(metadata_entry = e,
                                               dr = receipt)
-      assert replace_receipt.code == 200
       return replace_receipt
       
    def append_file_to_deposit(self, path, receipt):
@@ -111,7 +110,6 @@ class DSpace:
          append_receipt = self.connection.append(payload = data,
                               filename = os.path.basename(path),
                               dr = receipt)
-         assert append_receipt.code == 201
          return append_receipt
       
    def delete_deposit(self, receipt):
@@ -119,21 +117,21 @@ class DSpace:
       delete_receipt = self.connection.delete_container(dr = receipt)
       return delete_receipt
       
-url = "http://demo.dspace.org/swordv2/servicedocument"
-user_name = "dspacedemo+colladmin@gmail.com"
-user_pass = "dspace"
+#url = "http://demo.dspace.org/swordv2/servicedocument"
+#user_name = "dspacedemo+colladmin@gmail.com"
+#user_pass = "dspace"
 
-ds = DSpace(url, user_name, user_pass)
+#ds = DSpace(url, user_name, user_pass)
 
-collection = ds.get_collection_by_title("Collection of Sample Items")
-print collection.href
+#collection = ds.get_collection_by_title("Private Collection")
+#print collection.href
 
-receipt = ds.create_deposit_from_file(collection, path="test.png")
-print receipt
+#receipt = ds.create_deposit_from_file(collection, path="test.png")
+#print receipt
 
-receipt = ds.replace_deposit_metadata(receipt, title="hello world", dcterms_identifier="test deposit")
-print receipt
+#ds.replace_deposit_metadata(receipt, title="hello world", dcterms_identifier="test deposit")
 
-ds.delete_deposit(receipt)
+#ds.append_file_to_deposit("test.txt", receipt)
+
 
 
