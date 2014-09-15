@@ -19,6 +19,7 @@
 
 import sword2
 import os.path
+import feedparser
 
 class DSpace:
    """ A publishing interface to DSpace using the SWORD2 protocol. """
@@ -68,30 +69,31 @@ class DSpace:
          collection = None
       return collection
       
-   def create_deposit_from_file(self, collection, path):
+   def create_deposit_from_file(self, collection, file_path):
       """ Create a deposit in a specified collection by uploading a file with a given path.
       Return a Receipt object for this transaction. """
-      with open(path, "rb") as data:
+      with open(file_path, "rb") as data:
          receipt = self.connection.create(col_iri = collection.href,
                            payload = data,
-                           filename = os.path.basename(path))
+                           filename = os.path.basename(file_path))
          return receipt
   
-   def create_deposit_from_metadata(self, collection, **metadata_kwargs):
+   def create_deposit_from_metadata(self, collection, in_progress=False, **metadata_kwargs):
       """ Create a deposit in a specified collection by providing metadata in **metadata_kwargs.
       Return a Receipt object for this transaction. """
       e = sword2.Entry()
       e.add_fields(**metadata_kwargs)
-      receipt = self.connection.create(col_iri = collection.href, metadata_entry = e)
+      receipt = self.connection.create(col_iri = collection.href, in_progress=in_progress, metadata_entry = e)
       return receipt
           
-   def replace_deposit_file(self, path, receipt):
+   def replace_deposit_file(self, file_path, receipt):
       """ Replace a deposit's file with another, located at 'path'.
       Return a Receipt object for this replacement action. """
-      with open(path, "rb") as data:
+      with open(file_path, "rb") as data:
          replace_receipt = self.connection.update(payload = data,
-                           filename = os.path.basename(path),
-                           dr = receipt)
+                           filename = os.path.basename(file_path),
+                           dr = receipt,
+                           in_progress=True)
          return replace_receipt
        
    def replace_deposit_metadata(self, receipt, **metadata_kwargs):
@@ -100,38 +102,53 @@ class DSpace:
       e = sword2.Entry()
       e.add_fields(**metadata_kwargs)
       replace_receipt = self.connection.update(metadata_entry = e,
-                                              dr = receipt)
+                                              dr = receipt,
+                                              in_progress=True)
       return replace_receipt
       
-   def append_file_to_deposit(self, path, receipt):
+   def append_file_to_deposit(self, file_path, receipt):
       """ Append a new file, located at 'path', to a given deposit. 
       Return a Receipt object for this action. """
-      with open(path, "rb") as data:
+      with open(file_path, "rb") as data:
          append_receipt = self.connection.append(payload = data,
-                              filename = os.path.basename(path),
-                              dr = receipt)
+                              filename = os.path.basename(file_path),
+                              mimetype="application/zip",
+                              packaging = "http://purl.org/net/sword/package/METSDSpaceSIP", 
+                              dr = receipt, 
+                              in_progress=True)
          return append_receipt
+         
+   def add_file(self, file_path, receipt):
+      with open(file_path, "rb") as data:
+         r = self.connection.add_file_to_resource(payload = data, 
+                                            filename = os.path.basename(file_path),
+                                            edit_media_iri = receipt.edit_media,
+                                            in_progress=True)
+         return r                     
       
    def delete_deposit(self, receipt):
       """ Delete a deposit. Return a Receipt object for this action. """
       delete_receipt = self.connection.delete_container(dr = receipt)
       return delete_receipt
       
-#url = "http://demo.dspace.org/swordv2/servicedocument"
-#user_name = "dspacedemo+colladmin@gmail.com"
-#user_pass = "dspace"
-
-#ds = DSpace(url, user_name, user_pass)
-
-#collection = ds.get_collection_by_title("Private Collection")
-#print collection.href
-
-#receipt = ds.create_deposit_from_file(collection, path="test.png")
-#print receipt
-
-#ds.replace_deposit_metadata(receipt, title="hello world", dcterms_identifier="test deposit")
-
-#ds.append_file_to_deposit("test.txt", receipt)
-
-
+   def delete_content(self, receipt):
+      delete_receipt = self.connection.delete_content_of_resource(dr = receipt)
+      return delete_receipt
+   
+   def complete_deposit(self, receipt):
+      """ Delete a deposit. Return a Receipt object for this action. """
+      receipt = self.connection.complete_deposit(dr = receipt)
+      return receipt
+      
+   def list_files(self, media_edit_feed, user_name=None, user_pass=None):
+      handlers=[]
+      if(user_name is not None):
+         import urllib2, urlparse
+         auth = urllib2.HTTPBasicAuthHandler()
+         auth.add_password("DSpace", uri=media_edit_feed, user=user_name, passwd=user_pass)
+         handlers.append(auth)
+      feed = feedparser.parse(media_edit_feed, handlers=handlers)
+      print feed
+      files = feed["entries"][0]["summary"]
+      return files
 

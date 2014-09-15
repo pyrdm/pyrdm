@@ -1,6 +1,6 @@
 [general]
-name = "My Name Here"
-affiliation = "My Affiliation Here"
+name = My Name Here
+affiliation = My Affiliation Here
 
 [figshare]
 client_key = stuvwx

@@ -155,19 +155,21 @@ class Publisher:
             
       elif(self.service == "dspace"):
          collection = self.dspace.get_collection_by_title(kwargs["collection_title"])
-         publication_details = self.dspace.create_deposit_from_file(collection=collection, path="test.png")
-         pid = publication_details.id
-         doi = publication_details.alternate
+         deposit_receipt = self.dspace.create_deposit_from_file(collection=collection, file_path=archive_path)
+         pid = deposit_receipt.id
+         doi = deposit_receipt.alternate
          
-         authors = ["test", "test"]#self.get_authors_list(git_handler.get_working_directory())
+         print "Code repository created with ID: %s and DOI: %s" % (pid, doi)
          
-         self.dspace.replace_deposit_metadata(publication_details, dcterms_title="test", dcterms_description="test", 
+         # Add the metadata.
+         authors = self.get_authors_list(git_handler.get_working_directory())
+         self.dspace.replace_deposit_metadata(deposit_receipt, dcterms_title=name,
                                               dcterms_type="Software", dcterms_contributor=", ".join(authors))
 
       return pid, doi
       
       
-   def publish_data(self, parameters, pid=None, private=False):
+   def publish_data(self, files, pid=None, private=False, **kwargs):
       """ Create a new dataset on the online, citable repository's server. 
       Returns a dictionary of details about the new dataset once created. """
          
@@ -177,48 +179,60 @@ class Publisher:
          print "Creating new fileset for data..."
          if(self.service == "figshare"):
             # NOTE: The defined_type needs to be a 'fileset' to allow multiple files to be uploaded separately.
-            publication_details = self.figshare.create_article(title=parameters["title"], description=parameters["description"], defined_type="fileset", status="Drafts")
+            publication_details = self.figshare.create_article(title=kwargs["title"], description=kwargs["description"], defined_type="fileset", status="Drafts")
             pid = publication_details["article_id"]
             doi = str(publication_details["doi"])
             
             # Add category
             print "Adding category..."
-            if(parameters["category"] is not None):
-               self.figshare.add_category(pid, parameters["category"])
+            if(kwargs["category"] is not None):
+               self.figshare.add_category(pid, kwargs["category"])
 
             # Add tag(s)
             print "Adding tag(s)..."
-            if(parameters["tag_name"] is not None):
-               if(type(parameters["tag_name"]) == list):
-                  for tag_name in parameters["tag_name"]:
+            if(kwargs["tag_name"] is not None):
+               if(type(kwargs["tag_name"]) == list):
+                  for tag_name in kwargs["tag_name"]:
                      self.figshare.add_tag(pid, tag_name)
                else:
-                  self.figshare.add_tag(pid, parameters["tag_name"])
+                  self.figshare.add_tag(pid, kwargs["tag_name"])
             
          elif(self.service == "zenodo"):
-            publication_details = self.zenodo.create_deposition(title=parameters["title"], description=parameters["description"], upload_type="dataset",
+            publication_details = self.zenodo.create_deposition(title=kwargs["title"], description=kwargs["description"], upload_type="dataset",
                                                                 creators=[{"name": self.config.get("general", "name"), "affiliation": self.config.get("general", "affiliation")}], 
-                                                                keywords=parameters["tag_name"], prereserve_doi=True)
+                                                                keywords=kwargs["tag_name"], prereserve_doi=True)
             pid = publication_details["id"]
             doi = str(publication_details["metadata"]["prereserve_doi"]["doi"])
+            
+         elif(self.service == "dspace"):
+            collection = self.dspace.get_collection_by_title(kwargs["collection_title"])
+            deposit_receipt = self.dspace.create_deposit_from_metadata(collection=collection, in_progress=True, dcterms_title=kwargs["title"], dcterms_description=kwargs["description"], 
+                                              dcterms_type="Dataset", dcterms_creator=self.config.get("general", "name"))
+            pid = deposit_receipt.id
+            doi = deposit_receipt.alternate         
 
-         print "Fileset created with ID: %d and DOI: %s" % (pid, doi)
+         print "Fileset created with ID: %s and DOI: %s" % (pid, doi)
 
          # This is a new article, so upload ALL the files!
-         modified_files = parameters["files"]
+         modified_files = files
          existing_files = []
       else:
          publication_details = None
          doi = None # FIXME: We could try to look up the DOI associated with a given PID in the future.
          # This is an existing publication, so check whether any files have been modified since they were last published.
-         modified_files = self.find_modified(parameters["files"])
+         modified_files = self.find_modified(files)
          if(self.service == "figshare"):
             existing_files = self.figshare.get_file_details(pid)["files"]
          elif(self.service == "zenodo"):
             existing_files = self.zenodo.list_files(pid)
+         elif(self.service == "dspace"):
+            existing_files = None
+            deposit_receipt = self.dspace.connection.get_deposit_receipt(pid)
+            raise NotImplementedError("It is not yet possible to modify a deposit that has been 'completed'.")
 
       print "The following files have been marked for uploading: ", modified_files
       uploaded_files = []
+      
       for f in modified_files:
          # Check whether the file actually exists locally.
          if(os.path.exists(f)):
@@ -253,6 +267,16 @@ class Publisher:
                if(not exists):
                   self.zenodo.create_file(deposition_id=pid, file_path=f)
 
+            elif(self.service == "dspace"):
+               for e in existing_files:
+                  if(e["filename"] == os.path.basename(f)):
+                     print "File already exists on the server. Over-writing..."
+                     exists = True
+                     #TODO: Add in delete/re-add statements.
+                     break
+               if(not exists):
+                  r = self.dspace.add_file(file_path=f, receipt=deposit_receipt)
+
             # Write out the .md5 checksum file
             self.write_checksum(f)
             # Record the upload.
@@ -271,6 +295,16 @@ class Publisher:
          elif(self.service == "zenodo"):
             self.zenodo.publish_deposition(deposition_id=pid)
          print "The data has been made public."
+         
+      # Finalise the deposit in DSpace (if applicable).
+      if(self.service == "dspace"):
+         try:
+            self.dspace.complete_deposit(receipt=deposit_receipt)
+            deposit_receipt = self.dspace.connection.get_deposit_receipt(pid)
+            doi = deposit_receipt.alternate # Once the deposit has been completed, the DOI may have been updated.
+         except:
+            print "Could not complete deposit. Perhaps it has already been set to 'complete'?"
+            pass
 
       return pid, doi
       
@@ -354,6 +388,13 @@ class Publisher:
                   s = m.group(1).split(";")
                   author_id = {'name':s[0], 'affiliation':s[1]}
                   author_ids.append(author_id)
+                  
+            elif(self.service == "dspace"):
+               #TODO: This currently uses the author's DSpace username. Is there a better identifier? 
+               m = re.search("<%s:(.+)>" % self.service, line)
+               if(m is not None):
+                  author_id = m.group(1)
+                  author_ids.append(author_id)
                
          return author_ids
       except IOError:
@@ -368,13 +409,24 @@ class Publisher:
       elif(self.service == "zenodo"):
          files_on_server = self.zenodo.list_files(pid)
          key = "filename"
+      elif(self.service == "dspace"):
+         deposit_receipt = self.dspace.connection.get_deposit_receipt(pid)
+         try:
+            files_on_server = self.dspace.list_files(deposit_receipt.edit_media_feed, self.config.get("dspace", "user_name"), self.config.get("dspace", "user_pass"))
+         except:
+            return True # This will fail if the deposit has not yet been 'completed'. Assume all files have been uploaded successfully (if they haven't, the DSpace library should tell us anyway).
          
       for f in files:
          exists = False
          for s in files_on_server:
-            if(s[key] == os.path.basename(f)):
-               exists = True
-               break
+            if(isinstance(s, dict)): # Figshare and Zenodo file objects are dictionaries.
+               if(s[key] == os.path.basename(f)):
+                  exists = True
+                  break
+            else:
+               if(s == os.path.basename(f)):
+                  exists = True
+                  break
          if(exists):
             continue
          else:
