@@ -1,0 +1,14 @@
+language: python
+
+python:
+  - "2.7"
+  
+before_install:
+  - pip install -r requirements.txt
+  
+install:
+  - make install
+  
+script:
+  - export PYTHONPATH=`pwd`:$PYTHONPATH
+  - make unittest
