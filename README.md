@@ -15,10 +15,12 @@
     You should have received a copy of the GNU General Public License
     along with PyRDM.  If not, see <http://www.gnu.org/licenses/>.
 
-PyRDM [![Build Status](https://travis-ci.org/pyrdm/pyrdm.svg?branch=master)](https://travis-ci.org/pyrdm/pyrdm)
+PyRDM
 =====
 
 PyRDM is a Python module for research data management (RDM). It facilitates the automated online publication of scientific software and associated input and output data.
+
+[![Build Status](https://travis-ci.org/pyrdm/pyrdm.svg?branch=master)](https://travis-ci.org/pyrdm/pyrdm)
 
 Quick Start
 -----------
