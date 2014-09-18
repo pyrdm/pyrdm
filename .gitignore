@@ -1,2 +1,4 @@
 *.pyc
-pyrdm.ini
+build
+doc/build
+doc/apidoc
