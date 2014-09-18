@@ -1,0 +1,3 @@
+git+https://github.com/requests/requests-oauthlib.git#egg=requests-oauthlib >= 0.4.0
+GitPython >= 0.3.2.RC1
+Sphinx
