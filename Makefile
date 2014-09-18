@@ -17,29 +17,31 @@
 #    You should have received a copy of the GNU General Public License
 #    along with PyRDM.  If not, see <http://www.gnu.org/licenses/>.
 
-input: 	clean build manual
+.PHONY: input clean build install doc unittest
+
+input: 	clean build doc
 
 build:
-	@echo **********Building PyRDM
+	@echo "*** Building PyRDM"
 	python setup.py build
 
 install:
-	@echo **********Installing PyRDM
+	@echo "*** Installing PyRDM"
 	python setup.py install
 
-manual:
-	@echo **********Compiling the user manual
-	cd doc; pdflatex manual.tex; pdflatex manual.tex; cd ..
+doc:
+	@echo "*** Compiling the user documentation"
+	cd doc; make html; cd ..
 
 unittest:
-	@echo **********Running the unit tests
+	@echo "*** Running the unit tests"
 	cd pyrdm; for file in *.py; do (python $$file); done; cd ..
 	
 clean:
-	@echo **********Cleaning build directory
+	@echo "*** Removing build directory"
 	rm -rf build
-	@echo **********Cleaning pyrdm directory
+	@echo "*** Cleaning pyrdm directory"
 	cd pyrdm; rm -rf *.pyc; cd ..
-	@echo **********Cleaning doc directory
-	cd doc; rm -rf *.log *.aux *.dvi *.pdf *.ps *.toc *.out *.fdb_latexmk; cd ..
+	@echo "*** Cleaning doc directory"
+	cd doc; make clean; cd ..
 

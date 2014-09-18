@@ -11,12 +11,8 @@ Contents:
 .. toctree::
    :maxdepth: 2
 
-
-
-Indices and tables
-==================
-
-* :ref:`genindex`
-* :ref:`modindex`
-* :ref:`search`
-
+   introduction
+   functionality
+   application_fluidity
+   application_pyrdm
+   pyrdm
