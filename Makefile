@@ -30,7 +30,7 @@ install:
 	python setup.py install
 
 doc:
-	@echo "*** Compiling the user documentation"
+	@echo "*** Compiling the documentation"
 	cd doc; make html; cd ..
 
 unittest:
