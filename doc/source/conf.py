@@ -203,7 +203,7 @@ latex_elements = {
 #  author, documentclass [howto, manual, or own class]).
 latex_documents = [
   ('index', 'PyRDM.tex', u'PyRDM Documentation',
-   u'Christian T. Jacobs, Alexandros Avdis, Gerard J. Gorman, Matthew D. Piggott', 'manual'),
+   r'Christian T. Jacobs\\Alexandros Avdis\\Gerard J. Gorman\\Matthew D. Piggott', 'manual'),
 ]
 
 # The name of an image file (relative to this directory) to place at the top of
