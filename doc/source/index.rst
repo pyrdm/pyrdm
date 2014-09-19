@@ -12,6 +12,7 @@ Contents:
    :maxdepth: 2
 
    introduction
+   getting_started
    functionality
    application_fluidity
    application_pyrdm

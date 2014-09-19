@@ -22,14 +22,14 @@ Enable publishing
 If we want to publish the Fluidity source code used to run a particular
 simulation, along with the input and output data, we first need to
 enable the ‘publish’ option in that simulation’s configuration/options
-file (the “.flml” file), as shown in Figure [fig:diamond]. Simply select
+file (the “.flml” file), as shown in figure:diamond_. Simply select
 which publishing service you wish to use (e.g. Figshare or Zenodo), and
 under the ``input_files`` and ``output_files`` sub-options (see Figure
 [fig:diamond]), enter the paths (relative to the options file) to the
 input and output files you wish to publish in the following format (a
 Python list of strings):
 
-``[path/to/file1, path/to/file2, path/to/file3]``
+``["path/to/file1", "path/to/file2", "path/to/file3"]``
 
 You may use wildcard characters here (e.g. “\*vtu” to publish all
 VTK-based simulation output). Instead of creating a new code repository
@@ -38,8 +38,13 @@ one by entering its ID in the following option(s):
 
 ``/publish/{software,input_data,output_data}/article_id``
 
-|The ‘publish’ option enabled in a simulation’s configuration file. The
-file is being modified in Diamond.| [fig:diamond]
+   .. _figure:diamond:
+   .. figure::  images/diamond.png
+      :align: center
+      :scale: 75 %
+      :figclass: align-center
+      
+      The ‘publish’ option enabled in a simulation’s configuration file. The file is being modified in Diamond.
 
 Using Fluidity-Publish
 ----------------------

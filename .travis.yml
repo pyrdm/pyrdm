@@ -10,3 +10,5 @@ script:
   - export PYTHONPATH=`pwd`:$PYTHONPATH
   - make build
   - make install
+  - make doc
+  - make clean

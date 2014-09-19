@@ -1,4 +1,4 @@
-PyRDM Functionality
+PyRDM functionality
 ===================
 
 Publishing software
@@ -7,8 +7,7 @@ Publishing software
 The publication of software is handled by the ``publish_software``
 method in the Publication class. This requires:
 
--  The Figshare authentication details (see Section
-   [sect:authentication]).
+-  The Figshare authentication details (see the section on `Figshare authentication <getting_started.html#figshare-authentication>`_).
 
 -  The software’s name.
 
@@ -41,8 +40,7 @@ Publishing data
 The publication of software is handled by the ``publish_software``
 method in the Publication class. This requires:
 
--  The Figshare authentication details (see Section
-   [sect:authentication]).
+-  The Figshare authentication details (see the section on `Figshare authentication <getting_started.html#figshare-authentication>`_).
 
 -  A dictionary of parameters, containing the following key-value pairs:
 
