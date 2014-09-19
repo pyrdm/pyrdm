@@ -1,0 +1,4 @@
+requests
+requests_oauthlib
+GitPython >= 0.3.2.RC1
+Sphinx
