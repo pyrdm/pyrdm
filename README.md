@@ -26,13 +26,13 @@ PyRDM is a Python module for research data management (RDM). It facilitates the 
 Quick Start
 -----------
 
-In order to use PyRDM you must build as well as configure the package. Build the package carrying out the following steps:
+In order to use PyRDM you must build as well as configure the package. Build the package by carrying out the following steps:
 
 1. Install GitPython by `sudo pip install gitpython`
 2. Install requests-oauthlib by `sudo pip install requests requests_oauthlib`
 3. Make a clone of this repository by `git clone https://github.com/pyrdm/pyrdm.git pyrdm`
 4. Build the package by `cd pyrdm; sudo make install`
-5. Build the documentation by `make doc`. This will produce an HTML version of the documentation in the `doc/build` directory.
+5. Build the documentation by `make doc`. This will produce an HTML version of the documentation in the `doc/build` directory. Alternatively, you can view the latest version of the documentation [here](http://pyrdm.readthedocs.org).
 
 The configuration procedure allows PyRDM to access and upload files to your Figshare account. Please see the documentation that you have just built for a graphical guide on how to do this.
 
