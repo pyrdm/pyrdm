@@ -17,9 +17,9 @@
 #    You should have received a copy of the GNU General Public License
 #    along with PyRDM.  If not, see <http://www.gnu.org/licenses/>.
 
-.PHONY: input clean build install doc unittest
+.PHONY: input clean build install docs unittest
 
-input: 	clean build doc
+input: 	clean build docs
 
 build:
 	@echo "*** Building PyRDM"
@@ -29,9 +29,9 @@ install:
 	@echo "*** Installing PyRDM"
 	python setup.py install
 
-doc:
+docs:
 	@echo "*** Compiling the documentation"
-	cd doc; make html; cd ..
+	cd docs; make html; cd ..
 
 unittest:
 	@echo "*** Running the unit tests"
@@ -42,6 +42,6 @@ clean:
 	rm -rf build
 	@echo "*** Cleaning pyrdm directory"
 	cd pyrdm; rm -rf *.pyc; cd ..
-	@echo "*** Cleaning doc directory"
-	cd doc; make clean; cd ..
+	@echo "*** Cleaning docs directory"
+	cd docs; make clean; cd ..
 
