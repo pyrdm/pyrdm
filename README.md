@@ -46,6 +46,15 @@ PyRDM depends on:
 * [Sphinx](http://sphinx-doc.org/) - to build the documentation.
 * [libspud](https://launchpad.net/spud) - this package is not necessary if you do not wish to run the PyRDM-based publication tool `fluidity-publish` specifically designed for the Fluidity CFD code.
 
+
+Citing
+------
+
+When citing PyRDM, please use the following citation:
+
+Jacobs, C.T., Avdis, A, Gorman, G.J. and Piggott, M.D. 2014. PyRDM: A Python-based library for automating the management and online publication of scientific software and data. *Journal of Open Research Software* 2(1):e28, DOI: [http://dx.doi.org/10.5334/jors.bj](http://dx.doi.org/10.5334/jors.bj)
+
+
 Contact
 -------
 
