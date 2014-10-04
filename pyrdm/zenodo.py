@@ -17,6 +17,7 @@
 #    You should have received a copy of the GNU General Public License
 #    along with PyRDM.  If not, see <http://www.gnu.org/licenses/>.
 
+import logging
 import sys, os
 import unittest
 
@@ -25,6 +26,10 @@ import json
 
 from urllib2 import urlopen
 from urllib import urlencode
+
+
+_LOG = logging.getLogger(__name__)
+
 
 class Zenodo:
    """ A Python interface to Zenodo via the Zenodo API. """
@@ -41,9 +46,9 @@ class Zenodo:
       base_url = "https://zenodo.org/api/deposit/depositions"
       headers = {"content-type": "application/json"}
       data = {}
-      print self.api_key
+      _LOG.debug(self.api_key)
       url = base_url + "?apikey=" + self.api_key
-      print url
+      _LOG.debug(url)
 
       response = requests.get(url)
       results = json.loads(response.content)
