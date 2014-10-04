@@ -35,7 +35,7 @@ docs:
 
 unittest:
 	@echo "*** Running the unit tests"
-	cd pyrdm; for file in *.py; do (python $$file); done; cd ..
+	python -m unittest discover -p '*.py'
 	
 clean:
 	@echo "*** Removing build directory"
