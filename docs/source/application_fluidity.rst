@@ -69,6 +69,8 @@ absolute) path to the simulation's configuration file:
    used in conjunction with the ``-s``, ``-i`` or ``-o`` option. Note
    that any DOI generated will not be valid until the publication is
    made public.
+   
+-  ``-l`` : Set the log verbosity level.
 
 e.g.
 ``fluidity-publish -i /data/fluidity/tests/top_hat_cg_supg/top_hat_cg_supg.flml``

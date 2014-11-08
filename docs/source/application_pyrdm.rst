@@ -17,4 +17,8 @@ Git repository on your computer containing PyRDM. For example,
 ``pyrdm-publish /home/my_username_here/pyrdm``
 
 (or ``python /path/to/pyrdm/bin/pyrdm-publish /path/to/pyrdm``, if you
-did not install PyRDM).
+did not install PyRDM). The following options are also available:
+
+-  ``-v`` : Publish a specific version (Git SHA-1 hash) of the PyRDM source code.
+   
+-  ``-l`` : Set the log verbosity level (choose 'critical', 'error', 'warning', 'info', or 'debug').
