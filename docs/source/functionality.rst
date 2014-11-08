@@ -7,7 +7,7 @@ Publishing software
 The publication of software is handled by the ``publish_software``
 method in the Publication class. This requires:
 
--  The Figshare authentication details (see the section on `Figshare authentication <getting_started.html#figshare-authentication>`_).
+-  The service (e.g. Figshare) authentication details (see the sections on authentication in Getting Started `<getting_started.html#authentication>`_).
 
 -  The software's name.
 

@@ -64,7 +64,7 @@ configuration file.
 #. Fill in the application details as per figure:application_details_.
    
    .. _figure:application_details:
-   .. figure::  images/application_details.png
+   .. figure::  images/figshare_application_details.png
       :align: center
       :figclass: align-center
       
@@ -74,7 +74,7 @@ configuration file.
    Private and Public articles, as per figure:permissions_.
 
    .. _figure:permissions:
-   .. figure::  images/permissions.png
+   .. figure::  images/figshare_application_permissions.png
       :align:   center
       
       The set of permissions required by PyRDM.
@@ -88,6 +88,22 @@ configuration file.
 
 **Note:** If you are publishing through a group account, you will need
 to ask the account's administrator for the authentication details.
+
+Zenodo authentication
+~~~~~~~~~~~~~~~~~~~~~
+
+Zenodo uses a personal access token to handle authentication.
+
+#. Go to ``http://zenodo.org/account/settings/applications/tokens/new/``
+
+#. Enter ``PyRDM`` as the name of the token. Ensure that ``deposit:actions`` and ``deposit:write`` are selected, as per figure:zenodo_token_.
+
+   .. _figure:permissions:
+   .. figure::  images/zenodo_token.png
+      :align:   center
+
+#. Click ``Create``. The access token should be pasted into the ``[zenodo]`` section of the ``pyrdm.ini`` configuration file.
+
 
 Testing
 -------
