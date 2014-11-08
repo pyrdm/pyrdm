@@ -18,6 +18,7 @@
 #    along with PyRDM.  If not, see <http://www.gnu.org/licenses/>.
 
 import sys, os
+import logging
 import git
 from urllib2 import urlopen
 
