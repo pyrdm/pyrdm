@@ -18,8 +18,11 @@
 #    along with PyRDM.  If not, see <http://www.gnu.org/licenses/>.
 
 import sys, os
+import logging
 import git
 from urllib2 import urlopen
+
+_LOG = logging.getLogger(__name__)
 
 class GitHandler:
 
@@ -27,8 +30,7 @@ class GitHandler:
       try:
          self.repo = git.Repo(repository_location)
       except git.InvalidGitRepositoryError:
-         print "ERROR: Either the scientific software is not under version control, or the version control system has not been detected."
-         print "Perhaps you downloaded the scientific software as an archived (e.g. .zip or .tar.gz) file and the version control directory (e.g. .git) was not included.\n"
+         _LOG.error("Either the scientific software is not under version control, or the version control system has not been detected. Perhaps you downloaded the scientific software as an archived (e.g. .zip or .tar.gz) file and the version control directory (e.g. .git) was not included.")
          sys.exit(1)
       return
       
@@ -57,16 +59,16 @@ class GitHandler:
       
       remote_url = "%s/archive/%s.zip" % (origin_url, sha)
    
-      print "Downloading software from GitHub (URL: %s)..." % origin_url
+      _LOG.info("Downloading software from GitHub (URL: %s)..." % origin_url)
       f = urlopen(origin_url)
       try:
          local_file = open(archive_path, "wb")
          local_file.write(f.read())
       except:
-         print "An error occurred."
+         _LOG.error("Could not obtain archive from the GitHub server.")
          return False
 
-      print "Download successful."
+      _LOG.info("Download successful.")
       return True
       
    def get_head_version(self):

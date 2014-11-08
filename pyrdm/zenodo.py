@@ -17,11 +17,17 @@
 #    You should have received a copy of the GNU General Public License
 #    along with PyRDM.  If not, see <http://www.gnu.org/licenses/>.
 
+import logging
 import sys, os
 import unittest
 
 import requests
 import json
+
+from urllib2 import urlopen
+from urllib import urlencode
+
+_LOG = logging.getLogger(__name__)
 
 class Zenodo:
    """ A Python interface to Zenodo via the Zenodo API. """
@@ -31,17 +37,17 @@ class Zenodo:
       self.access_token = access_token
       self.api_url = "https://zenodo.org/api/"
 
-      print "Testing Zenodo authentication..."
+      _LOG.debug("Testing Zenodo authentication...")
       try:
          url = self.api_url + "deposit/depositions"
          url = self._append_suffix(url)
 
          response = requests.get(url)
-         print "* Server returned response %d" % response.status_code
+         _LOG.debug("Server returned response %d" % response.status_code)
          if(response.status_code != requests.codes.ok): # If the status is not "OK", then exit here.
             raise Exception("Could not authenticate with the Zenodo server. Check Internet connection? Check Zenodo personal authentication token in ~/.config/pyrdm.ini ?\n")
          else:
-            print "Authentication test successful.\n"
+            _LOG.debug("Authentication test successful.\n")
       except:
          sys.exit(1)
       return
