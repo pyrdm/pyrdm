@@ -35,8 +35,8 @@ docs:
 
 unittest:
 	@echo "*** Running the unit tests"
-	python -m unittest discover -p '*.py'
-	
+	python -m unittest discover --start-directory=pyrdm --pattern=*.py --verbose
+
 clean:
 	@echo "*** Removing build directory"
 	rm -rf build
