@@ -17,6 +17,7 @@
 #    You should have received a copy of the GNU General Public License
 #    along with PyRDM.  If not, see <http://www.gnu.org/licenses/>.
 
+import logging
 import sys, os
 import unittest
 
@@ -26,6 +27,10 @@ import json
 
 from urllib2 import urlopen
 from urllib import urlencode
+
+
+_LOG = logging.getLogger(__name__)
+
 
 class Figshare:
    """ A Python interface to Figshare via the Figshare API. """
@@ -42,16 +47,16 @@ class Figshare:
 
       # Before doing any creating/uploading on Figshare, try something simple like listing the user's articles
       # to check that the authentication is successful.
-      print "Testing Figshare authentication..."
+      _LOG.info("Testing Figshare authentication...")
       try:
          response = self.client.get('http://api.figshare.com/v1/my_data/articles', auth=self.oauth)
-         print "* Server returned response %d" % response.status_code
+         _LOG.debug("* Server returned response %d" % response.status_code)
          if(response.status_code != requests.codes.ok): # If the status is not "OK", then exit here.
             raise Exception("Could not authenticate with the Figshare server.")
          else:
-            print "Authentication test successful.\n"
+            _LOG.info("Authentication test successful.\n")
       except:
-         print "Error: Could not authenticate with the Figshare server. Check Internet connection? Check Figshare authentication keys in ~/.config/pyrdm.ini ?\n"
+         _LOG.error("Could not authenticate with the Figshare server. Check Internet connection? Check Figshare authentication keys in ~/.config/pyrdm.ini ?")
          sys.exit(1)
 
       return
@@ -250,63 +255,63 @@ class TestLog(unittest.TestCase):
                         resource_owner_key = self.publisher.config.get("figshare", "resource_owner_key"), resource_owner_secret = self.publisher.config.get("figshare", "resource_owner_secret"))
                      
       # Create a test article
-      print "Creating test article..."
+      _LOG.info("Creating test article...")
       publication_details = self.figshare.create_article(title="PyRDM Test", description="PyRDM Test Article", defined_type="code", status="Drafts")
-      print publication_details
+      _LOG.debug(str(publication_details))
       assert(not ("error" in publication_details.keys()))
       self.article_id = publication_details["article_id"]
       return
 
    def tearDown(self):
-      print "Deleting test article..."
+      _LOG.info("Deleting test article...")
       results = self.figshare.delete_article(self.article_id)
-      print results
+      _LOG.debug(str(results))
       assert("success" in results.keys())
       return
 
    def test_figshare_search(self):
-      print "Searching for test article..."
+      _LOG.info("Searching for test article...")
       results = self.figshare.search("PyRDM Test", search_private=True)
-      print results
+      _LOG.debug(str(results))
       assert (len(results) >= 1)
       return
  
    def test_figshare_add_file(self):
-      print "Adding file to test article..."
+      _LOG.info("Adding file to test article...")
       f = open("test_file.txt", "w")
       f.write("This is a test file for PyRDM's Figshare module unit tests")
       f.close()
       
       results = self.figshare.add_file(self.article_id, "test_file.txt")
-      print results
+      _LOG.debug(str(results))
       assert(results["extension"] == "txt")
       assert(results["name"] == "test_file.txt")
       
       return
 
    def test_figshare_add_tag(self):
-      print "Adding tag to test article..."
+      _LOG.info("Adding tag to test article...")
       
       results = self.figshare.add_tag(self.article_id, "test_file_tag")
-      print results
+      _LOG.debug(str(results))
       assert("success" in results.keys())
       
       return
 
    def test_figshare_add_category(self):
-      print "Adding category 'Computational Physics' to test article..."
+      _LOG.info("Adding category 'Computational Physics' to test article...")
       
       results = self.figshare.add_category(self.article_id, 109)
-      print results
+      _LOG.debug(str(results))
       assert("success" in results.keys())
       
       return
 
    def test_figshare_get_article_details(self):
-      print "Getting article details..."
+      _LOG.info("Getting article details...")
 
       publication_details = self.figshare.get_article_details(self.article_id)
-      print publication_details
+      _LOG.debug(str(publication_details))
       assert(len(publication_details["items"]) == 1)
       assert(publication_details["items"][0]["title"] == "PyRDM Test")
       assert(publication_details["items"][0]["description"] == "PyRDM Test Article")
