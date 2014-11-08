@@ -23,16 +23,14 @@ import sys, os
 import unittest
 import re
 
-import git
 import hashlib # For MD5 checksums
 from urllib2 import urlopen
 
 from pyrdm.figshare import Figshare
 from pyrdm.zenodo import Zenodo
-
+from pyrdm.git_handler import GitHandler
 
 _LOG = logging.getLogger(__name__)
-
 
 class Publisher:
    """ A Python module for publishing scientific software and data on Figshare or Zenodo. """
@@ -47,9 +45,7 @@ class Publisher:
          self.figshare = Figshare(client_key = self.config.get("figshare", "client_key"), client_secret = self.config.get("figshare", "client_secret"),
                         resource_owner_key = self.config.get("figshare", "resource_owner_key"), resource_owner_secret = self.config.get("figshare", "resource_owner_secret"))
       elif(service == "zenodo"):
-         # FIXME: The interface to the Zenodo API is currently not authenticating properly with the Zenodo servers.
-         raise NotImplementedError
-         self.zenodo = Zenodo(api_key = self.config.get("zenodo", "api_key"))
+         self.zenodo = Zenodo(access_token = self.config.get("zenodo", "access_token"))
       else:
          _LOG.error("Unsupported service: %s" % service)
          sys.exit(1)
@@ -57,8 +53,7 @@ class Publisher:
       return
       
    def load_config(self, config_file_path):
-      """ Load the configuration file containing the OAuth keys and information about the software name, etc
-      into a dictionary called 'config' and return it. """
+      """ Load the configuration file and return a dictionary containing the OAuth keys. """
 
       config = ConfigParser.ConfigParser()
       have_config = (config.read(config_file_path) != [])
@@ -67,91 +62,149 @@ class Publisher:
          sys.exit(1)
       return config
 
-   def publish_software(self, software_name, software_sha, software_local_repo_location, category_id, private=False):
+   def publish_software(self, name, local_repo_location, version=None, private=False):
       """ Publishes the software in the current repository. """
-
-      # Obtain the origin's URL and get the repository name from that.
-      repo = git.Repo(software_local_repo_location)
-      origin_url = repo.remotes.origin.url
-      if(origin_url.endswith(".git")):
-         origin_url = origin_url.replace(".git", "")
-      repository_name = os.path.basename(origin_url)
-
-      # Download the .zip file from GitHub...
-      url = "%s/archive/%s.zip" % (origin_url, software_sha)
       
-      _LOG.info("Downloading software from GitHub (URL: %s)..." % url)
-      f = urlopen(url)
-      file_name = repository_name + "_" + os.path.basename(url)
-      with open(file_name, "wb") as local_file:
-         local_file.write(f.read())
-      _LOG.info("Download complete.")
+      git_handler = GitHandler(local_repo_location)
 
-      # ...then upload it to Figshare.
-      _LOG.info("Creating code repository on Figshare for software...")
-      title='%s (%s)' % (software_name, software_sha)
-      description='%s (Version %s)' % (software_name, software_sha)
-      publication_details = self.figshare.create_article(title=title, description=description, defined_type="code", status="Drafts")
-      _LOG.info("Code repository created with ID: %d and DOI: %s" % (publication_details["article_id"], publication_details["doi"]))
+      # If no software version is given, use the version of the local repository's HEAD.
+      if(version is None):
+         version = git_handler.get_head_version()
+         _LOG.info("No version information provided. Using the local repository's HEAD as the version to publish (%s)." % version)
 
-      _LOG.info("Uploading software to Figshare...")
-      self.figshare.add_file(article_id=publication_details["article_id"], file_path=file_name)
-      self.verify_upload(article_id=publication_details["article_id"], files=[file_name])
+      # Search for the software, in case it has already been published.
+      pid, doi = self.find_software(name, version)
+      if(pid is not None):
+         _LOG.info("Version %s of the software has already been published. Re-using the publication ID (%d) and DOI (%s)..." % (version, pid, doi))
+         return pid, doi
 
-      _LOG.info("Adding the SHA-1 hash as a tag...")
-      self.figshare.add_tag(article_id=publication_details["article_id"], tag_name=software_sha)
-      _LOG.info("Tag added.")
+      # The desired path to the archive file.
+      archive_path = name + "-" + str(version) + ".zip"
+      
+      # Create the archive. First archive the local repository...
+      success = git_handler.archive(version, archive_path)
+      if(not success):
+         _LOG.error("Could not obtain an archive of the software at the specified version.")
+         sys.exit(1)
+      
+      # ...then upload it to the citable repository service.
+      _LOG.info("Creating code repository for software...")
+      title='%s (%s)' % (name, version)
+      description='%s (Version %s)' % (name, version)
 
-      if(category_id is not None):
+      if(self.service == "figshare"):
+         publication_details = self.figshare.create_article(title=title, description=description, defined_type="code", status="Drafts")
+         pid = publication_details["article_id"]
+         doi = str(publication_details["doi"])
+         _LOG.info("Code repository created with ID: %d and DOI: %s" % (pid, doi))
+
+         _LOG.info("Uploading software...")
+         self.figshare.add_file(article_id=pid, file_path=archive_path)
+         self.verify_upload(pid=pid, files=[archive_path])
+
+         _LOG.info("Adding the software's version as a tag...")
+         self.figshare.add_tag(article_id=pid, tag_name=version)
+         _LOG.info("Tag added.")
+
          _LOG.info("Adding category...")
-         self.figshare.add_category(article_id=publication_details["article_id"], category_id=category_id)
+         self.figshare.add_category(article_id=pid, category="Computer Software")
          _LOG.info("Category added.")
 
-      _LOG.info("Adding all authors (with Figshare IDs) to the code...")
-      author_ids = self.get_authors_list(software_local_repo_location)
-      _LOG.debug("List of author IDs: ", author_ids)
-      if(author_ids is not None):
-         for author_id in author_ids:
-            self.figshare.add_author(publication_details["article_id"], author_id)
-      _LOG.info("All authors (with Figshare IDs) added.")
+         _LOG.info("Adding all authors (with author IDs) to the code...")
+         author_ids = self.get_authors_list(git_handler)
+         _LOG.debug("List of author IDs: %s" % (author_ids,))
+         if(author_ids is not None):
+            for author_id in author_ids:
+               self.figshare.add_author(pid, author_id)
+         _LOG.info("All authors (with author IDs) added.")
 
-      # If we are not keeping the code private, then make it public.
-      if(not private):
-         _LOG.info("Making the code public...")
-         self.figshare.make_public(article_id=publication_details["article_id"])
-         _LOG.info("The code has been made public.")
+         # If we are not keeping the code private, then make it public.
+         if(not private):
+            _LOG.info("Making the code public...")
+            self.figshare.make_public(article_id=pid)
+            _LOG.info("The code has been made public.")
 
-      return publication_details
+      elif(self.service == "zenodo"):
+
+         # With Zenodo we have to obtain the authors list and tags *before* creating the deposition.
+         _LOG.info("Obtaining author names and affiliations...")
+         authors = self.get_authors_list(git_handler.get_working_directory())
+
+         if(authors is None or authors == []):
+            _LOG.warnig("""Could not obtain author information from an AUTHORS file. 
+            Zenodo requires at least one author to be present in the author's list. 
+            Using the name and affiliation given in the PyRDM configuration file.""")
+            authors = [{"name": self.config.get("general", "name"), "affiliation": self.config.get("general", "affiliation")}]
+         _LOG.debug("List of authors and affiliations: %s" % (authors,))
+         
+         publication_details = self.zenodo.create_deposition(title=title, description=description, upload_type="software", 
+                                                             creators=authors, keywords=[version], prereserve_doi=True)
+         pid = publication_details["id"]
+         doi = str(publication_details["metadata"]["prereserve_doi"]["doi"])
+         _LOG.info("Code repository created with ID: %d and DOI: %s" % (pid, doi))
+
+         _LOG.info("Uploading software...")
+         self.zenodo.create_file(deposition_id=pid, file_path=archive_path)
+         self.verify_upload(pid=pid, files=[archive_path])
+
+         # If we are not keeping the code private, then make it public.
+         if(not private):
+            _LOG.info("Making the code public...")
+            self.zenodo.publish_deposition(deposition_id=pid)
+            _LOG.info("The code has been made public.")
+
+      return pid, doi
       
-   def publish_data(self, parameters, article_id=None, private=False):
-      """ Create a new dataset on the Figshare server. 
+      
+   def publish_data(self, parameters, pid=None, private=False):
+      """ Create a new dataset on the online, citable repository's server. 
       Returns a dictionary of details about the new dataset once created. """
          
       _LOG.info("Publishing data...")
-      if(article_id is None):
+  
+      if(pid is None):
+         _LOG.info("Creating new fileset...")
          if(self.service == "figshare"):
-            _LOG.info("Creating dataset on Figshare for data...")
             # NOTE: The defined_type needs to be a 'fileset' to allow multiple files to be uploaded separately.
             publication_details = self.figshare.create_article(title=parameters["title"], description=parameters["description"], defined_type="fileset", status="Drafts")
-            _LOG.info("Dataset created with ID: %d and DOI: %s" % (publication_details["article_id"], publication_details["doi"]))
+            pid = publication_details["article_id"]
+            doi = str(publication_details["doi"])
+            
+            # Add category
+            _LOG.info("Adding category...")
+            if(parameters["category"] is not None):
+               self.figshare.add_category(pid, parameters["category"])
 
-            article_id = publication_details["article_id"]
+            # Add tag(s)
+            _LOG.info("Adding tag(s)...")
+            if(parameters["tag_name"] is not None):
+               if(type(parameters["tag_name"]) == list):
+                  for tag_name in parameters["tag_name"]:
+                     self.figshare.add_tag(pid, tag_name)
+               else:
+                  self.figshare.add_tag(pid, parameters["tag_name"])
+            
          elif(self.service == "zenodo"):
-            raise NotImplementedError # FIXME: Remove this line once the Zenodo interface is ready.
-            _LOG.info("Creating dataset on Zenodo for data...")
-            publication_details = self.zenodo.create_deposition(title=parameters["title"], description=parameters["description"], upload_type="dataset", state="inprogress")
-            _LOG.info("Dataset created with DOI: %s" % publication_details["doi"])
+            publication_details = self.zenodo.create_deposition(title=parameters["title"], description=parameters["description"], upload_type="dataset",
+                                                                creators=[{"name": self.config.get("general", "name"), "affiliation": self.config.get("general", "affiliation")}], 
+                                                                keywords=parameters["tag_name"], prereserve_doi=True)
+            pid = publication_details["id"]
+            doi = str(publication_details["metadata"]["prereserve_doi"]["doi"])
 
-            article_id = publication_details["id"]
+         _LOG.info("Fileset created with ID: %d and DOI: %s" % (pid, doi))
 
          # This is a new article, so upload ALL the files!
          modified_files = parameters["files"]
          existing_files = []
       else:
          publication_details = None
+         doi = None # FIXME: We could try to look up the DOI associated with a given PID in the future.
          # This is an existing publication, so check whether any files have been modified since they were last published.
          modified_files = self.find_modified(parameters["files"])
-         existing_files = self.figshare.get_file_details(article_id)["files"]
+         if(self.service == "figshare"):
+            existing_files = self.figshare.get_file_details(pid)["files"]
+         elif(self.service == "zenodo"):
+            existing_files = self.zenodo.list_files(pid)
 
       _LOG.debug("The following files have been marked for uploading: ", modified_files)
       uploaded_files = []
@@ -159,48 +212,56 @@ class Publisher:
          # Check whether the file actually exists locally.
          if(os.path.exists(f)):
             _LOG.info("Uploading %s..." % f)
+            
             # Check whether the file already exists on the server. If so, over-write the version on the server.
             exists = False
-            for e in existing_files:
-               if(e["name"] == os.path.basename(f)):
-                  _LOG.info("File already exists on the server. Over-writing...")
-                  exists = True
-                  # FIXME: It is currently not possible to over-write an existing file via the Figshare API.
-                  # We have to delete the file and then add it again.
-                  self.figshare.delete_file(article_id=article_id, file_id=e["id"])
-                  self.figshare.add_file(article_id=article_id, file_path=f)
-                  break
-            if(not exists):
-               self.figshare.add_file(article_id=article_id, file_path=f)
+            
+            if(self.service == "figshare"):
+               for e in existing_files:
+                  if(e["name"] == os.path.basename(f)):
+                     _LOG.info("File already exists on the server. Over-writing...")
+                     exists = True
+                     # FIXME: It is currently not possible to over-write an existing file via the Figshare API.
+                     # We have to delete the file and then add it again.
+                     self.figshare.delete_file(article_id=pid, file_id=e["id"])
+                     self.figshare.add_file(article_id=pid, file_path=f)
+                     break
+               if(not exists):
+                  self.figshare.add_file(article_id=pid, file_path=f)
+                  
+            elif(self.service == "zenodo"):
+               for e in existing_files:
+                  if(e["filename"] == os.path.basename(f)):
+                     _LOG.info("File already exists on the server. Over-writing...")
+                     exists = True
+                     # FIXME: It is currently not possible to over-write an existing file via the Zenodo API.
+                     # We have to delete the file and then add it again.
+                     self.zenodo.delete_file(deposition_id=pid, file_id=e["id"])
+                     self.zenodo.create_file(deposition_id=pid, file_path=f)
+                     break
+               if(not exists):
+                  self.zenodo.create_file(deposition_id=pid, file_path=f)
+
+            # Write out the .md5 checksum file
             self.write_checksum(f)
+            # Record the upload.
             uploaded_files.append(f)
          else:
             _LOG.warning("File %s not present on the local system. Skipping..." % f)
             continue
 
-      self.verify_upload(article_id=article_id, files=uploaded_files)
-
-      # Add category
-      _LOG.info("Adding category...")
-      if(parameters["category_id"] is not None):
-         self.figshare.add_category(article_id, parameters["category_id"])
-
-      # Add tag(s)
-      _LOG.info("Adding tag(s)...")
-      if(parameters["tag_name"] is not None):
-         if(type(parameters["tag_name"]) == list):
-            for tag_name in parameters["tag_name"]:
-               self.figshare.add_tag(article_id, tag_name)
-         else:
-            self.figshare.add_tag(article_id, parameters["tag_name"])
-
+      self.verify_upload(pid=pid, files=uploaded_files)
+      
       # If we are not keeping the data private, then make it public.
       if(not private):
          _LOG.info("Making the data public...")
-         self.figshare.make_public(article_id=article_id)
+         if(self.service == "figshare"):
+            self.figshare.make_public(article_id=pid)
+         elif(self.service == "zenodo"):
+            self.zenodo.publish_deposition(deposition_id=pid)
          _LOG.info("The data has been made public.")
 
-      return publication_details
+      return pid, doi
       
    def write_checksum(self, f):
       """ For a given file with path 'f', write a corresponding MD5 checksum file. """
@@ -228,18 +289,18 @@ class Publisher:
             
       return modified
 
-   def find_software(self, software_name, sha):
+   def find_software(self, name, version):
       """ Checks if the software has already been published. If so, it returns the DOI.
       Otherwise it returns None. """
       
-      keyword = "%s" % (software_name) # We always include the software's name in the title, so use it as the keyword
+      keyword = "%s" % (name) # We always include the software's name in the title, so use it as the keyword
       
       if(self.service == "figshare"):
-         results = self.figshare.search(keyword, tag=sha) # We always tag the software with the SHA-1 hash.
+         results = self.figshare.search(keyword, tag=version) # We always tag the software with its version (the SHA-1 hash for Git repositories).
 
          if(len(results["items"]) != 0):
-            _LOG.info("Software %s has already been published (with SHA-1 %s).\n" % (software_name, sha))
-            article_id = results["items"][-1]["article_id"]
+            _LOG.info("Software %s has already been published (with version %s).\n" % (name, version))
+            pid = results["items"][-1]["article_id"]
             # Try to find the DOI as well.
             # This try-except block might not be necessary if we are always searching public articles.
             try:
@@ -248,44 +309,55 @@ class Publisher:
             except:
                _LOG.info("DOI not found.")
                doi = None
-            return article_id, doi
+            return pid, doi
          else:
             return None, None
-      else:
-         # TODO: Add in Zenodo searching.
-         raise NotImplementedError
+      elif(self.service == "zenodo"):
+         # FIXME: There is currently no way of easily searching for a Zenodo deposit based on its keywords via the API.
+         # Therefore, assume for now that the software has not been published.
+         return None, None
 
-   def get_authors_list(self, local_repo_location):
-      """ If an AUTHORS file exists in a given Git repository's base directory, then read it and
-      match any Figshare author IDs using a regular expression. Return all author IDs in a single list. """
-
-      try:
-         repo = git.Repo(local_repo_location)
-      except git.InvalidGitRepositoryError:
-         _LOG.warning("Cannot obtain authors list because the Git repository location is not valid or does not exist. This is expected if you downloaded PyRDM as a .zip or .tar.gz file.")
-         return None
-
+   def get_authors_list(self, wd):
+      """ If an AUTHORS file exists in a given repository's base directory, then read it and
+      match any author IDs using a regular expression. Return all author IDs in a single list. """
+      
       author_ids = []
       try:
          # Assumes that the AUTHORS file is in the root directory of the project.
-         f = open(repo.working_dir + "/AUTHORS", "r")
+         f = open(wd + "/AUTHORS", "r")
          for line in f.readlines():
-            m = re.search("figshare:([0-9]+)", line)
-            if(m is not None):
-               author_id = int(m.group(1))
-               author_ids.append(author_id)
+         
+            if(self.service == "figshare"):
+               m = re.search("<%s:([0-9]+)>" % self.service, line)
+               if(m is not None):
+                  author_id = int(m.group(1)) # Figshare expects integer author IDs.
+                  author_ids.append(author_id)
+                  
+            elif(self.service == "zenodo"):
+               m = re.search("<%s:(.+;.+)>" % self.service, line)
+               if(m is not None):
+                  s = m.group(1).split(";")
+                  author_id = {'name':s[0], 'affiliation':s[1]}
+                  author_ids.append(author_id)               
+               
          return author_ids
       except IOError:
          _LOG.warning("Could not open AUTHORS file. Does it exist? Check read permissions?")
          return None
 
-   def is_uploaded(self, article_id, files):
+   def is_uploaded(self, pid, files):
       """ Return True if the files in the list 'files' are all present on the server. Otherwise, return False. """
-      files_on_server = self.figshare.get_file_details(article_id)["files"]
+      if(self.service == "figshare"):
+         files_on_server = self.figshare.get_file_details(pid)["files"]
+         key = "name"
+      elif(self.service == "zenodo"):
+         files_on_server = self.zenodo.list_files(pid)
+         key = "filename"
+         
       for f in files:
          exists = False
          for s in files_on_server:
-            if(s["name"] == os.path.basename(f)):
+            if(s[key] == os.path.basename(f)):
                exists = True
                break
          if(exists):
@@ -295,9 +367,9 @@ class Publisher:
             return False
       return True
 
-   def verify_upload(self, article_id, files):
+   def verify_upload(self, pid, files):
       """ Verify that all files in the list 'files' have been uploaded. """
-      if(self.is_uploaded(article_id=article_id, files=files)):
+      if(self.is_uploaded(pid=pid, files=files)):
          _LOG.info("All files successfully uploaded.")
       else:
          _LOG.warning("Not all files were successfully uploaded. Perhaps you ran out of space on the server?")
@@ -306,18 +378,29 @@ class Publisher:
             if(response == "y" or response == "Y"):
                break
             elif(response == "n" or response == "N"):
-               # Clean up and exit
-               self.figshare.delete_article(article_id) # NOTE: This should only delete draft code/filesets.
+               # Clean up and exit.
+               # NOTE: This only deletes draft/unpublished code/filesets.
+               if(self.service == "figshare"):
+                  self.figshare.delete_article(article_id=pid)
+               elif(self.service == "zenodo"):
+                  self.zenodo.delete_deposition(deposition_id=pid)
                sys.exit(1)
             else:
                continue
       return
 
-   def article_exists(self, article_id):
-      results = self.figshare.get_article_details(article_id)
-      if("error" in results.keys()):
-         return False
-      else:
+   def publication_exists(self, pid):
+      if(self.service == "figshare"):
+         results = self.figshare.get_article_details(pid)
+         if("error" in results.keys()):
+            return False
+         else:
+            return True
+      elif(self.service == "zenodo"):
+         try:
+            results = self.zenodo.retrieve_deposition(pid)
+         except:
+            return False
          return True
 
 class TestLog(unittest.TestCase):
@@ -325,7 +408,7 @@ class TestLog(unittest.TestCase):
 
    def setUp(self):
       self.publisher = Publisher(service="figshare")
-      
+            
       f = open("test_file.txt", "w")
       f.write("Hello World! This is a file for the MD5 functionality test.")
       f.close()
@@ -369,13 +452,14 @@ class TestLog(unittest.TestCase):
 
    def test_get_authors_list(self):
       try:
-         repo = git.Repo(".")
+         git_handler = GitHandler(".") # Assume that the unittests are being run from the PyRDM base directory
       except git.InvalidGitRepositoryError:
          _LOG.warning("Skipping the 'get_authors_list' test because the Git repository could not be opened. This is expected if you downloaded PyRDM as a .zip or .tar.gz file, but not if you used 'git clone'.")
          return
 
-      authors_list = self.publisher.get_authors_list(".") # Assume that the unittests are being run from the PyRDM base directory
+      authors_list = self.publisher.get_authors_list(git_handler.get_working_directory())
       _LOG.debug("authors_list = %s" % (authors_list,))
+
       assert(554577 in authors_list)
       assert(566335 in authors_list)
       assert(444083 in authors_list)

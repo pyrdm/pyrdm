@@ -25,12 +25,9 @@ import requests
 from requests_oauthlib import OAuth1
 import json
 
-from urllib2 import urlopen
 from urllib import urlencode
 
-
 _LOG = logging.getLogger(__name__)
-
 
 class Figshare:
    """ A Python interface to Figshare via the Figshare API. """
@@ -140,14 +137,30 @@ class Figshare:
       results = json.loads(response.content)
       return results
 
-   def add_category(self, article_id, category_id):
-      """ For an article with a given article_id, add a category with a given category_id. """
-      body = {'category_id':category_id}
-      headers = {'content-type':'application/json'}
-      response = self.client.put('http://api.figshare.com/v1/my_data/articles/%s/categories' % str(article_id), auth=self.oauth,
-                              data=json.dumps(body), headers=headers)
-      results = json.loads(response.content)
-      return results
+   def add_category(self, article_id, category):
+      """ For an article with a given article_id, add a category. Note that this is a string, not the integer ID of the category. """
+
+      category_id = self.get_category_id(category)
+      if(category_id is None):
+         _LOG.warning("Could not find the category '%s'! No category was added. The publication cannot be made public until a category is added." % category)
+         return None
+      else:
+         body = {'category_id':category_id}
+         headers = {'content-type':'application/json'}
+         response = self.client.put('http://api.figshare.com/v1/my_data/articles/%s/categories' % str(article_id), auth=self.oauth,
+                                 data=json.dumps(body), headers=headers)
+         results = json.loads(response.content)
+         return results
+
+   def get_category_id(self, category):
+      """ Return the integer ID of a given category. If not found, return None. """
+      categories_list = self.get_categories()["items"]
+      category_id = None
+      for c in categories_list:
+         if(c["name"] == category):
+            category_id = c["id"]
+            break
+      return category_id
 
    def get_categories(self):
       """ Get the full list of available categories. No authentication is required. """
@@ -299,9 +312,9 @@ class TestLog(unittest.TestCase):
       return
 
    def test_figshare_add_category(self):
-      _LOG.info("Adding category 'Computational Physics' to test article...")
+      _LOG.info("Adding category 'Computer Software' to test article...")
       
-      results = self.figshare.add_category(self.article_id, 109)
+      results = self.figshare.add_category(self.article_id, "Computer Software")
       _LOG.debug(str(results))
       assert("success" in results.keys())
       

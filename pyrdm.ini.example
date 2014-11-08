@@ -1,5 +1,12 @@
+[general]
+name = "My Name Here"
+affiliation = "My Affiliation Here"
+
 [figshare]
 client_key = stuvwx
 client_secret = xyz
 resource_owner_key = ghijkl
 resource_owner_secret = mnopqr
+
+[zenodo]
+access_token = abcde
