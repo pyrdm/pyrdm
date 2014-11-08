@@ -9,25 +9,25 @@ method in the Publication class. This requires:
 
 -  The Figshare authentication details (see the section on `Figshare authentication <getting_started.html#figshare-authentication>`_).
 
--  The software’s name.
+-  The software's name.
 
 -  The version of the software that you would like to publish (for Git
    repositories, this is the SHA-1 commit hash).
 
--  The location of the software’s Git repository (or the location of any
+-  The location of the software's Git repository (or the location of any
    file within that repository) on your local hard drive.
 
--  The ID of a category in Figshare’s categories list. The full list of
+-  The ID of a category in Figshare's categories list. The full list of
    categories can be found here:
    ``http://api.figshare.com/v1/categories``.
 
 Author attribution
 ~~~~~~~~~~~~~~~~~~
 
-If an AUTHORS file is provided in the Git repository’s base directory,
+If an AUTHORS file is provided in the Git repository's base directory,
 PyRDM parses it and looks for strings of the form ``figshare:xxxx``,
 where ``xxxx`` is an author ID. Author IDs should be specified after
-each author’s full name. An example is:
+each author's full name. An example is:
 
 ``Christian Jacobs (figshare:554577)``
 
@@ -50,11 +50,11 @@ method in the Publication class. This requires:
 
    -  ``files``: a list of paths to the files within the dataset.
 
-   -  ``category_id``: the ID of a category in Figshare’s categories
+   -  ``category_id``: the ID of a category in Figshare's categories
       list
 
    -  ``tag_name``: a single string, or list of strings, to tag the
-      data’s fileset with
+      data's fileset with
 
 -  Optionally, an ``article_id`` if the dataset already exists on the
    Figshare servers and you wish to update it. By default, this is set
@@ -63,7 +63,7 @@ method in the Publication class. This requires:
 MD5 cross-checks
 ~~~~~~~~~~~~~~~~
 
-When a data file is published, the file’s MD5 checksum is stored in a
+When a data file is published, the file's MD5 checksum is stored in a
 corresponding checksum file. The next time the user tries to publish the
 file, its MD5 checksum is recomputed and compared against the MD5
 checksum stored in its corresponding MD5 file. If the two MD5 checksums

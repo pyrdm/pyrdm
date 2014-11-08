@@ -40,7 +40,7 @@ the output data from the software must be captured, including provenance
 data that details how the input data and software were used to create
 this new data. PyRDM aims to address these needs by facilitating the
 automated management and online publication of software and data via
-citable repositories hosted by Figshare. This library can be
+citable repositories hosted by Figshare or Zenodo. This library can be
 incorporated into the workflow of scientific software to allow research
 output to be curated in a straight-forward manner.
 

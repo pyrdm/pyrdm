@@ -6,9 +6,9 @@ System requirements
 
 A standard Python installation is required, as well as any additional
 Python modules that are listed in the README file under the
-“Dependencies” section. PyRDM is designed to run on the Linux operating
-system. All development and testing takes place on the Ubuntu Precise
-(12.04) distribution.
+"Dependencies" section. PyRDM is designed to run on the Linux operating
+system. All development and testing takes place on the Ubuntu Trusty
+(14.04) distribution.
 
 Installation
 ------------
@@ -87,7 +87,7 @@ configuration file.
    into the ``pyrdm.ini`` configuration file.
 
 **Note:** If you are publishing through a group account, you will need
-to ask the account’s administrator for the authentication details.
+to ask the account's administrator for the authentication details.
 
 Testing
 -------

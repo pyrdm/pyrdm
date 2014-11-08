@@ -10,10 +10,10 @@ available here:
 
 ``https://github.com/ctjacobs/fluidity-rdm``
 
-but will soon be merged into Fluidity’s master branch. Note that you
+but will soon be merged into Fluidity's master branch. Note that you
 must build Fluidity (or at least satisfy the libspud dependency noted in
 the README file) before using Fluidity-Publish. You may need to add
-Fluidity’s ’python’ directory to your ``PYTHONPATH`` environment
+Fluidity's 'python' directory to your ``PYTHONPATH`` environment
 variable in order for the libspud module to be found.
 
 Enable publishing
@@ -21,7 +21,7 @@ Enable publishing
 
 If we want to publish the Fluidity source code used to run a particular
 simulation, along with the input and output data, we first need to
-enable the ‘publish’ option in that simulation’s configuration/options
+enable the ‘publish' option in that simulation's configuration/options
 file (the “.flml” file), as shown in figure:diamond_. Simply select
 which publishing service you wish to use (e.g. Figshare or Zenodo), and
 under the ``input_files`` and ``output_files`` sub-options (see Figure
@@ -44,15 +44,15 @@ one by entering its ID in the following option(s):
       :scale: 75 %
       :figclass: align-center
       
-      The ‘publish’ option enabled in a simulation’s configuration file. The file is being modified in Diamond.
+      The ‘publish' option enabled in a simulation's configuration file. The file is being modified in Diamond.
 
 Using Fluidity-Publish
 ----------------------
 
 To publish, you will need to use the ``fluidity-publish`` program
-(located in PyRDM’s ’bin’ directory) at the command line; this expects
+(located in PyRDM's 'bin' directory) at the command line; this expects
 one or more of the following options, followed by the (relative or
-absolute) path to the simulation’s configuration file:
+absolute) path to the simulation's configuration file:
 
 -  ``-s`` : Publish the Fluidity source code. This can be used in
    conjunction with the ``-v`` option to explicitly choose the version
@@ -84,7 +84,7 @@ Note that the software, input data and output data must be published
 separately. You cannot yet use the -s, -i and -o options together.
 
 Once the publication process has finished, the ID and DOI of the
-publication will be added to the simulation’s configuration file for
+publication will be added to the simulation's configuration file for
 future reference. If you wish to publish the simulation data again, the
 ID and DOI will be re-used (unless you remove them from the
 configuration file).
@@ -97,7 +97,7 @@ using the ``-v`` option, Fluidity-Publish will automatically obtain the
 version of Fluidity from the file ``version.h`` stored in the
 ``include`` directory of the local Fluidity repository on your computer.
 This file is created at compile-time when the Fluidity binary is built.
-If this file is not present (perhaps because you haven’t built Fluidity
+If this file is not present (perhaps because you haven't built Fluidity
 yet), then Fluidity-Publish will instead use the version (SHA-1 key) of
 the HEAD commit of the local repository.
 
@@ -105,9 +105,9 @@ Provenance data
 ~~~~~~~~~~~~~~~
 
 Fluidity writes a limited amount of provenance data to the header of the
-simulation’s ‘stat’ file. If you choose to publish the output data
-(which should include the ‘stat’ file) using the ``-o`` option, then
+simulation's ‘stat' file. If you choose to publish the output data
+(which should include the ‘stat' file) using the ``-o`` option, then
 Fluidity-Publish will (if available) retrieve the IDs and DOIs of the
-recently published software and input data from the simulation’s options
+recently published software and input data from the simulation's options
 file. It will then add those to the existing provenance data before
 publishing the output data files that you have specified.
