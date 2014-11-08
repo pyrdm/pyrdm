@@ -17,18 +17,29 @@
 #    You should have received a copy of the GNU General Public License
 #    along with PyRDM.  If not, see <http://www.gnu.org/licenses/>.
 
-import sys, os, glob
 import ConfigParser
+import glob
+import logging
 import argparse
+import os
 import re
+import sys
 
 import git
 from xml.dom import minidom
-
 pyrdm_path = os.path.join(os.path.realpath(os.path.dirname(__file__)), os.pardir)
 sys.path.insert(0, pyrdm_path)
 
+import pyrdm
 from pyrdm.publisher import Publisher
+
+_LOG = logging.getLogger(__name__)
+_HANDLER = logging.StreamHandler()
+_LOG.addHandler(_HANDLER)
+_HANDLER.setFormatter(logging.Formatter(
+    '%(module)s %(levelname)s: %(message)s'))
+del(_HANDLER)
+_LOG.setLevel(logging.ERROR)
 
 class PyRDMPublish:
 
@@ -42,22 +53,30 @@ class PyRDMPublish:
 
       # Publish the software
       pid, doi = self.publisher.publish_software(name="PyRDM", local_repo_location=path, version=version, private=private)
-      print "PyRDM has been published. Publication ID: %d, DOI: %s" % (pid, doi)
-
+      _LOG.info("PyRDM has been published. Publication ID: %d, DOI: %s" % (pid, doi))
       return
          
 if(__name__ == "__main__"):
    # Parse the command line arguments
-   usage = "Usage: %prog [options] path_to_local_pyrdm_git_repository"
    parser = argparse.ArgumentParser(prog="pyrdm-publish", description="Publishes the PyRDM source code to an online citable repository.")
    parser.add_argument("-v", "--version", help="Publish a specific version of the PyRDM source code identified by a given SHA-1 hash.", action="store", type=str, default=None, metavar="HASH")
+   parser.add_argument(
+      "-l", "--log-level", action="store", type="choice", metavar="LEVEL",
+      default=None, choices=['critical', 'error', 'warning', 'info', 'debug'],
+      help=("Log verbosity.  Defaults to %s" % (
+         logging.getLevelName(pyrdm.LOG.level).lower())))
    parser.add_argument("path", help="The path to the local Git repository of PyRDM on your file system.", action="store", type=str)
    args = parser.parse_args()
    
+   if args.log_level:
+      level = getattr(logging, args.log_level.upper())
+      pyrdm.LOG.setLevel(level)
+      _LOG.setLevel(level)
+      
    if(os.path.exists(args.path)):
       rdm = PyRDMPublish()
       rdm.publish(path = args.path, version = args.version, private=True)
    else:
-      print "The path to the local PyRDM directory does not exist."
+      _LOG.error("The path to the local PyRDM directory does not exist.")
       sys.exit(1)
    
