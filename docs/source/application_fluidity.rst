@@ -70,7 +70,7 @@ absolute) path to the simulation's configuration file:
    that any DOI generated will not be valid until the publication is
    made public.
    
--  ``-l`` : Set the log verbosity level.
+-  ``-l`` : Set the log verbosity level (choose 'critical', 'error', 'warning', 'info', or 'debug').
 
 e.g.
 ``fluidity-publish -i /data/fluidity/tests/top_hat_cg_supg/top_hat_cg_supg.flml``
