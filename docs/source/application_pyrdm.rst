@@ -6,7 +6,7 @@ publish PyRDM itself to Figshare. At the moment this is only used as an
 example program to demonstrate PyRDM's functionality without the need to
 install libspud (or Fluidity and libspud) as a dependency, and therefore
 any Figshare publications produced using this tool will be kept private
-in your Figshare account. You can visit the “My data” page on Figshare
+in your Figshare account. You can visit the "My data" page on Figshare
 to view the publication details.
 
 Only the source code hosted on PyRDM's GitHub repository can be
