@@ -17,9 +17,12 @@
 #    You should have received a copy of the GNU General Public License
 #    along with PyRDM.  If not, see <http://www.gnu.org/licenses/>.
 
+import logging
 import sword2
 import os.path
 import feedparser
+
+_LOG = logging.getLogger(__name__)
 
 class DSpace:
    """ A publishing interface to DSpace using the SWORD2 protocol. """
@@ -33,7 +36,7 @@ class DSpace:
       
       # Get the Service Document.
       self.connection.get_service_document()
-      print self.connection.sd
+      _LOG.debug("Service document: %s" % self.connection.sd)
       
       # Check that the Service Document has been parsed successfully, and that it is a valid document.
       assert self.connection.sd != None
@@ -42,7 +45,7 @@ class DSpace:
       
       # Retrieve the list of available workspaces.
       self.workspaces = self.connection.workspaces
-      print self.workspaces
+      _LOG.debug("Workspaces: %s" % (self.workspaces,))
       
       return
     
@@ -148,7 +151,7 @@ class DSpace:
          auth.add_password("DSpace", uri=media_edit_feed, user=user_name, passwd=user_pass)
          handlers.append(auth)
       feed = feedparser.parse(media_edit_feed, handlers=handlers)
-      print feed
+
       files = feed["entries"][0]["summary"]
       return files
 
