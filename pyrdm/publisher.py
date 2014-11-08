@@ -30,9 +30,7 @@ from pyrdm.figshare import Figshare
 from pyrdm.zenodo import Zenodo
 from pyrdm.git_handler import GitHandler
 
-
 _LOG = logging.getLogger(__name__)
-
 
 class Publisher:
    """ A Python module for publishing scientific software and data on Figshare or Zenodo. """
@@ -98,7 +96,7 @@ class Publisher:
          publication_details = self.figshare.create_article(title=title, description=description, defined_type="code", status="Drafts")
          pid = publication_details["article_id"]
          doi = str(publication_details["doi"])
-         _LOG.info("Code repository created with ID: %d and DOI: %s" % (pid, doi)
+         _LOG.info("Code repository created with ID: %d and DOI: %s" % (pid, doi))
 
          _LOG.info("Uploading software...")
          self.figshare.add_file(article_id=pid, file_path=archive_path)
@@ -114,7 +112,7 @@ class Publisher:
 
          _LOG.info("Adding all authors (with author IDs) to the code...")
          author_ids = self.get_authors_list(git_handler)
-         _LOG.debug("List of author IDs: %s" % (author_ids,)
+         _LOG.debug("List of author IDs: %s" % (author_ids,))
          if(author_ids is not None):
             for author_id in author_ids:
                self.figshare.add_author(pid, author_id)
