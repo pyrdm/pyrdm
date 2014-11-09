@@ -101,9 +101,12 @@ Zenodo uses a personal access token to handle authentication.
    .. _figure:permissions:
    .. figure::  images/zenodo_token.png
       :align:   center
+      
+      The personal access token details.
 
 #. Click ``Create``. The access token should be pasted into the ``[zenodo]`` section of the ``pyrdm.ini`` configuration file.
 
+#. Zenodo requires at least one author's name and affiliation to be present when creating a deposition. For a software deposition, PyRDM will try to obtain this information from the ``AUTHORS`` file. However, for a dataset deposition, this information needs to be provided under the ``[general]`` section of the ``pyrdm.ini`` configuration file.
 
 Testing
 -------
