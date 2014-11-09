@@ -134,7 +134,7 @@ class Publisher:
          authors = self.get_authors_list(git_handler.get_working_directory())
 
          if(authors is None or authors == []):
-            _LOG.warnig("""Could not obtain author information from an AUTHORS file. 
+            _LOG.warning("""Could not obtain author information from an AUTHORS file. 
             Zenodo requires at least one author to be present in the author's list. 
             Using the name and affiliation given in the PyRDM configuration file.""")
             authors = [{"name": self.config.get("general", "name"), "affiliation": self.config.get("general", "affiliation")}]

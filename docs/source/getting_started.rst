@@ -6,9 +6,9 @@ System requirements
 
 A standard Python installation is required, as well as any additional
 Python modules that are listed in the README file under the
-“Dependencies” section. PyRDM is designed to run on the Linux operating
-system. All development and testing takes place on the Ubuntu Precise
-(12.04) distribution.
+"Dependencies" section. PyRDM is designed to run on the Linux operating
+system. All development and testing takes place on the Ubuntu Trusty
+(14.04) distribution.
 
 Installation
 ------------
@@ -64,7 +64,7 @@ configuration file.
 #. Fill in the application details as per figure:application_details_.
    
    .. _figure:application_details:
-   .. figure::  images/application_details.png
+   .. figure::  images/figshare_application_details.png
       :align: center
       :figclass: align-center
       
@@ -74,7 +74,7 @@ configuration file.
    Private and Public articles, as per figure:permissions_.
 
    .. _figure:permissions:
-   .. figure::  images/permissions.png
+   .. figure::  images/figshare_application_permissions.png
       :align:   center
       
       The set of permissions required by PyRDM.
@@ -87,7 +87,26 @@ configuration file.
    into the ``pyrdm.ini`` configuration file.
 
 **Note:** If you are publishing through a group account, you will need
-to ask the account’s administrator for the authentication details.
+to ask the account's administrator for the authentication details.
+
+Zenodo authentication
+~~~~~~~~~~~~~~~~~~~~~
+
+Zenodo uses a personal access token to handle authentication.
+
+#. Go to ``http://zenodo.org/account/settings/applications/tokens/new/``
+
+#. Enter ``PyRDM`` as the name of the token. Ensure that ``deposit:actions`` and ``deposit:write`` are selected, as per figure:zenodo_token_.
+
+   .. _figure:permissions:
+   .. figure::  images/zenodo_token.png
+      :align:   center
+      
+      Setting up a new personal access token for PyRDM.
+
+#. Click ``Create``. The access token should be pasted into the ``[zenodo]`` section of the ``pyrdm.ini`` configuration file.
+
+#. Zenodo requires at least one author's name and affiliation to be present when creating a deposition. For a software deposition, PyRDM will try to obtain this information from the ``AUTHORS`` file. However, for a dataset deposition, this information needs to be provided under the ``[general]`` section of the ``pyrdm.ini`` configuration file.
 
 Testing
 -------
