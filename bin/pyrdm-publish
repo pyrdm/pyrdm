@@ -60,11 +60,7 @@ if(__name__ == "__main__"):
    # Parse the command line arguments
    parser = argparse.ArgumentParser(prog="pyrdm-publish", description="Publishes the PyRDM source code to an online citable repository.")
    parser.add_argument("-v", "--version", help="Publish a specific version of the PyRDM source code identified by a given SHA-1 hash.", action="store", type=str, default=None, metavar="HASH")
-   parser.add_argument(
-      "-l", "--log-level", action="store", type="choice", metavar="LEVEL",
-      default=None, choices=['critical', 'error', 'warning', 'info', 'debug'],
-      help=("Log verbosity.  Defaults to %s" % (
-         logging.getLevelName(pyrdm.LOG.level).lower())))
+   parser.add_argument("-l", "--log-level", action="store", type=str, metavar="LEVEL", default=None, choices=['critical', 'error', 'warning', 'info', 'debug'], help=("Log verbosity.  Defaults to %s" % (logging.getLevelName(pyrdm.LOG.level).lower())))
    parser.add_argument("path", help="The path to the local Git repository of PyRDM on your file system.", action="store", type=str)
    args = parser.parse_args()
    
