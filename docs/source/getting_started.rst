@@ -102,7 +102,7 @@ Zenodo uses a personal access token to handle authentication.
    .. figure::  images/zenodo_token.png
       :align:   center
       
-      The personal access token details.
+      Setting up a new personal access token for PyRDM.
 
 #. Click ``Create``. The access token should be pasted into the ``[zenodo]`` section of the ``pyrdm.ini`` configuration file.
 

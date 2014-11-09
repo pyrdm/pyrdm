@@ -49,7 +49,7 @@ method in the Publication class. This requires:
    -  ``files``: a list of paths to the files within the dataset.
 
    -  ``category``: the name of a category in `Figshare's categories
-      list <http://api.figshare.com/v1/categories>`_. This is not required if using Zenodo.
+      list <http://api.figshare.com/v1/categories>`_. This is not required when using Zenodo.
 
    -  ``tag_name``: a single string, or list of strings, to tag the
       data's fileset with
