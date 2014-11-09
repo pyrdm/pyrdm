@@ -39,7 +39,7 @@ _LOG.addHandler(_HANDLER)
 _HANDLER.setFormatter(logging.Formatter(
     '%(module)s %(levelname)s: %(message)s'))
 del(_HANDLER)
-_LOG.setLevel(logging.ERROR)
+_LOG.setLevel(logging.INFO)
 
 class PyRDMPublish:
 
@@ -49,7 +49,7 @@ class PyRDMPublish:
    def publish(self, path, version=None, private=False):
       """ Publish the PyRDM source code. """
 
-      self.publisher = Publisher(service="figshare")
+      self.publisher = Publisher(service="zenodo")
 
       # Publish the software
       pid, doi = self.publisher.publish_software(name="PyRDM", local_repo_location=path, version=version, private=private)
@@ -60,7 +60,7 @@ if(__name__ == "__main__"):
    # Parse the command line arguments
    parser = argparse.ArgumentParser(prog="pyrdm-publish", description="Publishes the PyRDM source code to an online citable repository.")
    parser.add_argument("-v", "--version", help="Publish a specific version of the PyRDM source code identified by a given SHA-1 hash.", action="store", type=str, default=None, metavar="HASH")
-   parser.add_argument("-l", "--log-level", action="store", type=str, metavar="LEVEL", default=None, choices=['critical', 'error', 'warning', 'info', 'debug'], help=("Log verbosity.  Defaults to %s" % (logging.getLevelName(pyrdm.LOG.level).lower())))
+   parser.add_argument("-l", "--log-level", action="store", type=str, metavar="LEVEL", default=None, choices=['critical', 'error', 'warning', 'info', 'debug'], help=("Log verbosity. Defaults to %s" % (logging.getLevelName(pyrdm.LOG.level).lower())))
    parser.add_argument("path", help="The path to the local Git repository of PyRDM on your file system.", action="store", type=str)
    args = parser.parse_args()
    
