@@ -6,4 +6,4 @@ LOG.addHandler(_HANDLER)
 _HANDLER.setFormatter(logging.Formatter(
     '%(name)s %(levelname)s: %(message)s'))
 del(_HANDLER)
-LOG.setLevel(logging.INFO)
+LOG.setLevel(logging.DEBUG)

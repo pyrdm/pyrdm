@@ -39,7 +39,7 @@ _LOG.addHandler(_HANDLER)
 _HANDLER.setFormatter(logging.Formatter(
     '%(module)s %(levelname)s: %(message)s'))
 del(_HANDLER)
-_LOG.setLevel(logging.INFO)
+_LOG.setLevel(logging.DEBUG)
 
 class PyRDMPublish:
 
