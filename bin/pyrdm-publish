@@ -64,14 +64,14 @@ if(__name__ == "__main__"):
    parser.add_argument("path", help="The path to the local Git repository of PyRDM on your file system.", action="store", type=str)
    args = parser.parse_args()
    
-   if args.log_level:
+   if(args.log_level):
       level = getattr(logging, args.log_level.upper())
       pyrdm.LOG.setLevel(level)
       _LOG.setLevel(level)
       
    if(os.path.exists(args.path)):
       rdm = PyRDMPublish()
-      rdm.publish(path = args.path, version = args.version, private=True)
+      rdm.publish(path = args.path, version = args.version, private = True)
    else:
       _LOG.error("The path to the local PyRDM directory does not exist.")
       sys.exit(1)
