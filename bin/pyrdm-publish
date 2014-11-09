@@ -49,7 +49,7 @@ class PyRDMPublish:
    def publish(self, path, version=None, private=False):
       """ Publish the PyRDM source code. """
 
-      self.publisher = Publisher(service="zenodo")
+      self.publisher = Publisher(service="figshare")
 
       # Publish the software
       pid, doi = self.publisher.publish_software(name="PyRDM", local_repo_location=path, version=version, private=private)
