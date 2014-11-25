@@ -114,7 +114,7 @@ class Publisher:
          _LOG.info("Category added.")
 
          _LOG.info("Adding all authors (with author IDs) to the code...")
-         author_ids = self.get_authors_list(git_handler)
+         author_ids = self.get_authors_list(git_handler.get_working_directory())
          _LOG.debug("List of author IDs: %s" % (author_ids,))
          if(author_ids is not None):
             for author_id in author_ids:

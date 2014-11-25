@@ -37,7 +37,7 @@ class Zenodo:
       self.access_token = access_token
       self.api_url = "https://zenodo.org/api/"
 
-      _LOG.debug("Testing Zenodo authentication...")
+      _LOG.info("Testing Zenodo authentication...")
       try:
          url = self.api_url + "deposit/depositions"
          url = self._append_suffix(url)
@@ -47,7 +47,7 @@ class Zenodo:
          if(response.status_code != requests.codes.ok): # If the status is not "OK", then exit here.
             raise Exception("Could not authenticate with the Zenodo server. Check Internet connection? Check Zenodo personal authentication token in ~/.config/pyrdm.ini ?\n")
          else:
-            _LOG.debug("Authentication test successful.\n")
+            _LOG.info("Authentication test successful.\n")
       except:
          sys.exit(1)
       return

@@ -47,7 +47,7 @@ class Figshare:
       _LOG.info("Testing Figshare authentication...")
       try:
          response = self.client.get('http://api.figshare.com/v1/my_data/articles', auth=self.oauth)
-         _LOG.debug("* Server returned response %d" % response.status_code)
+         _LOG.debug("Server returned response %d" % response.status_code)
          if(response.status_code != requests.codes.ok): # If the status is not "OK", then exit here.
             raise Exception("Could not authenticate with the Figshare server.")
          else:

@@ -41,7 +41,7 @@ _LOG.addHandler(_HANDLER)
 _HANDLER.setFormatter(logging.Formatter(
     '%(module)s %(levelname)s: %(message)s'))
 del(_HANDLER)
-_LOG.setLevel(logging.ERROR)
+_LOG.setLevel(logging.DEBUG)
 
 class FluidityPublish:
 
@@ -309,11 +309,7 @@ if(__name__ == "__main__"):
    parser.add_argument("-o", "--output", help="Publish the output data files whose paths are specified in the options file.", action="store_true", default=False)
    parser.add_argument("-v", "--version", help="Publish a specific version of the Fluidity source code identified by a given SHA-1 hash. Must be used in conjunction with the -s option.", action="store", type=str, default=None, metavar="HASH")
    parser.add_argument("-p", "--private", help="Publish the software or data, but keep it private. Note that any DOI generated will not be valid until the publication is made public.", action="store_true", default=False)
-   parser.add_argument(
-      "-l", "--log-level", action="store", type="choice", metavar="LEVEL",
-      default=None, choices=['critical', 'error', 'warning', 'info', 'debug'],
-      help=("Log verbosity.  Defaults to %s" % (
-         logging.getLevelName(pyrdm.LOG.level).lower())))
+   parser.add_argument("-l", "--log-level", action="store", type=str, metavar="LEVEL", default=None, choices=['critical', 'error', 'warning', 'info', 'debug'], help=("Log verbosity. Defaults to %s" % (logging.getLevelName(pyrdm.LOG.level).lower())))
    parser.add_argument("path", help="The path to the Fluidity options file. This usually has the extension '.flml'.", action="store", type=str)
    args = parser.parse_args()
    
