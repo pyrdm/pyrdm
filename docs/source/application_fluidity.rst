@@ -7,6 +7,7 @@ dynamics code called `Fluidity <http://www.fluidity-project.org/>`_. Currently, 
 the ``publishing`` branch of Fluidity which contains the publishing functionality:
 
 ``git clone https://github.com/FluidityProject/fluidity.git``
+
 ``git checkout publishing``
 
 This ``publishing`` branch will soon be merged into Fluidity's ``master`` branch.
