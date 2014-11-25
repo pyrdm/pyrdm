@@ -6,9 +6,11 @@ designed specifically for use with a computational fluid
 dynamics code called `Fluidity <http://www.fluidity-project.org/>`_. Currently, you must use
 the ``publishing`` branch of Fluidity which contains the publishing functionality:
 
-``git clone https://github.com/FluidityProject/fluidity.git``
+#. ``git clone https://github.com/FluidityProject/fluidity.git``
 
-``git checkout publishing``
+#. ``cd fluidity``
+
+#. ``git checkout publishing``
 
 This ``publishing`` branch will soon be merged into Fluidity's ``master`` branch.
 
