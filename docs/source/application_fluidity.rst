@@ -2,16 +2,16 @@ Application: Fluidity-Publish
 =============================
 
 Fluidity-Publish is a Python program which uses the PyRDM library. It is
-designed specifically for use with the Fluidity computational fluid
-dynamics code, located at
-``https://github.com/FluidityProject/fluidity``. Currently, you must use
-a fork of Fluidity which contains the publishing functionality. This is
-available here:
+designed specifically for use with a computational fluid
+dynamics code called `Fluidity <http://www.fluidity-project.org/>`_. Currently, you must use
+the ``publishing`` branch of Fluidity which contains the publishing functionality:
 
-``https://github.com/ctjacobs/fluidity-rdm``
+``git clone https://github.com/FluidityProject/fluidity.git``
+``git checkout publishing``
 
-but will soon be merged into Fluidity's master branch. Note that you
-must build Fluidity (or at least satisfy the libspud dependency noted in
+This ``publishing`` branch will soon be merged into Fluidity's ``master`` branch.
+
+Note that you must build Fluidity (or at least satisfy the libspud dependency noted in
 the README file) before using Fluidity-Publish. You may need to add
 Fluidity's 'python' directory to your ``PYTHONPATH`` environment
 variable in order for the libspud module to be found.
