@@ -206,7 +206,7 @@ class Publisher:
          elif(self.service == "zenodo"):
             existing_files = self.zenodo.list_files(pid)
 
-      _LOG.debug("The following files have been marked for uploading: ", modified_files)
+      _LOG.debug("The following files have been marked for uploading: %s" % modified_files)
       uploaded_files = []
       for f in modified_files:
          # Check whether the file actually exists locally.
