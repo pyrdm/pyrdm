@@ -1,6 +1,8 @@
 PyRDM functionality
 ===================
 
+PyRDM treats the publication of software source code and data separately, and this section is therefore split into two sub-sections. However, regardless of what is being published, PyRDM will print out the DOI or Handle associated with the online repository, which can be used to formally and properly cite the software and data.
+
 Publishing software
 -------------------
 

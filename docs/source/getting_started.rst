@@ -111,7 +111,7 @@ Zenodo uses a personal access token to handle authentication.
 DSpace authentication
 ~~~~~~~~~~~~~~~~~~~~~
 
-PyRDM provides limited support for publishing with DSpace-based services which run the SWORD protocol (version 2).
+PyRDM provides limited support for publishing with DSpace-based services which use the `SWORD protocol <http://swordapp.org>`_ (version 2).
 
 #. Locate the URL of the SWORD Service Document, and add it under the ``[dspace]`` section of the ``pyrdm.ini`` configuration file. Note: this URL may need to be obtained from the system administrator.
 

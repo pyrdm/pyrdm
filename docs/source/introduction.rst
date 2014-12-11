@@ -38,11 +38,9 @@ data must be captured, and care must be taken to ensure that the same
 version that created a particular result from the data is used. Finally,
 the output data from the software must be captured, including provenance
 data that details how the input data and software were used to create
-this new data. PyRDM aims to address these needs by facilitating the
-automated management and online publication of software and data via
-citable repositories hosted by `Figshare <http://www.figshare.com/>`_, `Zenodo <http://www.zenodo.org/>`_, or a `DSpace <http://www.dspace.org/>`_-based service (running version 2 of the `SWORD protocol <http://swordapp.org>`_). This library can be
-incorporated into the workflow of scientific software to allow research
-output to be curated in a straight-forward manner.
+this new data.
+
+The PyRDM library aims to address these needs by facilitating the automated management and publication of software source code and data via online, citable repositories hosted by `Figshare <http://www.figshare.com/>`_, `Zenodo <http://www.zenodo.org/>`_, or a `DSpace <http://www.dspace.org/>`_-based service. The library can be readily incorporated into scientific workflows to allow research outputs to be curated and shared in a straight-forward manner.
 
 Licensing
 ---------
