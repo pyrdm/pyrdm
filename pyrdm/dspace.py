@@ -20,7 +20,6 @@
 import logging
 import sword2
 import os.path
-import feedparser
 
 _LOG = logging.getLogger(__name__)
 
@@ -151,6 +150,7 @@ class DSpace:
       handlers=[]
       if(user_name is not None):
          import urllib2, urlparse
+         import feedparser
          auth = urllib2.HTTPBasicAuthHandler()
          auth.add_password("DSpace", uri=media_edit_feed, user=user_name, passwd=user_pass)
          handlers.append(auth)
