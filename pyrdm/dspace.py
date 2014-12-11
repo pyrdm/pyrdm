@@ -72,16 +72,17 @@ class DSpace:
          collection = None
       return collection
       
-   def create_deposit_from_file(self, collection, file_path):
+   def create_deposit_from_file(self, collection, file_path, in_progress=True):
       """ Create a deposit in a specified collection by uploading a file with a given path.
       Return a Receipt object for this transaction. """
       with open(file_path, "rb") as data:
          receipt = self.connection.create(col_iri = collection.href,
                            payload = data,
-                           filename = os.path.basename(file_path))
+                           filename = os.path.basename(file_path),
+                           in_progress=in_progress)
          return receipt
   
-   def create_deposit_from_metadata(self, collection, in_progress=False, **metadata_kwargs):
+   def create_deposit_from_metadata(self, collection, in_progress=True, **metadata_kwargs):
       """ Create a deposit in a specified collection by providing metadata in **metadata_kwargs.
       Return a Receipt object for this transaction. """
       e = sword2.Entry()

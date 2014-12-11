@@ -162,15 +162,28 @@ class Publisher:
          collection = self.dspace.get_collection_by_title(self.config.get("dspace", "collection_title"))
          deposit_receipt = self.dspace.create_deposit_from_file(collection=collection, file_path=archive_path)
          pid = deposit_receipt.id
-         doi = deposit_receipt.alternate
+         doi = deposit_receipt.alternate # NOTE: This may be a Handle, rather than a DOI.
          
          _LOG.info("Code repository created with ID: %s and DOI: %s" % (pid, doi))
          
          # Add the metadata.
+         _LOG.info("Adding metadata to the deposit...")
          authors = self.get_authors_list(git_handler.get_working_directory())
-         self.dspace.replace_deposit_metadata(deposit_receipt, dcterms_title=name,
+         deposit_receipt = self.dspace.replace_deposit_metadata(deposit_receipt, dcterms_title=title,
                                               dcterms_type="Software", dcterms_contributor=", ".join(authors))
-
+         doi = deposit_receipt.alternate # Once the deposit has been completed, the DOI may have been updated.
+         
+         # Complete the deposit.
+         _LOG.info("Completing the deposit...")
+         try:
+            self.dspace.complete_deposit(deposit_receipt)
+         except:
+            _LOG.error("A server error occurred when trying to 'complete' the deposit. This might be because the deposit is already complete, but check the deposit just in case.")
+            pass
+            
+         deposit_receipt = self.dspace.connection.get_deposit_receipt(pid)
+         doi = deposit_receipt.alternate # Once the deposit has been completed, the DOI may have been updated.
+            
       return pid, doi
       
       
@@ -214,7 +227,7 @@ class Publisher:
             deposit_receipt = self.dspace.create_deposit_from_metadata(collection=collection, in_progress=True, dcterms_title=parameters["title"], dcterms_description=parameters["description"], 
                                               dcterms_type="Dataset", dcterms_creator=self.config.get("general", "name"))
             pid = deposit_receipt.id
-            doi = deposit_receipt.alternate         
+            doi = deposit_receipt.alternate  
 
          _LOG.info("Fileset created with ID: %s and DOI: %s" % (pid, doi))
 
@@ -231,8 +244,6 @@ class Publisher:
          elif(self.service == "zenodo"):
             existing_files = self.zenodo.list_files(pid)
          elif(self.service == "dspace"):
-            existing_files = None
-            deposit_receipt = self.dspace.connection.get_deposit_receipt(pid)
             raise NotImplementedError("It is not yet possible to modify a deposit that has been 'completed'.")
 
       _LOG.debug("The following files have been marked for uploading: %s" % modified_files)
@@ -273,12 +284,8 @@ class Publisher:
                   self.zenodo.create_file(deposition_id=pid, file_path=f)
 
             elif(self.service == "dspace"):
-               for e in existing_files:
-                  if(e["filename"] == os.path.basename(f)):
-                     _LOG.info("File already exists on the server. Over-writing...")
-                     exists = True
-                     #TODO: Add in delete/re-add statements.
-                     break
+               #FIXME: With DSpace, we currently have to assume that the file does not exist.
+               exists = False
                if(not exists):
                   r = self.dspace.add_file(file_path=f, receipt=deposit_receipt)
 
@@ -293,7 +300,7 @@ class Publisher:
       self.verify_upload(pid=pid, files=uploaded_files)
       
       # If we are not keeping the data private, then make it public.
-      if(not private):
+      if(not private and self.service != "dspace"):
          _LOG.info("Making the data public...")
          if(self.service == "figshare"):
             self.figshare.make_public(article_id=pid)
@@ -303,14 +310,16 @@ class Publisher:
          
       # Finalise the deposit in DSpace (if applicable).
       if(self.service == "dspace"):
+         _LOG.info("Completing the deposit...")
          try:
             self.dspace.complete_deposit(receipt=deposit_receipt)
-            deposit_receipt = self.dspace.connection.get_deposit_receipt(pid)
-            doi = deposit_receipt.alternate # Once the deposit has been completed, the DOI may have been updated.
          except:
-            _LOG.error("Could not complete deposit. Perhaps it has already been set to 'complete'?")
+            _LOG.error("A server error occurred when trying to 'complete' the deposit. This might be because the deposit is already complete, but check the deposit just in case.")
             pass
-
+            
+         deposit_receipt = self.dspace.connection.get_deposit_receipt(pid)
+         doi = deposit_receipt.alternate # Once the deposit has been completed, the DOI may have been updated.
+            
       return pid, doi
       
    def write_checksum(self, f):
