@@ -71,9 +71,9 @@ configuration file.
       The application details for PyRDM.
 
 #. Ensure that the application has read and write access to your Drafts,
-   Private and Public articles, as per figure:permissions_.
+   Private and Public articles, as per figure:figshare_application_permissions_.
 
-   .. _figure:permissions:
+   .. _figure:figshare_application_permissions:
    .. figure::  images/figshare_application_permissions.png
       :align:   center
       
@@ -98,7 +98,7 @@ Zenodo uses a personal access token to handle authentication.
 
 #. Enter ``PyRDM`` as the name of the token. Ensure that ``deposit:actions`` and ``deposit:write`` are selected, as per figure:zenodo_token_.
 
-   .. _figure:permissions:
+   .. _figure:zenodo_token:
    .. figure::  images/zenodo_token.png
       :align:   center
       
