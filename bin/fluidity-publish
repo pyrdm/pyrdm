@@ -66,6 +66,7 @@ class FluidityPublish:
          f.readline()
          l = f.readline()
          sha = l.split()[-1].replace("\"", "")
+         sha = sha.split(":")[-1] # Remove the Git branch name
          f.close()
       except:
          _LOG.warning("Unable to determine the Fluidity version from the file 'version.h'. Fluidity might not have been compiled yet.")
@@ -129,6 +130,7 @@ class FluidityPublish:
       for element in xml.getElementsByTagName('constant'):
          if(element.attributes["name"].value == "FluidityVersion"):
             sha_in_statfile = element.attributes["value"].value
+            sha_in_statfile = sha_in_statfile.split(":")[-1] # Remove the Git branch name
             break
       if(libspud.have_option("/publish/software/pid")):
          if(libspud.get_option("/publish/software/pid") != self.publisher.find_software("Fluidity", sha_in_statfile)[0]):

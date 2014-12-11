@@ -233,7 +233,7 @@ class Publisher:
             deposit_receipt = self.dspace.connection.get_deposit_receipt(pid)
             raise NotImplementedError("It is not yet possible to modify a deposit that has been 'completed'.")
 
-      _LOG.debug("The following files have been marked for uploading: ", modified_files)
+      _LOG.debug("The following files have been marked for uploading: %s" % modified_files)
       uploaded_files = []
       
       for f in modified_files:
