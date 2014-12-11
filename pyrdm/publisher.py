@@ -28,6 +28,7 @@ from urllib2 import urlopen
 
 from pyrdm.figshare import Figshare
 from pyrdm.zenodo import Zenodo
+from pyrdm.dspace import DSpace
 from pyrdm.git_handler import GitHandler
 
 _LOG = logging.getLogger(__name__)
@@ -36,6 +37,8 @@ class Publisher:
    """ A Python module for publishing scientific software and data on Figshare or Zenodo. """
 
    def __init__(self, service):
+      """ Load the PyRDM configuration file and set up the interface object for the desired publishing service. """
+      
       self.service = service
    
       # Read in the authentication tokens, etc from the configuration file.
@@ -46,6 +49,8 @@ class Publisher:
                         resource_owner_key = self.config.get("figshare", "resource_owner_key"), resource_owner_secret = self.config.get("figshare", "resource_owner_secret"))
       elif(service == "zenodo"):
          self.zenodo = Zenodo(access_token = self.config.get("zenodo", "access_token"))
+      elif(service == "dspace"):
+         self.dspace = DSpace(service_document_url = self.config.get("dspace", "service_document_url"), user_name = self.config.get("dspace", "user_name"), user_pass = self.config.get("dspace", "user_pass"))
       else:
          _LOG.error("Unsupported service: %s" % service)
          sys.exit(1)
@@ -152,7 +157,33 @@ class Publisher:
             _LOG.info("Making the code public...")
             self.zenodo.publish_deposition(deposition_id=pid)
             _LOG.info("The code has been made public.")
-
+            
+      elif(self.service == "dspace"):
+         collection = self.dspace.get_collection_by_title(self.config.get("dspace", "collection_title"))
+         deposit_receipt = self.dspace.create_deposit_from_file(collection=collection, file_path=archive_path)
+         pid = deposit_receipt.id
+         doi = deposit_receipt.alternate # NOTE: This may be a Handle, rather than a DOI.
+         
+         _LOG.info("Code repository created with ID: %s and DOI: %s" % (pid, doi))
+         
+         # Add the metadata.
+         _LOG.info("Adding metadata to the deposit...")
+         authors = self.get_authors_list(git_handler.get_working_directory())
+         deposit_receipt = self.dspace.replace_deposit_metadata(deposit_receipt, dcterms_title=title,
+                                              dcterms_type="Software", dcterms_contributor=", ".join(authors))
+         doi = deposit_receipt.alternate # Once the deposit has been completed, the DOI may have been updated.
+         
+         # Complete the deposit.
+         _LOG.info("Completing the deposit...")
+         try:
+            self.dspace.complete_deposit(deposit_receipt)
+         except:
+            _LOG.error("A server error occurred when trying to 'complete' the deposit. This might be because the deposit is already complete, but check the deposit just in case.")
+            pass
+            
+         deposit_receipt = self.dspace.connection.get_deposit_receipt(pid)
+         doi = deposit_receipt.alternate # Once the deposit has been completed, the DOI may have been updated.
+            
       return pid, doi
       
       
@@ -190,8 +221,15 @@ class Publisher:
                                                                 keywords=parameters["tag_name"], prereserve_doi=True)
             pid = publication_details["id"]
             doi = str(publication_details["metadata"]["prereserve_doi"]["doi"])
+            
+         elif(self.service == "dspace"):
+            collection = self.dspace.get_collection_by_title(self.config.get("dspace", "collection_title"))
+            deposit_receipt = self.dspace.create_deposit_from_metadata(collection=collection, in_progress=True, dcterms_title=parameters["title"], dcterms_description=parameters["description"], 
+                                              dcterms_type="Dataset", dcterms_creator=self.config.get("general", "name"))
+            pid = deposit_receipt.id
+            doi = deposit_receipt.alternate  
 
-         _LOG.info("Fileset created with ID: %d and DOI: %s" % (pid, doi))
+         _LOG.info("Fileset created with ID: %s and DOI: %s" % (pid, doi))
 
          # This is a new article, so upload ALL the files!
          modified_files = parameters["files"]
@@ -205,9 +243,12 @@ class Publisher:
             existing_files = self.figshare.get_file_details(pid)["files"]
          elif(self.service == "zenodo"):
             existing_files = self.zenodo.list_files(pid)
+         elif(self.service == "dspace"):
+            raise NotImplementedError("It is not yet possible to modify a deposit that has been 'completed'.")
 
       _LOG.debug("The following files have been marked for uploading: %s" % modified_files)
       uploaded_files = []
+      
       for f in modified_files:
          # Check whether the file actually exists locally.
          if(os.path.exists(f)):
@@ -242,6 +283,12 @@ class Publisher:
                if(not exists):
                   self.zenodo.create_file(deposition_id=pid, file_path=f)
 
+            elif(self.service == "dspace"):
+               #FIXME: With DSpace, we currently have to assume that the file does not exist.
+               exists = False
+               if(not exists):
+                  r = self.dspace.add_file(file_path=f, receipt=deposit_receipt)
+
             # Write out the .md5 checksum file
             self.write_checksum(f)
             # Record the upload.
@@ -253,14 +300,26 @@ class Publisher:
       self.verify_upload(pid=pid, files=uploaded_files)
       
       # If we are not keeping the data private, then make it public.
-      if(not private):
+      if(not private and self.service != "dspace"):
          _LOG.info("Making the data public...")
          if(self.service == "figshare"):
             self.figshare.make_public(article_id=pid)
          elif(self.service == "zenodo"):
             self.zenodo.publish_deposition(deposition_id=pid)
          _LOG.info("The data has been made public.")
-
+         
+      # Finalise the deposit in DSpace (if applicable).
+      if(self.service == "dspace"):
+         _LOG.info("Completing the deposit...")
+         try:
+            self.dspace.complete_deposit(receipt=deposit_receipt)
+         except:
+            _LOG.error("A server error occurred when trying to 'complete' the deposit. This might be because the deposit is already complete, but check the deposit just in case.")
+            pass
+            
+         deposit_receipt = self.dspace.connection.get_deposit_receipt(pid)
+         doi = deposit_receipt.alternate # Once the deposit has been completed, the DOI may have been updated.
+            
       return pid, doi
       
    def write_checksum(self, f):
@@ -312,10 +371,15 @@ class Publisher:
             return pid, doi
          else:
             return None, None
+            
       elif(self.service == "zenodo"):
          # FIXME: There is currently no way of easily searching for a Zenodo deposit based on its keywords via the API.
          # Therefore, assume for now that the software has not been published.
          return None, None
+         
+      elif(self.service == "dspace"):
+         # FIXME: Assume for now that the software has not been published.
+         return None, None   
 
    def get_authors_list(self, wd):
       """ If an AUTHORS file exists in a given repository's base directory, then read it and
@@ -338,7 +402,14 @@ class Publisher:
                if(m is not None):
                   s = m.group(1).split(";")
                   author_id = {'name':s[0], 'affiliation':s[1]}
-                  author_ids.append(author_id)               
+                  author_ids.append(author_id)
+                  
+            elif(self.service == "dspace"):
+               #TODO: This currently uses the author's DSpace username. Is there a better identifier? 
+               m = re.search("<%s:(.+)>" % self.service, line)
+               if(m is not None):
+                  author_id = m.group(1)
+                  author_ids.append(author_id)
                
          return author_ids
       except IOError:
@@ -353,13 +424,24 @@ class Publisher:
       elif(self.service == "zenodo"):
          files_on_server = self.zenodo.list_files(pid)
          key = "filename"
+      elif(self.service == "dspace"):
+         deposit_receipt = self.dspace.connection.get_deposit_receipt(pid)
+         try:
+            files_on_server = self.dspace.list_files(deposit_receipt.edit_media_feed, self.config.get("dspace", "user_name"), self.config.get("dspace", "user_pass"))
+         except:
+            return True # This will fail if the deposit has not yet been 'completed'. Assume all files have been uploaded successfully (if they haven't, the DSpace library should tell us anyway).
          
       for f in files:
          exists = False
          for s in files_on_server:
-            if(s[key] == os.path.basename(f)):
-               exists = True
-               break
+            if(isinstance(s, dict)): # Figshare and Zenodo file objects are dictionaries.
+               if(s[key] == os.path.basename(f)):
+                  exists = True
+                  break
+            else:
+               if(s == os.path.basename(f)):
+                  exists = True
+                  break
          if(exists):
             continue
          else:
@@ -402,6 +484,9 @@ class Publisher:
          except:
             return False
          return True
+      elif(self.service == "dspace"):
+         #FIXME: Assume that the publication does not exist for now.
+         return False
 
 class TestLog(unittest.TestCase):
    """ Unit test suite for PyRDM's Publisher module. """

@@ -53,7 +53,7 @@ class PyRDMPublish:
 
       # Publish the software
       pid, doi = self.publisher.publish_software(name="PyRDM", local_repo_location=path, version=version, private=private)
-      _LOG.info("PyRDM has been published. Publication ID: %d, DOI: %s" % (pid, doi))
+      _LOG.info("PyRDM has been published. Publication ID: %s, DOI: %s" % (pid, doi))
       return
          
 if(__name__ == "__main__"):

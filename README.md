@@ -33,7 +33,7 @@ In order to use PyRDM you must build as well as configure the package. Build the
 3. Build the package by `cd pyrdm; sudo make install`
 4. Build the documentation by `make docs`. This will produce an HTML version of the documentation in the `docs/build` directory. Alternatively, you can view the latest version of the documentation [here](http://pyrdm.readthedocs.org).
 
-The configuration procedure allows PyRDM to access and upload files to your Figshare or Zenodo account. Please see the documentation that you have just built for a graphical guide on how to do this.
+The configuration procedure allows PyRDM to access and upload files to your Figshare, Zenodo or DSpace account. Please see the documentation that you have just built for a graphical guide on how to do this.
 
 Dependencies
 ------------
@@ -42,6 +42,7 @@ PyRDM depends on:
 
 * [GitPython](https://pypi.python.org/pypi/GitPython/)
 * [requests-oauthlib](https://github.com/requests/requests-oauthlib)
+* [python-client-sword2](https://github.com/swordapp/python-client-sword2)
 * [Sphinx](http://sphinx-doc.org/) - to build the documentation.
 * [libspud](https://launchpad.net/spud) - this package is not necessary if you do not wish to run the PyRDM-based publication tool `fluidity-publish` specifically designed for the Fluidity CFD code.
 

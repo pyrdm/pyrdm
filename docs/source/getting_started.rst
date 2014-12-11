@@ -71,9 +71,9 @@ configuration file.
       The application details for PyRDM.
 
 #. Ensure that the application has read and write access to your Drafts,
-   Private and Public articles, as per figure:permissions_.
+   Private and Public articles, as per figure:figshare_application_permissions_.
 
-   .. _figure:permissions:
+   .. _figure:figshare_application_permissions:
    .. figure::  images/figshare_application_permissions.png
       :align:   center
       
@@ -98,7 +98,7 @@ Zenodo uses a personal access token to handle authentication.
 
 #. Enter ``PyRDM`` as the name of the token. Ensure that ``deposit:actions`` and ``deposit:write`` are selected, as per figure:zenodo_token_.
 
-   .. _figure:permissions:
+   .. _figure:zenodo_token:
    .. figure::  images/zenodo_token.png
       :align:   center
       
@@ -107,6 +107,17 @@ Zenodo uses a personal access token to handle authentication.
 #. Click ``Create``. The access token should be pasted into the ``[zenodo]`` section of the ``pyrdm.ini`` configuration file.
 
 #. Zenodo requires at least one author's name and affiliation to be present when creating a deposition. For a software deposition, PyRDM will try to obtain this information from the ``AUTHORS`` file. However, for a dataset deposition, this information needs to be provided under the ``[general]`` section of the ``pyrdm.ini`` configuration file.
+
+DSpace authentication
+~~~~~~~~~~~~~~~~~~~~~
+
+PyRDM provides limited support for publishing with DSpace-based services which use the `SWORD protocol <http://swordapp.org>`_ (version 2).
+
+#. Locate the URL of the SWORD Service Document, and add it under the ``[dspace]`` section of the ``pyrdm.ini`` configuration file. Note: this URL may need to be obtained from the system administrator.
+
+#. Add the title of the DSpace Collection that you want to publish in. Note: the publication's privacy settings are determined by the DSpace Collection, not by the ``private`` parameter in PyRDM.
+
+#. Add your user name and password used to access the DSpace server. Note: this is currently stored in plain text, so make sure that the PyRDM configuration file is not readable by other users.
 
 Testing
 -------
