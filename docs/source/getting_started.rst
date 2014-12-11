@@ -115,7 +115,7 @@ PyRDM provides limited support for publishing with DSpace-based services which u
 
 #. Locate the URL of the SWORD Service Document, and add it under the ``[dspace]`` section of the ``pyrdm.ini`` configuration file. Note: this URL may need to be obtained from the system administrator.
 
-#. Add the title of the DSpace Collection that you want to publish in. Note: the publication's privacy settings are determined by the DSpace Collection, not by the `private` parameter in PyRDM.
+#. Add the title of the DSpace Collection that you want to publish in. Note: the publication's privacy settings are determined by the DSpace Collection, not by the ``private`` parameter in PyRDM.
 
 #. Add your user name and password used to access the DSpace server. Note: this is currently stored in plain text, so make sure that the PyRDM configuration file is not readable by other users.
 
