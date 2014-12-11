@@ -67,7 +67,7 @@ class Publisher:
          sys.exit(1)
       return config
 
-   def publish_software(self, name, local_repo_location, version=None, private=False, **kwargs):
+   def publish_software(self, name, local_repo_location, version=None, private=False):
       """ Publishes the software in the current repository. """
       
       git_handler = GitHandler(local_repo_location)
@@ -159,7 +159,7 @@ class Publisher:
             _LOG.info("The code has been made public.")
             
       elif(self.service == "dspace"):
-         collection = self.dspace.get_collection_by_title(kwargs["collection_title"])
+         collection = self.dspace.get_collection_by_title(self.config.get("dspace", "collection_title"))
          deposit_receipt = self.dspace.create_deposit_from_file(collection=collection, file_path=archive_path)
          pid = deposit_receipt.id
          doi = deposit_receipt.alternate
@@ -174,7 +174,7 @@ class Publisher:
       return pid, doi
       
       
-   def publish_data(self, files, pid=None, private=False, **kwargs):
+   def publish_data(self, parameters, pid=None, private=False):
       """ Create a new dataset on the online, citable repository's server. 
       Returns a dictionary of details about the new dataset once created. """
          
@@ -184,34 +184,34 @@ class Publisher:
          _LOG.info("Creating new fileset...")
          if(self.service == "figshare"):
             # NOTE: The defined_type needs to be a 'fileset' to allow multiple files to be uploaded separately.
-            publication_details = self.figshare.create_article(title=kwargs["title"], description=kwargs["description"], defined_type="fileset", status="Drafts")
+            publication_details = self.figshare.create_article(title=parameters["title"], description=parameters["description"], defined_type="fileset", status="Drafts")
             pid = publication_details["article_id"]
             doi = str(publication_details["doi"])
             
             # Add category
             _LOG.info("Adding category...")
-            if(kwargs["category"] is not None):
-               self.figshare.add_category(pid, kwargs["category"])
+            if(parameters["category"] is not None):
+               self.figshare.add_category(pid, parameters["category"])
 
             # Add tag(s)
             _LOG.info("Adding tag(s)...")
-            if(kwargs["tag_name"] is not None):
-               if(type(kwargs["tag_name"]) == list):
-                  for tag_name in kwargs["tag_name"]:
+            if(parameters["tag_name"] is not None):
+               if(type(parameters["tag_name"]) == list):
+                  for tag_name in parameters["tag_name"]:
                      self.figshare.add_tag(pid, tag_name)
                else:
-                  self.figshare.add_tag(pid, kwargs["tag_name"])
+                  self.figshare.add_tag(pid, parameters["tag_name"])
             
          elif(self.service == "zenodo"):
-            publication_details = self.zenodo.create_deposition(title=kwargs["title"], description=kwargs["description"], upload_type="dataset",
+            publication_details = self.zenodo.create_deposition(title=parameters["title"], description=parameters["description"], upload_type="dataset",
                                                                 creators=[{"name": self.config.get("general", "name"), "affiliation": self.config.get("general", "affiliation")}], 
-                                                                keywords=kwargs["tag_name"], prereserve_doi=True)
+                                                                keywords=parameters["tag_name"], prereserve_doi=True)
             pid = publication_details["id"]
             doi = str(publication_details["metadata"]["prereserve_doi"]["doi"])
             
          elif(self.service == "dspace"):
-            collection = self.dspace.get_collection_by_title(kwargs["collection_title"])
-            deposit_receipt = self.dspace.create_deposit_from_metadata(collection=collection, in_progress=True, dcterms_title=kwargs["title"], dcterms_description=kwargs["description"], 
+            collection = self.dspace.get_collection_by_title(self.config.get("dspace", "collection_title"))
+            deposit_receipt = self.dspace.create_deposit_from_metadata(collection=collection, in_progress=True, dcterms_title=parameters["title"], dcterms_description=parameters["description"], 
                                               dcterms_type="Dataset", dcterms_creator=self.config.get("general", "name"))
             pid = deposit_receipt.id
             doi = deposit_receipt.alternate         

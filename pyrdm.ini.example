@@ -15,3 +15,4 @@ access_token = abcde
 user_name = abc
 user_pass = xyz
 service_document_url = http://example.org/swordv2/servicedocument
+collection_title = My Collection Title Here
