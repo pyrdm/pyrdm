@@ -128,6 +128,6 @@ before using PyRDM by executing:
 
 ``make unittest``
 
-on the command line. Many of these tests require access to a Figshare
+on the command line. Many of these tests require access to a Figshare and a Zenodo
 account, so please ensure that the ``pyrdm.ini`` setup file contains
-valid Figshare authentication tokens.
+valid authentication tokens.
