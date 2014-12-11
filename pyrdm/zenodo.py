@@ -45,10 +45,11 @@ class Zenodo:
          response = requests.get(url)
          _LOG.debug("Server returned response %d" % response.status_code)
          if(response.status_code != requests.codes.ok): # If the status is not "OK", then exit here.
-            raise Exception("Could not authenticate with the Zenodo server. Check Internet connection? Check Zenodo personal authentication token in ~/.config/pyrdm.ini ?\n")
+            raise Exception("Could not authenticate with the Zenodo server.")
          else:
             _LOG.info("Authentication test successful.\n")
       except:
+         _LOG.error("Could not authenticate with the Zenodo server. Check Internet connection? Check Zenodo authentication keys in ~/.config/pyrdm.ini ?")
          sys.exit(1)
       return
 
@@ -114,7 +115,8 @@ class Zenodo:
       url = self.api_url + "deposit/depositions/%d" % deposition_id
       url = self._append_suffix(url)
 
-      requests.delete(url)
+      response = requests.delete(url)
+      response.raise_for_status()
       return
 
 
@@ -227,5 +229,40 @@ class Zenodo:
       results = json.loads(response.content)
       return results
 
+
+class TestLog(unittest.TestCase):
+   """ Unit test suite for PyRDM's Zenodo module. """
+
+   def setUp(self):
+      # NOTE: This requires the user to have their Zenodo authentication details in the file "/home/<user_name>/.config/pyrdm.ini".
+      from pyrdm.publisher import Publisher
+      self.publisher = Publisher(service="zenodo")
+      self.zenodo = Zenodo(access_token = self.publisher.config.get("zenodo", "access_token"))
+      
+      # Create a test article
+      _LOG.info("Creating test article...")
+      publication_details = self.zenodo.create_deposition(title="PyRDM Test", description="PyRDM Test Article", upload_type="software", creators=[{"name":"Test User", "affiliation":"Test Affiliation"}], keywords=["Test"], prereserve_doi=True)
+      _LOG.debug(str(publication_details))
+      assert(not ("errors" in publication_details.keys()))
+      self.deposition_id = publication_details["id"]
+      return
+
+   def tearDown(self):
+      _LOG.info("Deleting test article...")
+      self.zenodo.delete_deposition(self.deposition_id)
+      return
+
+   def test_zenodo_create_file(self):
+      _LOG.info("Creating test file...")
+      
+      f = open("test_file.txt", "w")
+      f.write("This is a test file for PyRDM's Zenodo module unit tests")
+      f.close()
+      
+      results = self.zenodo.create_file(self.deposition_id, "test_file.txt")
+      _LOG.debug(str(results))
+      assert(results["filename"] == "test_file.txt")
+      return
+ 
 if(__name__ == '__main__'):
    unittest.main()

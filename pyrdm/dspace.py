@@ -159,3 +159,5 @@ class DSpace:
       files = feed["entries"][0]["summary"]
       return files
 
+if(__name__ == '__main__'):
+   unittest.main()
