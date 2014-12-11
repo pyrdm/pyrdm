@@ -2,3 +2,4 @@ requests
 requests_oauthlib
 GitPython >= 0.3.2.RC1
 Sphinx
+-e git+https://github.com/swordapp/python-client-sword2.git#egg=python-client-sword2

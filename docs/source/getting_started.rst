@@ -108,6 +108,15 @@ Zenodo uses a personal access token to handle authentication.
 
 #. Zenodo requires at least one author's name and affiliation to be present when creating a deposition. For a software deposition, PyRDM will try to obtain this information from the ``AUTHORS`` file. However, for a dataset deposition, this information needs to be provided under the ``[general]`` section of the ``pyrdm.ini`` configuration file.
 
+DSpace authentication
+~~~~~~~~~~~~~~~~~~~~~
+
+PyRDM provides limited support for publishing to DSpace-based services which run the SWORD protocol (version 2).
+
+#. Locate the URL of the SWORD Service Document of the Collection that you want to publish in. Add it under the ``[dspace]`` section of the ``pyrdm.ini`` configuration file. Note that this URL may need to be obtained from the system administrator.
+
+#. Add your user name and password used to access the DSpace server under the ``[dspace]`` section. Note that this is currently stored in plain text, so make sure that the PyRDM configuration file is not readable by other users.
+
 Testing
 -------
 

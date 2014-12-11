@@ -110,7 +110,7 @@ class DSpace:
       return replace_receipt
       
    def append_file_to_deposit(self, file_path, receipt):
-      """ Append a new file, located at 'path', to a given deposit. 
+      """ Append a new file, located at 'file_path', to a given deposit. 
       Return a Receipt object for this action. """
       with open(file_path, "rb") as data:
          append_receipt = self.connection.append(payload = data,
@@ -122,6 +122,7 @@ class DSpace:
          return append_receipt
          
    def add_file(self, file_path, receipt):
+      """ Add a file, located at 'file_path', to a given deposit. """
       with open(file_path, "rb") as data:
          r = self.connection.add_file_to_resource(payload = data, 
                                             filename = os.path.basename(file_path),
@@ -135,15 +136,17 @@ class DSpace:
       return delete_receipt
       
    def delete_content(self, receipt):
+      """ Delete content in a given deposit. Return a Receipt object for this action. """
       delete_receipt = self.connection.delete_content_of_resource(dr = receipt)
       return delete_receipt
    
    def complete_deposit(self, receipt):
-      """ Delete a deposit. Return a Receipt object for this action. """
+      """ 'Complete' a deposit. Return a Receipt object for this action. """
       receipt = self.connection.complete_deposit(dr = receipt)
       return receipt
       
    def list_files(self, media_edit_feed, user_name=None, user_pass=None):
+      """ List all the files at a given repository address. """
       handlers=[]
       if(user_name is not None):
          import urllib2, urlparse

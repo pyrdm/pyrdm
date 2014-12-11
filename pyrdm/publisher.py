@@ -37,6 +37,8 @@ class Publisher:
    """ A Python module for publishing scientific software and data on Figshare or Zenodo. """
 
    def __init__(self, service):
+      """ Load the PyRDM configuration file and set up the interface object for the desired publishing service. """
+      
       self.service = service
    
       # Read in the authentication tokens, etc from the configuration file.
@@ -367,6 +369,7 @@ class Publisher:
          return None, None
          
       elif(self.service == "dspace"):
+         # FIXME: Assume for now that the software has not been published.
          return None, None   
 
    def get_authors_list(self, wd):
@@ -472,6 +475,9 @@ class Publisher:
          except:
             return False
          return True
+      elif(self.service == "dspace"):
+         #FIXME: Assume that the publication does not exist for now.
+         return False
 
 class TestLog(unittest.TestCase):
    """ Unit test suite for PyRDM's Publisher module. """
