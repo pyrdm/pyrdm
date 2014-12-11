@@ -219,13 +219,13 @@ class Publisher:
          _LOG.info("Fileset created with ID: %s and DOI: %s" % (pid, doi))
 
          # This is a new article, so upload ALL the files!
-         modified_files = files
+         modified_files = parameters["files"]
          existing_files = []
       else:
          publication_details = None
          doi = None # FIXME: We could try to look up the DOI associated with a given PID in the future.
          # This is an existing publication, so check whether any files have been modified since they were last published.
-         modified_files = self.find_modified(files)
+         modified_files = self.find_modified(parameters["files"])
          if(self.service == "figshare"):
             existing_files = self.figshare.get_file_details(pid)["files"]
          elif(self.service == "zenodo"):
