@@ -44,7 +44,7 @@ class GitHandler:
       except:
          # Perhaps the local version of the software is out-of-date, or corrupted.
          # Let's try and download the .zip file from GitHub instead...
-         success = self.get_archive_from_server(version, archive_path)
+         success = self.get_archive_from_server(sha, archive_path)
          return success
       return True
 
