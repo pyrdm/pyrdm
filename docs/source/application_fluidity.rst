@@ -12,8 +12,6 @@ the ``publishing`` branch of Fluidity which contains the publishing functionalit
 
 #. ``git checkout publishing``
 
-This ``publishing`` branch will soon be merged into Fluidity's ``master`` branch.
-
 Note that you must build Fluidity (or at least satisfy the libspud dependency noted in
 the README file) before using Fluidity-Publish. You may need to add
 Fluidity's 'python' directory to your ``PYTHONPATH`` environment
