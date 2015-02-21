@@ -37,7 +37,7 @@ VTK-based simulation output). Instead of creating a new code repository
 or fileset on Figshare or Zenodo, you may also publish to an existing
 one by entering its ID in the following option(s):
 
-``/publish/{software,input_data,output_data}/article_id``
+``/publish/{software,input_data,output_data}/pid``
 
    .. _figure:diamond:
    .. figure::  images/diamond.png
