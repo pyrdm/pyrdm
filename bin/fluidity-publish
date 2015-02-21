@@ -215,8 +215,7 @@ class FluidityPublish:
          
          options_path = "/publish/software/"
 
-         pid, doi = self.publisher.publish_software(name="Fluidity", local_repo_location=sys.argv[-1], version=sha,
-                                                    category="Computational Physics", private=private)
+         pid, doi = self.publisher.publish_software(name="Fluidity", local_repo_location=sys.argv[-1], version=sha, private=private)
          try:
             libspud.set_option(options_path + "/pid", pid)
          except:
