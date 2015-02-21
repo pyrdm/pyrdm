@@ -57,7 +57,7 @@ the Figshare web interface to generate these authentication details,
 after which you should paste them into the ``figshare`` section of the
 configuration file.
 
-#. Go to ``http://figshare.com/account/applications``
+#. Go to `<http://figshare.com/account/applications>`_
 
 #. Click ``Create a new application``
 
@@ -70,7 +70,7 @@ configuration file.
       
       The application details for PyRDM.
 
-#. Ensure that the application has read and write access to your Drafts,
+#. Under the ``Permissions`` tab, ensure that the application has read and write access to your Drafts,
    Private and Public articles, as per figure:figshare_application_permissions_.
 
    .. _figure:figshare_application_permissions:
@@ -84,7 +84,7 @@ configuration file.
 
 #. Click ``View`` next to PyRDM and then click the ``Access codes`` tab
    to see the authentication details. The four fields should be pasted
-   into the ``pyrdm.ini`` configuration file.
+   into the ``pyrdm.ini`` configuration file. Note that the fields ``consumer_key``, ``consumer_secret``, ``access_token`` and ``access_token_secret`` in the Figshare "Access codes" tab respectively correspond to the fields ``client_key``, ``client_secret``, ``resource_owner_key`` and ``resource_owner_secret`` in the ``pyrdm.ini`` file.
 
 **Note:** If you are publishing through a group account, you will need
 to ask the account's administrator for the authentication details.
@@ -94,7 +94,7 @@ Zenodo authentication
 
 Zenodo uses a personal access token to handle authentication.
 
-#. Go to ``http://zenodo.org/account/settings/applications/tokens/new/``
+#. Go to `<http://zenodo.org/account/settings/applications/tokens/new/>`_
 
 #. Enter ``PyRDM`` as the name of the token. Ensure that ``deposit:actions`` and ``deposit:write`` are selected, as per figure:zenodo_token_.
 
