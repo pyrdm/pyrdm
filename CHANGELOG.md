@@ -3,14 +3,13 @@
 ## [0.2] - 2015-02-21
 
 ### Added
-- Local archiving of Git repositories.
+- Local archiving of the software's Git repository using `git archive`.
 - Support for Zenodo and DSpace-based repositories.
 - A configuration file for Travis CI.
 
 ### Changed
 - Updated the documentation.
 - Migrated the documentation to .rst format for use with Sphinx.
-- Use argparse rather than optparse.
 
 ## [0.1] - 2014-05-27
 
