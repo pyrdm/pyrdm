@@ -4,7 +4,7 @@ Introduction
 Overview
 --------
 
-PyRDM is a project that focuses on the relationship between data and the
+`PyRDM <https://github.com/pyrdm/pyrdm/>`_ is a project that focuses on the relationship between data and the
 scientific software that has either created that data, or operates on
 that data to create new information. Two examples from geoscience are
 given for illustrative purposes:
