@@ -9,7 +9,7 @@ Journal articles
 Conference papers
 -----------------
 
-- **Jacobs, C.T., Avdis, A, Mouradian, S.L. and Piggott, M.D. (2015)**. *Integrating Research Data Management into Geographical Information Systems*. In Proceedings of the 5th International Workshop on `Semantic Digital Archives <http://sda2015.dke-research.de/>`_, held in Poznań, Poland on 18 September 2015. Pre-print: `http://arxiv.org/abs/1509.04729 <http://arxiv.org/abs/1509.04729>`_
+- **Jacobs, C.T., Avdis, A, Mouradian, S.L. and Piggott, M.D. (2015)**. *Integrating Research Data Management into Geographical Information Systems*. In Proceedings of the `5th International Workshop on Semantic Digital Archives <http://sda2015.dke-research.de/>`_, held in Poznań, Poland on 18 September 2015. Pre-print: `http://arxiv.org/abs/1509.04729 <http://arxiv.org/abs/1509.04729>`_
 
 Posters and presentations
 -------------------------
