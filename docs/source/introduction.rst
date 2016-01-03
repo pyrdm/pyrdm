@@ -42,6 +42,8 @@ this new data.
 
 The PyRDM library aims to address these needs by facilitating the automated management and publication of software source code and data via online, citable repositories hosted by `Figshare <http://www.figshare.com/>`_, `Zenodo <http://www.zenodo.org/>`_, or a `DSpace <http://www.dspace.org/>`_-based service. The library can be readily incorporated into scientific workflows to allow research outputs to be curated and shared in a straight-forward manner.
 
+PyRDM is open-source, and is available to download from the project's GitHub repository: `<https://github.com/pyrdm/pyrdm>`_
+
 Licensing
 ---------
 
