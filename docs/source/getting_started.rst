@@ -5,22 +5,33 @@ System requirements
 -------------------
 
 A standard Python installation is required, as well as any additional
-Python modules that are listed in the README file under the
+Python modules that are listed in the `README file <https://github.com/pyrdm/pyrdm/blob/master/README.md#dependencies>`_ under the
 "Dependencies" section. PyRDM is designed to run on the Linux operating
 system. All development and testing takes place on the Ubuntu Trusty
 (14.04) distribution.
 
-Installation
-------------
-
 It is recommended that users use the terminal to install and run PyRDM.
-After navigating to the base directory of PyRDM (i.e. the directory that
-the Makefile is in), use the following command to install the PyRDM
-library:
 
-``make install``
+Downloading and Installing
+--------------------------
 
-**Note 1:** ``sudo`` may be needed for this if the default install
+PyRDM's source code is hosted on GitHub and can be found here: `<https://github.com/pyrdm/pyrdm>`_. The first step is to download the source code using:
+
+``git clone https://github.com/pyrdm/pyrdm.git pyrdm``
+
+The core dependencies that PyRDM needs to function can then be installed by navigating to the base directory of PyRDM (i.e. the directory that the Makefile is in) using
+
+``cd pyrdm``
+
+and executing
+
+``sudo pip install -r requirements.txt``
+
+Use the following command to install the PyRDM library:
+
+``sudo make install``
+
+**Note 1:** ``sudo`` is likely to be necessary here if the default install
 directory is located outside of ``/home``. This will yield a system-wide
 install of PyRDM, which is recommended.
 
@@ -35,8 +46,8 @@ You may wish to add this statement to your
 ``/home/your_username/.bashrc`` or ``/etc/bash.bashrc`` files so the
 ``PYTHONPATH`` is set correctly each time you log in.
 
-Configuration
--------------
+Configuring
+-----------
 
 You should copy the contents of the file ``pyrdm.ini.example`` to a new
 file called ``pyrdm.ini`` and save it in the
