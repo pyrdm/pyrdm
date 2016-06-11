@@ -28,12 +28,6 @@ from restkit import Resource, request
 import json
 
 _LOG = logging.getLogger(__name__)
-_HANDLER = logging.StreamHandler()
-_LOG.addHandler(_HANDLER)
-_HANDLER.setFormatter(logging.Formatter(
-    '%(module)s %(levelname)s: %(message)s'))
-del(_HANDLER)
-_LOG.setLevel(logging.DEBUG)
 
 class Figshare(Resource):
    """ A Python interface to Figshare via version 2 of the Figshare API. """

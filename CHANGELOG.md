@@ -1,5 +1,16 @@
 # Change Log
 
+## [0.3] - 2016-06-11
+
+### Added
+- Support for version 2 of the Figshare API.
+
+### Changed
+- Updated the documentation.
+
+### Removed
+- Support for version 1 of the Figshare API.
+
 ## [0.2] - 2015-02-21
 
 ### Added
@@ -18,4 +29,5 @@
 - Parsing of the software's AUTHORS file to affiliate authors with the published software.
 - MD5 checksum cross-checking to selectively re-upload only those files that have been modified locally, when updating an existing publication of data files.
 
+[0.3]: https://github.com/pyrdm/pyrdm/compare/v0.2...v0.3
 [0.2]: https://github.com/pyrdm/pyrdm/compare/v0.1...v0.2
