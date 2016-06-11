@@ -51,7 +51,7 @@ class Figshare(Resource):
       # to check that the authentication is successful.
       _LOG.info("Testing Figshare authentication...")
       try:
-         response = self.get('/account/articles', params_dict={"limit":1000}, headers=self.get_headers(token=self.token))
+         response = self.get('/account/articles', params_dict={"limit":10}, headers=self.get_headers(token=self.token))
          _LOG.debug("Server returned response %d" % response.status_int)
          if(response.status_int != requests.codes.ok): # If the status is not "OK", then exit here.
             raise Exception("Could not authenticate with the Figshare server.")
