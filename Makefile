@@ -17,7 +17,7 @@
 #    You should have received a copy of the GNU General Public License
 #    along with PyRDM.  If not, see <http://www.gnu.org/licenses/>.
 
-.PHONY: input clean build install docs unittest
+.PHONY: input clean build install docs test
 
 input: 	clean build docs
 
@@ -33,7 +33,7 @@ docs:
 	@echo "*** Compiling the documentation"
 	cd docs; make html; cd ..
 
-unittest:
+test:
 	@echo "*** Running the unit tests"
 	python -m unittest discover --start-directory=pyrdm --pattern=*.py --verbose
 

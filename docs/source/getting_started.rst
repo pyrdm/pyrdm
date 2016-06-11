@@ -69,33 +69,28 @@ configuration file.
 
 #. Go to `<http://figshare.com/account/applications>`_
 
-#. Click ``Create a new application``
+#. Click ``Create Personal Token``
 
-#. Fill in the application details as per figure:application_details_.
+#. In the description box, type "PyRDM" as per figure:create_token_.
    
-   .. _figure:application_details:
-   .. figure::  images/figshare_application_details.png
+   .. _figure:create_token:
+   .. figure::  images/figshare_create_token.png
       :align: center
       :figclass: align-center
       
-      The application details for PyRDM.
+      The details for the new personal access token.
 
-#. Under the ``Permissions`` tab, ensure that the application has read and write access to your Drafts,
-   Private and Public articles, as per figure:figshare_application_permissions_.
+#. Click ``Save``. The token will appear and should be pasted into the ``pyrdm.ini`` configuration file. .
 
-   .. _figure:figshare_application_permissions:
-   .. figure::  images/figshare_application_permissions.png
-      :align:   center
+#. Click ``Done`` and the new token should appear in the list, as per figure:token_list_. 
+
+   .. _figure:token_list:
+   .. figure::  images/figshare_tokens.png
+      :align: center
+      :figclass: align-center
       
-      The set of permissions required by PyRDM.
-
-#. Click ``Save changes``. PyRDM should appear in your list of
-   applications which can access your account.
-
-#. Click ``View`` next to PyRDM and then click the ``Access codes`` tab
-   to see the authentication details. The token should be pasted
-   into the ``pyrdm.ini`` configuration file.
-
+      The new personal access token.
+      
 **Note:** If you are publishing through a group account, you will need
 to ask the account's administrator for the authentication details.
 
@@ -136,7 +131,7 @@ PyRDM comes with a suite of unit tests which verify the correctness of
 its functionality. It is recommended that you run these unit tests
 before using PyRDM by executing:
 
-``make unittest``
+``make test``
 
 on the command line. Many of these tests require access to a Figshare and a Zenodo
 account, so please ensure that the ``pyrdm.ini`` setup file contains
