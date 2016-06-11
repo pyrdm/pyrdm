@@ -62,10 +62,10 @@ per the guidance in the following subsections.
 Figshare authentication
 ~~~~~~~~~~~~~~~~~~~~~~~
 
-PyRDM requires a set of authentication details in order to publish and
+PyRDM requires a personal authentication token in order to publish and
 modify files using your Figshare account. You will need to login and use
-the Figshare web interface to generate these authentication details,
-after which you should paste them into the ``figshare`` section of the
+the Figshare web interface to generate this authentication token,
+after which you should paste it into the ``figshare`` section of the
 configuration file.
 
 #. Go to `<http://figshare.com/account/applications>`_
@@ -94,8 +94,8 @@ configuration file.
    applications which can access your account.
 
 #. Click ``View`` next to PyRDM and then click the ``Access codes`` tab
-   to see the authentication details. The four fields should be pasted
-   into the ``pyrdm.ini`` configuration file. Note that the fields ``consumer_key``, ``consumer_secret``, ``access_token`` and ``access_token_secret`` in the Figshare "Access codes" tab respectively correspond to the fields ``client_key``, ``client_secret``, ``resource_owner_key`` and ``resource_owner_secret`` in the ``pyrdm.ini`` file.
+   to see the authentication details. The token should be pasted
+   into the ``pyrdm.ini`` configuration file.
 
 **Note:** If you are publishing through a group account, you will need
 to ask the account's administrator for the authentication details.

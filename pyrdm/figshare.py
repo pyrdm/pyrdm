@@ -1,5 +1,6 @@
 #!/usr/bin/env python
 
+#    Copyright (C) 2016 Christian T. Jacobs
 #    Copyright (C) 2014 Christian T. Jacobs, Alexandros Avdis, Gerard J. Gorman, Matthew D. Piggott.
 
 #    This file is part of PyRDM.
