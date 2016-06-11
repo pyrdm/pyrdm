@@ -97,35 +97,31 @@ class Publisher:
       description='%s (Version %s)' % (name, version)
 
       if(self.service == "figshare"):
-         publication_details = self.figshare.create_article(title=title, description=description, defined_type="code", status="Drafts")
-         pid = publication_details["article_id"]
-         doi = str(publication_details["doi"])
+         pid = self.figshare.create_article(title=title, description=description, defined_type="code", tags=[version])
+         doi = self.figshare.reserve_doi()
          _LOG.info("Code repository created with ID: %d and DOI: %s" % (pid, doi))
-
-         _LOG.info("Uploading software...")
-         self.figshare.add_file(article_id=pid, file_path=archive_path)
-         self.verify_upload(pid=pid, files=[archive_path])
-
-         _LOG.info("Adding the software's version as a tag...")
-         self.figshare.add_tag(article_id=pid, tag_name=version)
-         _LOG.info("Tag added.")
 
          _LOG.info("Adding category...")
          self.figshare.add_category(article_id=pid, category="Computer Software")
          _LOG.info("Category added.")
+         
+         _LOG.info("Uploading software...")
+         self.figshare.add_file(article_id=pid, file_path=archive_path)
+         self.verify_upload(pid=pid, files=[archive_path])
 
          _LOG.info("Adding all authors (with author IDs) to the code...")
          author_ids = self.get_authors_list(git_handler.get_working_directory())
          _LOG.debug("List of author IDs: %s" % (author_ids,))
          if(author_ids is not None):
-            for author_id in author_ids:
-               self.figshare.add_author(pid, author_id)
+            # Convert to a list of dictionaries with ('id':id) pairs.
+            author_ids = [{'id':author_id} for author_id in author_ids]
+            self.figshare.add_authors(pid, author_ids)
          _LOG.info("All authors (with author IDs) added.")
 
          # If we are not keeping the code private, then make it public.
          if(not private):
             _LOG.info("Making the code public...")
-            self.figshare.make_public(article_id=pid)
+            self.figshare.publish(article_id=pid)
             _LOG.info("The code has been made public.")
 
       elif(self.service == "zenodo"):
@@ -196,23 +192,13 @@ class Publisher:
          _LOG.info("Creating new fileset...")
          if(self.service == "figshare"):
             # NOTE: The defined_type needs to be a 'fileset' to allow multiple files to be uploaded separately.
-            publication_details = self.figshare.create_article(title=parameters["title"], description=parameters["description"], defined_type="fileset", status="Drafts")
-            pid = publication_details["article_id"]
-            doi = str(publication_details["doi"])
+            pid = self.figshare.create_article(title=parameters["title"], description=parameters["description"], defined_type="fileset", tags=parameters["tag_name"])
+            doi = self.figshare.reserve_doi(article_id)
             
             # Add category
             _LOG.info("Adding category...")
             if(parameters["category"] is not None):
                self.figshare.add_category(pid, parameters["category"])
-
-            # Add tag(s)
-            _LOG.info("Adding tag(s)...")
-            if(parameters["tag_name"] is not None):
-               if(type(parameters["tag_name"]) == list):
-                  for tag_name in parameters["tag_name"]:
-                     self.figshare.add_tag(pid, tag_name)
-               else:
-                  self.figshare.add_tag(pid, parameters["tag_name"])
             
          elif(self.service == "zenodo"):
             publication_details = self.zenodo.create_deposition(title=parameters["title"], description=parameters["description"], upload_type="dataset",
@@ -239,7 +225,7 @@ class Publisher:
          # This is an existing publication, so check whether any files have been modified since they were last published.
          modified_files = self.find_modified(parameters["files"])
          if(self.service == "figshare"):
-            existing_files = self.figshare.get_file_details(pid)["files"]
+            existing_files = self.figshare.list_files(pid)
          elif(self.service == "zenodo"):
             existing_files = self.zenodo.list_files(pid)
          elif(self.service == "dspace"):
@@ -302,7 +288,7 @@ class Publisher:
       if(not private and self.service != "dspace"):
          _LOG.info("Making the data public...")
          if(self.service == "figshare"):
-            self.figshare.make_public(article_id=pid)
+            self.figshare.publish(article_id=pid)
          elif(self.service == "zenodo"):
             self.zenodo.publish_deposition(deposition_id=pid)
          _LOG.info("The data has been made public.")
@@ -354,22 +340,29 @@ class Publisher:
       keyword = "%s" % (name) # We always include the software's name in the title, so use it as the keyword
       
       if(self.service == "figshare"):
-         results = self.figshare.search(keyword, tag=version) # We always tag the software with its version (the SHA-1 hash for Git repositories).
+         results = self.figshare.search(keyword) # We always tag the software with its version (the SHA-1 hash for Git repositories).
 
-         if(len(results["items"]) != 0):
-            _LOG.info("Software %s has already been published (with version %s).\n" % (name, version))
-            pid = results["items"][-1]["article_id"]
-            # Try to find the DOI as well.
-            # This try-except block might not be necessary if we are always searching public articles.
+         for article in results:
             try:
-               doi = results["items"][-1]["DOI"]
-               _LOG.info("Software DOI: %s" % doi)
-            except:
-               _LOG.info("DOI not found.")
-               doi = None
-            return pid, doi
-         else:
-            return None, None
+               if str(version) in article.tags:
+                  _LOG.info("Software %s has already been published (with version %s).\n" % (name, version))
+                  pid = article["id"]
+
+                  # Try to find the DOI as well.
+                  # This try-except block might not be necessary if we are always searching public articles.
+                  try:
+                     doi = article["doi"]
+                     if doi == "":
+                        raise ValueError()
+                     _LOG.info("Software DOI: %s" % doi)
+                  except:
+                     _LOG.info("DOI not found.")
+                     doi = None
+                  return pid, doi
+            except AttributeError:
+               pass
+              
+         return None, None
             
       elif(self.service == "zenodo"):
          # FIXME: There is currently no way of easily searching for a Zenodo deposit based on its keywords via the API.
@@ -418,7 +411,7 @@ class Publisher:
    def is_uploaded(self, pid, files):
       """ Return True if the files in the list 'files' are all present on the server. Otherwise, return False. """
       if(self.service == "figshare"):
-         files_on_server = self.figshare.get_file_details(pid)["files"]
+         files_on_server = self.figshare.list_files(pid)
          key = "name"
       elif(self.service == "zenodo"):
          files_on_server = self.zenodo.list_files(pid)

@@ -82,8 +82,14 @@ class Figshare(Resource):
       headers = {'content-type':'application/json'}
       response = self.post("/account/articles", payload=json.dumps(body), headers=self.get_headers(token=self.token))
       
-      results = json.loads(response.body_string())
-      return results
+      response = json.loads(response.body_string())
+      
+      if not "error" in response.keys():
+         article_id = response["location"].split("/")[-1]
+      else:
+         article_id = None
+      
+      return article_id
 
    def update_article(self, article_id, title=None, description=None, defined_type=None, tags=None, categories=None):
       """ Updates an article with a given article_id. """
@@ -102,8 +108,8 @@ class Figshare(Resource):
          body['categories'] = categories
 
       response = self.put('/account/articles/%s' % str(article_id), payload=json.dumps(body), headers=self.get_headers(token=self.token))
-      results = json.loads(response.content)
-      return results
+      response = json.loads(response.content)
+      return response
 
    def delete_article(self, article_id):
       """ Delete a private or draft article with a given article_id. """
@@ -123,8 +129,8 @@ class Figshare(Resource):
          url = '/articles/%s' % str(article_id)
          
       response = self.get(url, headers=self.get_headers(token=self.token))
-      result = json.loads(response.body_string())
-      return result
+      details = json.loads(response.body_string())
+      return details
       
    def search(self, keyword, private=False, institution=None, group=None, published_since=None, modified_since=None):
       """ Searches public and private articles using a keyword. """
@@ -151,16 +157,16 @@ class Figshare(Resource):
       return results
 
    def add_category(self, article_id, category):
-      """ For an article with a given article_id, add a category. Note that this is a string, not the integer ID of the category. """
+      """ For an article with a given article_id, add a category. Note that this is the name of the category in string form, not the integer ID of the category. """
 
       category_id = self.get_category_id(category)
       if(category_id is None):
          _LOG.warning("Could not find the category '%s'! No category was added. The publication cannot be made public until a category is added." % category)
          return None
       else:
-         body = {'categories':category_id}
+         body = {'categories':[category_id]}
          response = self.post('/account/articles/%s/categories' % str(article_id), payload=json.dumps(body), headers=self.get_headers(token=self.token))
-         return json.loads(response.body_string())
+         return
 
    def get_category_id(self, category):
       """ Return the integer ID of a given category. If not found, return None. """
@@ -177,8 +183,8 @@ class Figshare(Resource):
       
       headers = {'content-type':'application/json'}
       response = self.get('/categories', headers=self.get_headers())
-      results = json.loads(response.body_string())
-      return results
+      categories = json.loads(response.body_string())
+      return categories
 
    def add_authors(self, article_id, author_ids):
       """ Associate author(s) with this article. """
@@ -210,17 +216,17 @@ class Figshare(Resource):
       # Create file object
       payload = json.dumps(file_info)
       response = self.post('/account/articles/{}/files'.format(article_id), headers=self.get_headers(token=self.token), payload=payload)
-      result = json.loads(response.body_string())
-      file_location = result["location"]
+      response = json.loads(response.body_string())
+      file_location = response["location"]
       
       # Get the file upload URL
-      response = request(result["location"], headers=self.get_headers(token=self.token))
+      response = request(response["location"], headers=self.get_headers(token=self.token))
       upload_url = json.loads(response.body_string())["upload_url"]
       
       # Upload the file
       response = request(upload_url, headers=self.get_headers(token=self.token))
-      result = json.loads(response.body_string())
-      parts = result["parts"]
+      response = json.loads(response.body_string())
+      parts = response["parts"]
 
       with open(file_path, 'rb') as file_input:
          for part in parts:
@@ -229,30 +235,43 @@ class Figshare(Resource):
 
       response = request(file_location, method='POST', headers=self.get_headers(token=self.token))
       return file_location
-        
+
+   def list_files(self, article_id):
+      """ List all the files associated with a given article. """
+      response = self.get('/account/articles/%s/files' % str(article_id), headers=self.get_headers(token=self.token))
+      files = json.loads(response.body_string())
+      return files
+      
    def delete_file(self, article_id, file_id):
       """ Delete a file associated with a given article. """
       response = self.delete('/articles/%s/files/%s' % (str(article_id), str(file_id)), headers=self.get_headers(token=self.token))
-      results = json.loads(response.body_string())
-      return results
+      response = json.loads(response.body_string())
+      return response
 
    def get_file_details(self, article_id, file_id):
       """ Get the details about a file associated with a given article. """
       response = self.get('/account/articles/%s/files/%s' % (str(article_id), str(file_id)), headers=self.get_headers(token=self.token))
-      result = json.loads(response.body_string())
-      return result
+      response = json.loads(response.body_string())
+      return response
 
    def reserve_doi(self, article_id):
       """ Reserve a DOI for the article. """
       response = self.post('/account/articles/%s/reserve_doi' % str(article_id), headers=self.get_headers(token=self.token))
-      result = json.loads(response.body_string())["doi"]
-      return result
+      
+      response = json.loads(response.body_string())
+      
+      if not "error" in json.loads(response.keys()):
+         doi = response["doi"]
+      else:
+         doi = None
+         
+      return doi
 
    def publish(self, article_id):
       """ Publish the article and make it public. """
       response = self.post('/account/articles/%s/publish' % str(article_id), headers=self.get_headers(token=self.token))
-      result = json.loads(response.body_string())
-      return result
+      response = json.loads(response.body_string())
+      return response
 
 
 class TestLog(unittest.TestCase):
@@ -266,17 +285,16 @@ class TestLog(unittest.TestCase):
                      
       # Create a test article
       _LOG.info("Creating test article...")
-      publication_details = self.figshare.create_article(title="PyRDM Test", description="PyRDM Test Article", tags=["test", "article"], defined_type="code", categories=2)
-      _LOG.debug(str(publication_details))
-      assert(not ("error" in publication_details.keys()))
-      self.article_id = publication_details["location"].split("/")[-1]
+      article_id, doi = self.figshare.create_article(title="PyRDM Test", description="PyRDM Test Article", tags=["test", "article"], defined_type="code", categories=2)
+      _LOG.debug(str(article_id))
+      assert(article_id is not None)
       return
 
    def tearDown(self):
       _LOG.info("Deleting test article...")
-      results = self.figshare.delete_article(self.article_id)
-      _LOG.debug(str(results))
-      assert("success" in results.keys())
+      response = self.figshare.delete_article(self.article_id)
+      _LOG.debug(str(response))
+      assert("success" in response.keys())
       return
 
    def test_figshare_search(self):
@@ -292,19 +310,19 @@ class TestLog(unittest.TestCase):
       f.write("This is a test file for PyRDM's Figshare module unit tests")
       f.close()
       
-      results = self.figshare.add_file(self.article_id, "test_file.txt")
-      _LOG.debug(str(results))
-      assert(results["extension"] == "txt")
-      assert(results["name"] == "test_file.txt")
+      response = self.figshare.add_file(self.article_id, "test_file.txt")
+      _LOG.debug(str(response))
+      assert(response["extension"] == "txt")
+      assert(response["name"] == "test_file.txt")
       
       return
       
    def test_figshare_add_category(self):
       _LOG.info("Adding category 'Computer Software' to test article...")
       
-      results = self.figshare.add_category(self.article_id, "Computer Software")
-      _LOG.debug(str(results))
-      assert("success" in results.keys())
+      response = self.figshare.add_category(self.article_id, "Computer Software")
+      _LOG.debug(str(response))
+      assert("success" in response.keys())
       
       return
 
