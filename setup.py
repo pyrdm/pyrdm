@@ -1,5 +1,6 @@
 #!/usr/bin/env python
 
+#    Copyright (C) 2016 Christian T. Jacobs.
 #    Copyright (C) 2014 Christian T. Jacobs, Alexandros Avdis, Gerard J. Gorman, Matthew D. Piggott.
 
 #    This file is part of PyRDM.
@@ -20,7 +21,7 @@
 from distutils.core import setup
 
 setup(name='PyRDM',
-      version='0.2',
+      version='0.3',
       description='PyRDM is a Python module for research data management (RDM). It facilitates the automated publication of scientific software and associated input and output data.',
       author='Christian T. Jacobs, Alexandros Avdis, Gerard J. Gorman, Matthew D. Piggott',
       url='https://github.com/pyrdm/pyrdm',

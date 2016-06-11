@@ -7,8 +7,7 @@ System requirements
 A standard Python installation is required, as well as any additional
 Python modules that are listed in the `README file <https://github.com/pyrdm/pyrdm/blob/master/README.md#dependencies>`_ under the
 "Dependencies" section. PyRDM is designed to run on the Linux operating
-system. All development and testing takes place on the Ubuntu Trusty
-(14.04) distribution.
+system.
 
 It is recommended that users use the terminal to install and run PyRDM.
 

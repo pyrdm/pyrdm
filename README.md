@@ -1,3 +1,4 @@
+    Copyright (C) 2016 Christian T. Jacobs.
     Copyright (C) 2014 Christian T. Jacobs, Alexandros Avdis, Gerard J. Gorman, Matthew D. Piggott.
 
     This file is part of PyRDM.
@@ -41,7 +42,8 @@ Dependencies
 PyRDM depends on:
 
 * [GitPython](https://pypi.python.org/pypi/GitPython/)
-* [requests-oauthlib](https://github.com/requests/requests-oauthlib)
+* [requests](https://github.com/requests/requests) ??????
+* [restkit](??????????)
 * [python-client-sword2](https://github.com/swordapp/python-client-sword2)
 * [Sphinx](http://sphinx-doc.org/) - to build the documentation.
 * [libspud](https://launchpad.net/spud) - this package is not necessary if you do not wish to run the PyRDM-based publication tool `fluidity-publish` specifically designed for the Fluidity CFD code.
@@ -58,4 +60,4 @@ Jacobs, C.T., Avdis, A, Gorman, G.J. and Piggott, M.D. (2014). PyRDM: A Python-b
 Contact
 -------
 
-If you have any questions or comments about PyRDM, please send them via email to <c.jacobs10@imperial.ac.uk>.
+If you have any questions or comments about PyRDM, please send them via email to <christian@christianjacobs.uk>.
