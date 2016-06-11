@@ -45,8 +45,7 @@ class Publisher:
       self.config = self.load_config(os.path.expanduser("~/.config/pyrdm.ini"))
       
       if(service == "figshare"):
-         self.figshare = Figshare(client_key = self.config.get("figshare", "client_key"), client_secret = self.config.get("figshare", "client_secret"),
-                        resource_owner_key = self.config.get("figshare", "resource_owner_key"), resource_owner_secret = self.config.get("figshare", "resource_owner_secret"))
+         self.figshare = Figshare(token = self.config.get("figshare", "token"))
       elif(service == "zenodo"):
          self.zenodo = Zenodo(access_token = self.config.get("zenodo", "access_token"))
       elif(service == "dspace"):
