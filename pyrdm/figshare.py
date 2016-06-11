@@ -80,7 +80,7 @@ class Figshare(Resource):
       response = json.loads(response.body_string())
       
       if not "error" in response.keys():
-         article_id = response["location"].split("/")[-1]
+         article_id = int(response["location"].split("/")[-1])
       else:
          article_id = None
       
@@ -159,9 +159,12 @@ class Figshare(Resource):
          _LOG.warning("Could not find the category '%s'! No category was added. The publication cannot be made public until a category is added." % category)
          return None
       else:
-         body = {'categories':[category_id]}
-         response = self.post('/account/articles/%s/categories' % str(article_id), payload=json.dumps(body), headers=self.get_headers(token=self.token))
-         return
+         try:
+            body = {'categories':[category_id]}
+            response = self.post('/account/articles/%s/categories' % str(article_id), payload=json.dumps(body), headers=self.get_headers(token=self.token))
+            return {"success": True}
+         except:
+            return {"success": False}
 
    def get_category_id(self, category):
       """ Return the integer ID of a given category. If not found, return None. """
@@ -193,8 +196,8 @@ class Figshare(Resource):
       return response
     
    def add_file(self, article_id, file_path):
-      """ Upload a file with path 'file_path' to an article with a given article_id.
-      Based on the example from the Figshare API documentation: https://docs.figshare.com/api/upload_example/"""
+      """ Upload a file with path 'file_path' to an article with a given article_id. Return the ID of the file.
+      This code is based on the example from the Figshare API documentation: https://docs.figshare.com/api/upload_example/"""
       
       file_name = os.path.basename(file_path)
       
@@ -214,8 +217,8 @@ class Figshare(Resource):
       response = json.loads(response.body_string())
       file_location = response["location"]
       
-      # Get the file upload URL
-      response = request(response["location"], headers=self.get_headers(token=self.token))
+      # Get the file info, in particular the upload URL
+      response = request(file_location, headers=self.get_headers(token=self.token))
       upload_url = json.loads(response.body_string())["upload_url"]
       
       # Upload the file
@@ -229,7 +232,9 @@ class Figshare(Resource):
              response = request('{0}/{1}'.format(upload_url, part["partNo"]), method='PUT', body=file_input.read(size))
 
       response = request(file_location, method='POST', headers=self.get_headers(token=self.token))
-      return file_location
+      
+      file_id = int(file_location.split("/")[-1])
+      return file_id
 
    def list_files(self, article_id):
       """ List all the files associated with a given article. """
@@ -255,8 +260,8 @@ class Figshare(Resource):
       
       response = json.loads(response.body_string())
       
-      if not "error" in json.loads(response.keys()):
-         doi = response["doi"]
+      if not "error" in response.keys():
+         doi = str(response["doi"])
       else:
          doi = None
          
@@ -280,9 +285,9 @@ class TestLog(unittest.TestCase):
                      
       # Create a test article
       _LOG.info("Creating test article...")
-      article_id, doi = self.figshare.create_article(title="PyRDM Test", description="PyRDM Test Article", tags=["test", "article"], defined_type="code", categories=2)
-      _LOG.debug(str(article_id))
-      assert(article_id is not None)
+      self.article_id = self.figshare.create_article(title="PyRDM Test", description="PyRDM Test Article", tags=["test", "article"], defined_type="code", categories=2)
+      _LOG.debug(str(self.article_id))
+      assert(self.article_id is not None)
       return
 
    def tearDown(self):
@@ -305,10 +310,15 @@ class TestLog(unittest.TestCase):
       f.write("This is a test file for PyRDM's Figshare module unit tests")
       f.close()
       
-      response = self.figshare.add_file(self.article_id, "test_file.txt")
-      _LOG.debug(str(response))
-      assert(response["extension"] == "txt")
+      file_id = self.figshare.add_file(self.article_id, "test_file.txt")
+      _LOG.debug(str(file_id))
+      
+      response = self.figshare.get_file_details(self.article_id, file_id)
+    
       assert(response["name"] == "test_file.txt")
+      assert(response["viewer_type"] == "txt")
+      assert(response["computed_md5"] == "e6bee908f14f172a54c920e06b5e9db0")
+      assert(response["supplied_md5"] == "e6bee908f14f172a54c920e06b5e9db0")
       
       return
       
@@ -317,7 +327,7 @@ class TestLog(unittest.TestCase):
       
       response = self.figshare.add_category(self.article_id, "Computer Software")
       _LOG.debug(str(response))
-      assert("success" in response.keys())
+      assert(response["success"])
       
       return
 

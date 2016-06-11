@@ -98,8 +98,8 @@ class Publisher:
       description='%s (Version %s)' % (name, version)
 
       if(self.service == "figshare"):
-         pid = self.figshare.create_article(title=title, description=description, defined_type="code", tags=[version])
-         doi = self.figshare.reserve_doi()
+         pid = self.figshare.create_article(title=title, description=description, defined_type="code", tags=[version], categories=[])
+         doi = self.figshare.reserve_doi(pid)
          _LOG.info("Code repository created with ID: %d and DOI: %s" % (pid, doi))
 
          _LOG.info("Adding category...")
@@ -193,8 +193,8 @@ class Publisher:
          _LOG.info("Creating new fileset...")
          if(self.service == "figshare"):
             # NOTE: The defined_type needs to be a 'fileset' to allow multiple files to be uploaded separately.
-            pid = self.figshare.create_article(title=parameters["title"], description=parameters["description"], defined_type="fileset", tags=parameters["tag_name"])
-            doi = self.figshare.reserve_doi(article_id)
+            pid = self.figshare.create_article(title=parameters["title"], description=parameters["description"], defined_type="fileset", tags=parameters["tag_name"], categories=[])
+            doi = self.figshare.reserve_doi(pid)
             
             # Add category
             _LOG.info("Adding category...")
