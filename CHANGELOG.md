@@ -1,6 +1,6 @@
 # Change Log
 
-## [0.3] - 2016-06-15
+## [0.3] - 2016-06-16
 
 ### Added
 - Support for version 2 of the Figshare API.
