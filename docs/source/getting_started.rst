@@ -80,7 +80,7 @@ configuration file.
       
       The details for the new personal access token.
 
-#. Click ``Save``. The token will appear and should be pasted into the ``pyrdm.ini`` configuration file. .
+#. Click ``Save``. The token will appear and should be pasted into the ``pyrdm.ini`` configuration file.
 
 #. Click ``Done`` and the new token should appear in the list, as per figure:token_list_. 
 
