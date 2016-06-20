@@ -31,9 +31,15 @@ In order to use PyRDM you must build as well as configure the package. Build the
 1. Make a clone of this repository by `git clone https://github.com/pyrdm/pyrdm.git pyrdm`
 2. Install the core dependencies by `cd pyrdm; sudo pip install -r requirements.txt`
 3. Build the package by `sudo make install`
-4. Build the documentation by `make docs`. This will produce an HTML version of the documentation in the `docs/build` directory. Alternatively, you can view the latest version of the documentation [here](http://pyrdm.readthedocs.org).
+4. Build the documentation by `make docs`. This will produce an HTML version of the documentation in the `docs/build` directory. Alternatively, you can view the latest version of the documentation [here](http://pyrdm.readthedocs.io).
 
-The configuration procedure allows PyRDM to access and upload files to Figshare, Zenodo or DSpace. Please see the [PyRDM documentation](http://pyrdm.readthedocs.org) for a graphical guide on how to do this.
+Alternatively, users of Conda can install PyRDM and its dependencies using
+
+```
+conda install -c ctjacobs -c pypi -c auto -c ioos -c conda-forge pyrdm
+```
+
+The next step involves configuring PyRDM in order for it to access and upload files to Figshare, Zenodo or DSpace. Please see the [PyRDM documentation](http://pyrdm.readthedocs.io) for a graphical guide on how to do this.
 
 Dependencies
 ------------
