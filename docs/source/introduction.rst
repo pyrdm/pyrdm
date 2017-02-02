@@ -44,7 +44,7 @@ The PyRDM library aims to address these needs by facilitating the automated mana
 
 - **C. T. Jacobs, A. Avdis, G. J. Gorman, M. D. Piggott (2014)**. *PyRDM: A Python-based library for automating the management and online publication of scientific software and data*. Journal of Open Research Software, 2(1):e28, DOI: `10.5334/jors.bj <http://dx.doi.org/10.5334/jors.bj>`_
 
-and in the resources listed `here <http://pyrdm.readthedocs.org/en/latest/citing.html>`_.
+and in the resources listed `here <http://pyrdm.readthedocs.org/en/latest/references.html>`_.
 
 PyRDM is open-source, and is available to download from the project's GitHub repository: `<https://github.com/pyrdm/pyrdm>`_
 

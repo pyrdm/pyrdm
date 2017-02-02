@@ -16,5 +16,5 @@ Contents:
    functionality
    application_fluidity
    application_pyrdm
-   citing
+   references
    pyrdm
