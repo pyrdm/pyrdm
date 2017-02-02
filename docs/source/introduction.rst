@@ -42,7 +42,7 @@ this new data.
 
 The PyRDM library aims to address these needs by facilitating the automated management and publication of software source code and data via online, citable repositories hosted by `Figshare <http://www.figshare.com/>`_, `Zenodo <http://www.zenodo.org/>`_, or a `DSpace <http://www.dspace.org/>`_-based service. The library can be readily incorporated into scientific workflows to allow research outputs to be curated and shared in a straight-forward manner. Further details and technical information are provided in the following paper:
 
-- **Jacobs, C.T., Avdis, A, Gorman, G.J. and Piggott, M.D. (2014)**. *PyRDM: A Python-based library for automating the management and online publication of scientific software and data*. Journal of Open Research Software 2(1):e28, DOI: `10.5334/jors.bj <http://dx.doi.org/10.5334/jors.bj>`_
+- **C. T. Jacobs, A. Avdis, G. J. Gorman, M. D. Piggott (2014)**. *PyRDM: A Python-based library for automating the management and online publication of scientific software and data*. Journal of Open Research Software, 2(1):e28, DOI: `10.5334/jors.bj <http://dx.doi.org/10.5334/jors.bj>`_
 
 and in the resources listed `here <http://pyrdm.readthedocs.org/en/latest/citing.html>`_.
 
