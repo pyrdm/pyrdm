@@ -21,7 +21,7 @@ PyRDM
 PyRDM is a Python module for research data management (RDM). It facilitates the automated online publication of scientific software and associated input and output data.
 
 [![Build Status](https://travis-ci.org/pyrdm/pyrdm.svg?branch=master)](https://travis-ci.org/pyrdm/pyrdm)
-[![Documentation Status](https://readthedocs.org/projects/pyrdm/badge/?version=latest)](https://readthedocs.org/projects/pyrdm/?badge=latest)
+[![Documentation Status](https://readthedocs.org/projects/pyrdm/badge/?version=latest)](http://pyrdm.readthedocs.io/en/latest/?badge=latest)
 
 Quick Start
 -----------
