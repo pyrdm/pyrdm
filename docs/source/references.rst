@@ -1,5 +1,5 @@
-Citing
-======
+References
+==========
 
 Journal articles
 ----------------
