@@ -33,7 +33,7 @@ In order to use PyRDM you must build as well as configure the package. Build the
 3. Build the package by `sudo make install`
 4. Build the documentation by `make docs`. This will produce an HTML version of the documentation in the `docs/build` directory. Alternatively, you can view the latest version of the documentation [here](http://pyrdm.readthedocs.io).
 
-Alternatively, users of Conda can install PyRDM and its dependencies using
+Alternatively, users of [Conda](http://conda.pydata.org/) can install PyRDM and its dependencies using
 
 ```
 conda install -c ctjacobs -c pypi -c auto -c ioos -c conda-forge pyrdm

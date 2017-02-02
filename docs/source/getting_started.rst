@@ -11,8 +11,13 @@ system.
 
 It is recommended that users use the terminal to install and run PyRDM.
 
-Downloading and Installing
+Downloading and installing
 --------------------------
+
+PyRDM can either be installed from source or through a `Conda package <http://conda.pydata.org/>`_, both of which are described below.
+
+From source
+~~~~~~~~~~~
 
 PyRDM's source code is hosted on GitHub and can be found here: `<https://github.com/pyrdm/pyrdm>`_. The first step is to download the source code using:
 
@@ -44,6 +49,13 @@ This can be achieved using:
 You may wish to add this statement to your
 ``/home/your_username/.bashrc`` or ``/etc/bash.bashrc`` files so the
 ``PYTHONPATH`` is set correctly each time you log in.
+
+Conda package
+~~~~~~~~~~~~~
+
+Users of Conda can install PyRDM and its dependencies using
+
+``conda install -c ctjacobs -c pypi -c auto -c ioos -c conda-forge pyrdm``
 
 Configuring
 -----------
