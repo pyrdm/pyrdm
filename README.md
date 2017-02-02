@@ -64,4 +64,4 @@ When citing PyRDM, please use the following citation:
 Contact
 -------
 
-If you have any questions or comments about PyRDM, please send them via email to <christian@christianjacobs.uk>.
+If you have any questions or comments about PyRDM, please send them via email to <C.T.Jacobs@soton.ac.uk>.
