@@ -437,7 +437,7 @@ class Publisher:
          if(exists):
             continue
          else:
-            _LOG.warning("Could not find file %s on the Figshare server." % f)
+            _LOG.warning("Could not find file %s on the server." % f)
             return False
       return True
 
