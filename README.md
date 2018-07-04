@@ -53,7 +53,7 @@ Citing
 
 When citing PyRDM, please use the following citation:
 
-* C. T. Jacobs, A. Avdis, G. J. Gorman, M. D. Piggott (2014). PyRDM: A Python-based library for automating the management and online publication of scientific software and data. *Journal of Open Research Software*, 2(1):e28, DOI: [http://dx.doi.org/10.5334/jors.bj](http://dx.doi.org/10.5334/jors.bj)
+* C. T. Jacobs, A. Avdis, G. J. Gorman, M. D. Piggott (2014). PyRDM: A Python-based library for automating the management and online publication of scientific software and data. *Journal of Open Research Software*, 2(1):e28, DOI: [https://doi.org/10.5334/jors.bj](https://doi.org/10.5334/jors.bj)
 
 Contact
 -------
