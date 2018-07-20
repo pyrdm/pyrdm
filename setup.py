@@ -26,8 +26,8 @@ setup(name='PyRDM',
       author='Christian T. Jacobs, Alexandros Avdis, Gerard J. Gorman, Matthew D. Piggott',
       url='https://github.com/pyrdm/pyrdm',
       packages=['pyrdm'],
-      provides=['pyrdm']
-      install_requires=['requests', 'restkit', 'GitPython >= 0.3.2.RC1', 'sword2', 'Shpinx']
+      provides=['pyrdm'],
+      install_requires=['requests', 'restkit', 'GitPython >= 0.3.2.RC1', 'sword2', 'Shpinx'],
       package_dir = {'pyrdm': 'pyrdm'},
       scripts=["bin/fluidity-publish", "bin/pyrdm-publish"],
       data_files=[]
