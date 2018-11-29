@@ -8,3 +8,8 @@ install:
   
 script:
   - ./CID/cid.sh
+
+deploy:
+  provider: pypi
+  on:
+    branch: production
