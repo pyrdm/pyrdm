@@ -2,7 +2,7 @@
 BRANCH_NAME=`git rev-parse --abbrev-ref HEAD`
 if test $BRANCH_NAME = 'master'
 then
-    #Test the doc build
+    # Test the doc build
     make docs
     make clean
 fi
