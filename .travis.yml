@@ -11,5 +11,7 @@ script:
 
 deploy:
   provider: pypi
+  user: $TWINE_USERNAME
+  password: $TWINE_PASSWORD
   on:
     branch: production
