@@ -20,10 +20,11 @@
 from distutils.core import setup
 
 setup(name='PyRDM',
-      version='0.3.2',
+      version='0.3.3',
       license='GPLv3',
       description='PyRDM is a Python module for research data management (RDM). It facilitates the automated publication of scientific software and associated input and output data.',
       author='Christian T. Jacobs, Alexandros Avdis, Gerard J. Gorman, Matthew D. Piggott',
+      author_email='C.T.Jacobs@soton.ac.uk, a.avdis@imperial.ac.uk'
       url='https://github.com/pyrdm/pyrdm',
       packages=['pyrdm'],
       provides=['pyrdm'],
