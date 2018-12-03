@@ -17,10 +17,10 @@
 #    You should have received a copy of the GNU General Public License
 #    along with PyRDM.  If not, see <http://www.gnu.org/licenses/>.
 
-from distutils.core import setup
+from setuptools import setup
 
 setup(name='PyRDM',
-      version='0.3.3',
+      version='0.3.4',
       license='GPLv3',
       description='PyRDM is a Python module for research data management (RDM). It facilitates the automated publication of scientific software and associated input and output data.',
       author='Christian T. Jacobs, Alexandros Avdis, Gerard J. Gorman, Matthew D. Piggott',
