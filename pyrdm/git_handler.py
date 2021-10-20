@@ -20,7 +20,7 @@
 import sys, os
 import logging
 import git
-from urllib2 import urlopen
+from urllib.request import urlopen
 
 _LOG = logging.getLogger(__name__)
 

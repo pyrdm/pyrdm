@@ -17,7 +17,7 @@
 #    You should have received a copy of the GNU General Public License
 #    along with PyRDM.  If not, see <http://www.gnu.org/licenses/>.
 
-import ConfigParser
+import configparser
 import glob
 import logging
 import argparse
@@ -71,7 +71,7 @@ class FluidityPublish:
       except:
          _LOG.warning("Unable to determine the Fluidity version from the file 'version.h'. Fluidity might not have been compiled yet.")
          while True:
-            response = raw_input("Do you want to assume that the version of Fluidity you want to publish is the same as the local Git repository's HEAD? (Y/N)\n")
+            response = input("Do you want to assume that the version of Fluidity you want to publish is the same as the local Git repository's HEAD? (Y/N)\n")
             if(response == "y" or response == "Y"):
                sha = repo.head.commit.hexsha
                return sha
@@ -136,7 +136,7 @@ class FluidityPublish:
          if(libspud.get_option("/publish/software/pid") != self.publisher.find_software("Fluidity", sha_in_statfile)[0]):
             _LOG.warning("The version of Fluidity that created this output data is either: (a) not published (and made public) yet, or (b) inconsistent with the version referred to by the publication ID in the options file (%d).\n" % libspud.get_option("/publish/software/pid"))
             while True:
-               response = raw_input("Are you sure you want to continue? (Y/N)\n")
+               response = input("Are you sure you want to continue? (Y/N)\n")
                if(response == "y" or response == "Y"):
                   break
                elif(response == "n" or response == "N"):
@@ -158,7 +158,7 @@ class FluidityPublish:
          provenance_data["InputDataDOI"] = "Unknown"
 
       elements = xml.getElementsByTagName('constant')
-      for key in provenance_data.keys():
+      for key in list(provenance_data.keys()):
          exists = False
          for element in elements:
             if(element.getAttribute("name") == key):

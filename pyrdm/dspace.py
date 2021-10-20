@@ -149,9 +149,9 @@ class DSpace:
       """ List all the files at a given repository address. """
       handlers=[]
       if(user_name is not None):
-         import urllib2, urlparse
+         import urllib.request, urllib.error, urllib.parse, urllib.parse
          import feedparser
-         auth = urllib2.HTTPBasicAuthHandler()
+         auth = urllib.request.HTTPBasicAuthHandler()
          auth.add_password("DSpace", uri=media_edit_feed, user=user_name, passwd=user_pass)
          handlers.append(auth)
       feed = feedparser.parse(media_edit_feed, handlers=handlers)

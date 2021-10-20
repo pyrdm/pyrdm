@@ -24,8 +24,8 @@ import unittest
 import requests
 import json
 
-from urllib2 import urlopen
-from urllib import urlencode
+from urllib.request import urlopen
+from urllib.parse import urlencode
 
 _LOG = logging.getLogger(__name__)
 
@@ -243,7 +243,7 @@ class TestLog(unittest.TestCase):
       _LOG.info("Creating test article...")
       publication_details = self.zenodo.create_deposition(title="PyRDM Test", description="PyRDM Test Article", upload_type="software", creators=[{"name":"Test User", "affiliation":"Test Affiliation"}], keywords=["Test"], prereserve_doi=True)
       _LOG.debug(str(publication_details))
-      assert(not ("errors" in publication_details.keys()))
+      assert(not ("errors" in list(publication_details.keys())))
       self.deposition_id = publication_details["id"]
       return
 

@@ -17,14 +17,14 @@
 #    You should have received a copy of the GNU General Public License
 #    along with PyRDM.  If not, see <http://www.gnu.org/licenses/>.
 
-import ConfigParser
+import configparser
 import logging
 import sys, os
 import unittest
 import re
 
 import hashlib # For MD5 checksums
-from urllib2 import urlopen
+from urllib.request import urlopen
 
 from pyrdm.figshare import Figshare
 from pyrdm.zenodo import Zenodo
@@ -59,7 +59,7 @@ class Publisher:
    def load_config(self, config_file_path):
       """ Load the configuration file and return a dictionary containing the OAuth keys. """
 
-      config = ConfigParser.ConfigParser()
+      config = configparser.ConfigParser()
       have_config = (config.read(config_file_path) != [])
       if(not have_config):
          _LOG.error("Could not open the PyRDM configuration file. Check that the file 'pyrdm.ini' is in the ~/.config/ directory, and that it is readable.")
@@ -448,7 +448,7 @@ class Publisher:
       else:
          _LOG.warning("Not all files were successfully uploaded. Perhaps you ran out of space on the server?")
          while True:
-            response = raw_input("Are you sure you want to continue? (Y/N)\n")
+            response = input("Are you sure you want to continue? (Y/N)\n")
             if(response == "y" or response == "Y"):
                break
             elif(response == "n" or response == "N"):
@@ -466,7 +466,7 @@ class Publisher:
    def publication_exists(self, pid):
       if(self.service == "figshare"):
          results = self.figshare.get_article_details(pid)
-         if("error" in results.keys()):
+         if("error" in list(results.keys())):
             return False
          else:
             return True

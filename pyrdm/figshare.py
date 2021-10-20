@@ -78,7 +78,7 @@ class Figshare(Resource):
       
       response = json.loads(response.body_string())
       
-      if not "error" in response.keys():
+      if not "error" in list(response.keys()):
          article_id = int(response["location"].split("/")[-1])
       else:
          article_id = None
@@ -259,7 +259,7 @@ class Figshare(Resource):
       
       response = json.loads(response.body_string())
       
-      if not "error" in response.keys():
+      if not "error" in list(response.keys()):
          doi = str(response["doi"])
       else:
          doi = None
@@ -293,7 +293,7 @@ class TestLog(unittest.TestCase):
       _LOG.info("Deleting test article...")
       response = self.figshare.delete_article(self.article_id)
       _LOG.debug(str(response))
-      assert("success" in response.keys())
+      assert("success" in list(response.keys()))
       return
 
    def test_figshare_search(self):
