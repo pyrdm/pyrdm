@@ -74,7 +74,7 @@ class Figshare:
       response = requests.post(self.base_url+"/account/articles", data=json.dumps(body), headers=self.get_headers(token=self.token))
       
       response = json.loads(response.content)
-      
+
       if not "error" in list(response.keys()):
          article_id = int(response["location"].split("/")[-1])
       else:
@@ -280,7 +280,7 @@ class TestLog(unittest.TestCase):
                      
       # Create a test article
       _LOG.info("Creating test article...")
-      self.article_id = self.figshare.create_article(title="PyRDM Test", description="PyRDM Test Article", tags=["test", "article"], defined_type="code", categories=2)
+      self.article_id = self.figshare.create_article(title="PyRDM Test", description="PyRDM Test Article", tags=["test", "article"], defined_type="software", categories=2)
       _LOG.debug(str(self.article_id))
       assert(self.article_id is not None)
       return
@@ -309,7 +309,7 @@ class TestLog(unittest.TestCase):
       _LOG.debug(str(file_id))
       
       response = self.figshare.get_file_details(self.article_id, file_id)
-    
+
       assert(response["name"] == "test_file.txt")
       assert(response["viewer_type"] == "txt")
       assert(response["computed_md5"] == "e6bee908f14f172a54c920e06b5e9db0")

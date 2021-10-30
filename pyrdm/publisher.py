@@ -309,7 +309,7 @@ class Publisher:
       
    def write_checksum(self, f):
       """ For a given file with path 'f', write a corresponding MD5 checksum file. """
-      md5 = hashlib.md5(open(f).read()).hexdigest()
+      md5 = hashlib.md5(open(f, "rb").read()).hexdigest()
       checksum_file = open(f + ".md5", "w")
       checksum_file.write(md5)
       checksum_file.close()
@@ -323,7 +323,7 @@ class Publisher:
          if(os.path.isfile(f + ".md5")):
             checksum_file = open(f + ".md5", "r")
             md5_original = checksum_file.readline()
-            md5 = hashlib.md5(open(f).read()).hexdigest()
+            md5 = hashlib.md5(open(f, "rb").read()).hexdigest()
             
             if(md5 != md5_original):
                modified.append(f)
@@ -402,7 +402,7 @@ class Publisher:
                if(m is not None):
                   author_id = m.group(1)
                   author_ids.append(author_id)
-               
+         f.close()      
          return author_ids
       except IOError:
          _LOG.warning("Could not open AUTHORS file. Does it exist? Check read permissions?")
@@ -499,7 +499,9 @@ class TestLog(unittest.TestCase):
       
       f = open("test_file.txt.md5", "r")
       md5_known = "29586140472f40eec4031eb2e0d352e1"
-      md5 = hashlib.md5(open("test_file.txt").read()).hexdigest()
+      f.close()
+
+      md5 = hashlib.md5(open("test_file.txt", "rb").read()).hexdigest()
       _LOG.debug("Known MD5 hash of file: %s" % md5_known)
       _LOG.debug("Computed MD5 hash of file: %s" % md5)
       assert(md5 == md5_known)
@@ -518,7 +520,7 @@ class TestLog(unittest.TestCase):
       
       # Check that the MD5 checksums are not the same
       md5_before = "29586140472f40eec4031eb2e0d352e1"
-      md5_after = hashlib.md5(open("test_file.txt").read()).hexdigest()
+      md5_after = hashlib.md5(open("test_file.txt", "rb").read()).hexdigest()
       _LOG.debug("MD5 hash before modification: %s" % md5_before)
       _LOG.debug("MD5 hash after modification: %s" % md5_after)
       assert(md5_before != md5_after)
