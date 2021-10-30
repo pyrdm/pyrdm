@@ -24,6 +24,7 @@ from urllib.request import urlopen
 
 _LOG = logging.getLogger(__name__)
 
+
 class GitHandler:
 
    def __init__(self, repository_location):

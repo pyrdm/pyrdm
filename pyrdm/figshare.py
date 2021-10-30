@@ -21,14 +21,13 @@ import logging
 import sys, os
 import unittest
 import hashlib
-
 import requests
-from restkit import Resource, request
 import json
 
 _LOG = logging.getLogger(__name__)
 
-class Figshare(Resource):
+
+class Figshare:
    """ A Python interface to Figshare via version 2 of the Figshare API. """
 
    def __init__(self, token):
@@ -37,16 +36,14 @@ class Figshare(Resource):
       
       # The Figshare OAuth2 authentication token.
       self.token = token
-      
-      super(Figshare, self).__init__(self.base_url)
 
       # Before doing any creating/uploading on Figshare, try something simple like listing the user's articles
       # to check that the authentication is successful.
       _LOG.info("Testing Figshare authentication...")
       try:
-         response = self.get('/account/articles', params_dict={"limit":10}, headers=self.get_headers(token=self.token))
-         _LOG.debug("Server returned response %d" % response.status_int)
-         if(response.status_int != requests.codes.ok): # If the status is not "OK", then exit here.
+         response = requests.get(self.base_url+'/account/articles', params={"limit":10}, headers=self.get_headers(token=self.token))
+         _LOG.debug("Server returned response %d" % response.status_code)
+         if(response.status_code != requests.codes.ok): # If the status is not "OK", then exit here.
             raise Exception("Could not authenticate with the Figshare server.")
          else:
             _LOG.info("Authentication test successful.\n")
@@ -74,9 +71,9 @@ class Figshare(Resource):
       # The data that will be sent via HTTP POST.
       body = {'title':title, 'description':description, 'defined_type':defined_type, "categories":categories, "tags":tags}
       headers = {'content-type':'application/json'}
-      response = self.post("/account/articles", payload=json.dumps(body), headers=self.get_headers(token=self.token))
+      response = requests.post(self.base_url+"/account/articles", data=json.dumps(body), headers=self.get_headers(token=self.token))
       
-      response = json.loads(response.body_string())
+      response = json.loads(response.content)
       
       if not "error" in list(response.keys()):
          article_id = int(response["location"].split("/")[-1])
@@ -101,14 +98,14 @@ class Figshare(Resource):
       if(categories is not None):
          body['categories'] = categories
 
-      response = self.put('/account/articles/%s' % str(article_id), payload=json.dumps(body), headers=self.get_headers(token=self.token))
+      response = requests.put(self.base_url+'/account/articles/%s' % str(article_id), data=json.dumps(body), headers=self.get_headers(token=self.token))
       response = json.loads(response.content)
       return response
 
    def delete_article(self, article_id):
       """ Delete a private or draft article with a given article_id. """
       try:
-         response = self.delete('/account/articles/%s' % str(article_id), headers=self.get_headers(token=self.token))
+         response = requests.delete(self.base_url+'/account/articles/%s' % str(article_id), headers=self.get_headers(token=self.token))
          return {"success": True}
       except Exception as e:
          _LOG.exception(e)
@@ -118,21 +115,21 @@ class Figshare(Resource):
       """ Return the details of an article with a given article ID. """
       
       if private:
-         url = '/account/articles/%s' % str(article_id)
+         url = self.base_url+'/account/articles/%s' % str(article_id)
       else:
-         url = '/articles/%s' % str(article_id)
+         url = self.base_url+'/articles/%s' % str(article_id)
          
-      response = self.get(url, headers=self.get_headers(token=self.token))
-      details = json.loads(response.body_string())
+      response = requests.get(url, headers=self.get_headers(token=self.token))
+      details = json.loads(response.content)
       return details
       
    def search(self, keyword, private=False, institution=None, group=None, published_since=None, modified_since=None):
       """ Searches public and private articles using a keyword. """
 
       if private:
-         url = "/account/articles/search"
+         url = self.base_url+"/account/articles/search"
       else:
-         url = "/articles/search"
+         url = self.base_url+"/articles/search"
 
       parameters = {"search_for":"%s" % keyword}
 
@@ -146,8 +143,8 @@ class Figshare(Resource):
       if modified_since:
          parameters["modified_since"] = modified_since
       
-      response = self.post(url, payload=json.dumps(parameters), headers=self.get_headers(token=self.token))
-      results = json.loads(response.body_string())
+      response = requests.post(url, data=json.dumps(parameters), headers=self.get_headers(token=self.token))
+      results = response.json()
       return results
 
    def add_category(self, article_id, category):
@@ -160,7 +157,7 @@ class Figshare(Resource):
       else:
          try:
             body = {'categories':[category_id]}
-            response = self.post('/account/articles/%s/categories' % str(article_id), payload=json.dumps(body), headers=self.get_headers(token=self.token))
+            response = requests.post(self.base_url+'/account/articles/%s/categories' % str(article_id), data=json.dumps(body), headers=self.get_headers(token=self.token))
             return {"success": True}
          except:
             return {"success": False}
@@ -179,8 +176,8 @@ class Figshare(Resource):
       """ Get the full list of available categories. No authentication is required. """
       
       headers = {'content-type':'application/json'}
-      response = self.get('/categories', headers=self.get_headers())
-      categories = json.loads(response.body_string())
+      response = requests.get(self.base_url+'/categories', headers=self.get_headers())
+      categories = json.loads(response.content)
       return categories
 
    def add_authors(self, article_id, author_ids):
@@ -189,9 +186,8 @@ class Figshare(Resource):
       # We require author_ids to be a list
       if isinstance(author_ids, int):
          author_ids = [{'id':author_ids}]
-         
-      payload = json.dumps({'authors':author_ids})
-      response = self.put('/account/articles/%s/authors' % str(article_id), payload=payload, headers=self.get_headers(token=self.token))
+
+      response = requests.put(self.base_url+'/account/articles/%s/authors' % str(article_id), data=json.dumps({'authors':author_ids}), headers=self.get_headers(token=self.token))
       return response
     
    def add_file(self, article_id, file_path):
@@ -211,53 +207,53 @@ class Figshare(Resource):
       file_info['size'] = os.path.getsize(file_path)
 
       # Create file object
-      payload = json.dumps(file_info)
-      response = self.post('/account/articles/{}/files'.format(article_id), headers=self.get_headers(token=self.token), payload=payload)
-      response = json.loads(response.body_string())
+      response = requests.post(self.base_url+'/account/articles/{}/files'.format(article_id), headers=self.get_headers(token=self.token), data=json.dumps(file_info))
+      response = json.loads(response.content)
       file_location = response["location"]
       
       # Get the file info, in particular the upload URL
-      response = request(file_location, headers=self.get_headers(token=self.token))
-      upload_url = json.loads(response.body_string())["upload_url"]
+      response = requests.request("GET", file_location, headers=self.get_headers(token=self.token))
+      upload_url = json.loads(response.content)["upload_url"]
+      print(upload_url)
       
       # Upload the file
-      response = request(upload_url, headers=self.get_headers(token=self.token))
-      response = json.loads(response.body_string())
+      response = requests.request("GET", upload_url, headers=self.get_headers(token=self.token))
+      response = json.loads(response.content)
       parts = response["parts"]
 
       with open(file_path, 'rb') as file_input:
          for part in parts:
              size = part['endOffset'] - part['startOffset'] + 1
-             response = request('{0}/{1}'.format(upload_url, part["partNo"]), method='PUT', body=file_input.read(size))
+             response = requests.request("PUT", '{0}/{1}'.format(upload_url, part["partNo"]), data=file_input.read(size))
 
-      response = request(file_location, method='POST', headers=self.get_headers(token=self.token))
+      response = requests.request("POST", file_location, headers=self.get_headers(token=self.token))
       
       file_id = int(file_location.split("/")[-1])
       return file_id
 
    def list_files(self, article_id):
       """ List all the files associated with a given article. """
-      response = self.get('/account/articles/%s/files' % str(article_id), headers=self.get_headers(token=self.token))
-      files = json.loads(response.body_string())
+      response = requests.get(self.base_url+'/account/articles/%s/files' % str(article_id), headers=self.get_headers(token=self.token))
+      files = json.loads(response.content)
       return files
       
    def delete_file(self, article_id, file_id):
       """ Delete a file associated with a given article. """
-      response = self.delete('/articles/%s/files/%s' % (str(article_id), str(file_id)), headers=self.get_headers(token=self.token))
-      response = json.loads(response.body_string())
+      response = requests.delete(self.base_url+'/articles/%s/files/%s' % (str(article_id), str(file_id)), headers=self.get_headers(token=self.token))
+      response = json.loads(response.content)
       return response
 
    def get_file_details(self, article_id, file_id):
       """ Get the details about a file associated with a given article. """
-      response = self.get('/account/articles/%s/files/%s' % (str(article_id), str(file_id)), headers=self.get_headers(token=self.token))
-      response = json.loads(response.body_string())
+      response = requests.get(self.base_url+'/account/articles/%s/files/%s' % (str(article_id), str(file_id)), headers=self.get_headers(token=self.token))
+      response = json.loads(response.content)
       return response
 
    def reserve_doi(self, article_id):
       """ Reserve a DOI for the article. """
-      response = self.post('/account/articles/%s/reserve_doi' % str(article_id), headers=self.get_headers(token=self.token))
+      response = requests.post(self.base_url+'/account/articles/%s/reserve_doi' % str(article_id), headers=self.get_headers(token=self.token))
       
-      response = json.loads(response.body_string())
+      response = json.loads(response.content)
       
       if not "error" in list(response.keys()):
          doi = str(response["doi"])
@@ -268,8 +264,8 @@ class Figshare(Resource):
 
    def publish(self, article_id):
       """ Publish the article and make it public. """
-      response = self.post('/account/articles/%s/publish' % str(article_id), headers=self.get_headers(token=self.token))
-      response = json.loads(response.body_string())
+      response = requests.post(self.base_url+'/account/articles/%s/publish' % str(article_id), headers=self.get_headers(token=self.token))
+      response = json.loads(response.content)
       return response
 
 

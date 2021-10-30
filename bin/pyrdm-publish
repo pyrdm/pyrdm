@@ -1,4 +1,4 @@
-#!/usr/bin/env python
+#!/usr/bin/env python3
 
 #    Copyright (C) 2014 Christian T. Jacobs, Alexandros Avdis, Gerard J. Gorman, Matthew D. Piggott.
 
@@ -24,7 +24,6 @@ import argparse
 import os
 import re
 import sys
-
 import git
 from xml.dom import minidom
 pyrdm_path = os.path.join(os.path.realpath(os.path.dirname(__file__)), os.pardir)
@@ -41,12 +40,13 @@ _HANDLER.setFormatter(logging.Formatter(
 del(_HANDLER)
 _LOG.setLevel(logging.DEBUG)
 
+
 class PyRDMPublish:
 
    def __init__(self):
       return
 
-   def publish(self, path, version=None, private=False):
+   def publish(self, path, version=None, private=True):
       """ Publish the PyRDM source code. """
 
       self.publisher = Publisher(service="figshare")

@@ -23,11 +23,11 @@ input: 	clean build docs
 
 build:
 	@echo "*** Building PyRDM"
-	python setup.py build
+	python3 setup.py build
 
 install:
 	@echo "*** Installing PyRDM"
-	python setup.py install
+	python3 setup.py install
 
 docs:
 	@echo "*** Compiling the documentation"
@@ -35,7 +35,7 @@ docs:
 
 test:
 	@echo "*** Running the unit tests"
-	python -m unittest discover --start-directory=pyrdm --pattern=*.py --verbose
+	python3 -m unittest discover --start-directory=pyrdm --pattern=*.py --verbose
 
 clean:
 	@echo "*** Removing build directory"

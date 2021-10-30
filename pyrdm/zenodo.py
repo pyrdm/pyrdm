@@ -20,7 +20,6 @@
 import logging
 import sys, os
 import unittest
-
 import requests
 import json
 
@@ -28,6 +27,7 @@ from urllib.request import urlopen
 from urllib.parse import urlencode
 
 _LOG = logging.getLogger(__name__)
+
 
 class Zenodo:
    """ A Python interface to Zenodo via the Zenodo API. """

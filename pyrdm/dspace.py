@@ -23,6 +23,7 @@ import os.path
 
 _LOG = logging.getLogger(__name__)
 
+
 class DSpace:
    """ A publishing interface to DSpace using the SWORD2 protocol. """
    

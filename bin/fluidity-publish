@@ -1,4 +1,4 @@
-#!/usr/bin/env python
+#!/usr/bin/env python3
 
 #    Copyright (C) 2014 Christian T. Jacobs, Alexandros Avdis, Gerard J. Gorman, Matthew D. Piggott.
 
@@ -42,6 +42,7 @@ _HANDLER.setFormatter(logging.Formatter(
     '%(module)s %(levelname)s: %(message)s'))
 del(_HANDLER)
 _LOG.setLevel(logging.DEBUG)
+
 
 class FluidityPublish:
 

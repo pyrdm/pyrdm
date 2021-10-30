@@ -22,7 +22,6 @@ import logging
 import sys, os
 import unittest
 import re
-
 import hashlib # For MD5 checksums
 from urllib.request import urlopen
 
@@ -32,6 +31,7 @@ from pyrdm.dspace import DSpace
 from pyrdm.git_handler import GitHandler
 
 _LOG = logging.getLogger(__name__)
+
 
 class Publisher:
    """ A Python module for publishing scientific software and data on Figshare or Zenodo. """
@@ -97,7 +97,7 @@ class Publisher:
       description='%s (Version %s)' % (name, version)
 
       if(self.service == "figshare"):
-         pid = self.figshare.create_article(title=title, description=description, defined_type="code", tags=[version], categories=[])
+         pid = self.figshare.create_article(title=title, description=description, defined_type="software", tags=[version], categories=[])
          doi = self.figshare.reserve_doi(pid)
          _LOG.info("Code repository created with ID: %d and DOI: %s" % (pid, doi))
 
@@ -192,7 +192,7 @@ class Publisher:
          _LOG.info("Creating new fileset...")
          if(self.service == "figshare"):
             # NOTE: The defined_type needs to be a 'fileset' to allow multiple files to be uploaded separately.
-            pid = self.figshare.create_article(title=parameters["title"], description=parameters["description"], defined_type="fileset", tags=parameters["tag_name"], categories=[])
+            pid = self.figshare.create_article(title=parameters["title"], description=parameters["description"], defined_type="dataset", tags=parameters["tag_name"], categories=[])
             doi = self.figshare.reserve_doi(pid)
             
             # Add category
