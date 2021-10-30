@@ -27,7 +27,7 @@ setup(name='PyRDM',
       url='https://github.com/pyrdm/pyrdm',
       packages=['pyrdm'],
       provides=['pyrdm'],
-      install_requires=['requests', 'restkit', 'GitPython >= 0.3.2.RC1', 'gitdb', 'sword2', 'Sphinx'],
+      install_requires=['requests', 'GitPython >= 0.3.2.RC1', 'gitdb', 'sword2', 'Sphinx'],
       package_dir = {'pyrdm': 'pyrdm'},
       scripts=["bin/fluidity-publish", "bin/pyrdm-publish"],
       data_files=[]
