@@ -42,7 +42,6 @@ PyRDM depends on:
 
 * [GitPython](https://pypi.python.org/pypi/GitPython/)
 * [requests](https://pypi.python.org/pypi/requests/)
-* [restkit](https://pypi.python.org/pypi/restkit)
 * [python-client-sword2](https://github.com/swordapp/python-client-sword2)
 * [Sphinx](http://sphinx-doc.org/) - to build the documentation.
 * [libspud](https://launchpad.net/spud) - this package is not necessary if you do not wish to run the PyRDM-based publication tool `fluidity-publish` specifically designed for the Fluidity CFD code.
